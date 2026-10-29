@@ -6,7 +6,7 @@ import { soundEngine } from '../utils/sound';
 import { generateDailyQuests, getRankInfo, getXpForLevel, INITIAL_BADGES } from '../utils/gamification';
 import { generateSeedDayLogs, SEED_HABITS, SEED_TIMETABLE } from '../utils/seeds';
 
-const LOCAL_STORAGE_KEY = 'kata_habit_app_state_v1';
+const LOCAL_STORAGE_KEY = 'kata_habit_app_state_v2';
 
 export interface SprintTimerState {
   active: boolean;

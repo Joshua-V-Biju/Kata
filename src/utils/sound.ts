@@ -1,16 +1,21 @@
-// Web Audio API Synthesizer for anime-style sound effects
+// Web Audio API Synthesizer for anime-style sound effects & ambient focus drone
 // Completely offline, zero asset files required, smooth 60fps response
 
 class SoundEngine {
   private ctx: AudioContext | null = null;
   private enabled: boolean = true;
+  private droneOsc1: OscillatorNode | null = null;
+  private droneOsc2: OscillatorNode | null = null;
+  private droneGain: GainNode | null = null;
+  private isDronePlaying: boolean = false;
 
-  constructor() {
-    // AudioContext will be initialized on first user interaction
-  }
+  constructor() {}
 
   public setEnabled(enabled: boolean) {
     this.enabled = enabled;
+    if (!enabled && this.isDronePlaying) {
+      this.stopFocusDrone();
+    }
   }
 
   private getContext(): AudioContext | null {
@@ -127,6 +132,81 @@ class SoundEngine {
       osc.start(st);
       osc.stop(st + 0.26);
     });
+  }
+
+  // Synthesized Cyber Ambient Binaural Focus Drone (108 Hz + 114 Hz binaural beat)
+  public toggleFocusDrone(): boolean {
+    if (this.isDronePlaying) {
+      this.stopFocusDrone();
+      return false;
+    } else {
+      this.startFocusDrone();
+      return true;
+    }
+  }
+
+  public startFocusDrone() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    this.stopFocusDrone();
+
+    const now = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+
+    // Binaural alpha frequency: 108Hz and 114Hz -> 6Hz theta brainwave focus
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(108, now);
+
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(114, now);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(320, now);
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.08, now + 1.5); // Gentle soft volume
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc1.start(now);
+    osc2.start(now);
+
+    this.droneOsc1 = osc1;
+    this.droneOsc2 = osc2;
+    this.droneGain = gain;
+    this.isDronePlaying = true;
+  }
+
+  public stopFocusDrone() {
+    if (this.droneGain && this.ctx) {
+      const now = this.ctx.currentTime;
+      this.droneGain.gain.linearRampToValueAtTime(0.001, now + 0.8);
+      setTimeout(() => {
+        try {
+          this.droneOsc1?.stop();
+          this.droneOsc2?.stop();
+          this.droneOsc1?.disconnect();
+          this.droneOsc2?.disconnect();
+        } catch (e) {}
+        this.droneOsc1 = null;
+        this.droneOsc2 = null;
+        this.droneGain = null;
+        this.isDronePlaying = false;
+      }, 850);
+    } else {
+      this.isDronePlaying = false;
+    }
+  }
+
+  public isFocusDroneActive(): boolean {
+    return this.isDronePlaying;
   }
 }
 
