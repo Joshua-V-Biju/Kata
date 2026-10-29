@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { getDaysInMonth, getTodayStr, isWeekend, getDayOfWeekIndex, getDayShortName } from '../../utils/dates';
-import { IconRenderer } from '../common/IconRenderer';
-import { ChevronLeft, ChevronRight, Calendar, Sparkles, TrendingUp, ThumbsDown, ThumbsUp, Flame } from 'lucide-react';
+import { ChevronLeft, ChevronRight, DollarSign, Plus, Check, Edit3, Sparkles } from 'lucide-react';
 
 export const MonthlyGrid: React.FC = () => {
-  const { habits, dayLogs, toggleHabit, setDaySpending, setSelectedDate } = useKataStore();
+  const { habits, dayLogs, toggleHabit, editHabit, setDaySpending, setSelectedDate, addToast } = useKataStore();
   const todayStr = getTodayStr();
 
-  // Allow switching between months, defaulting to current or August (from Excel)
-  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 7, 1)); // Default to August 2026 to show exact excel match, or user can click 'Today'
+  // Allow switching between months, defaulting to August (from Excel) or current date
+  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 7, 1)); // Default to August 2026 matching excel seed
 
   const year = currentDate.getFullYear();
   const monthIndex = currentDate.getMonth();
@@ -20,6 +19,10 @@ export const MonthlyGrid: React.FC = () => {
   const endDateStr = `${monthName} ${totalDays}, ${year}`;
 
   const activeHabits = habits.filter(h => !h.archived).sort((a, b) => a.order - b.order);
+
+  // Spendings Quick Editor State
+  const [selectedSpendDay, setSelectedSpendDay] = useState<number>(12);
+  const [spendAmountInput, setSpendAmountInput] = useState<string>('30');
 
   const prevMonth = () => {
     setCurrentDate(new Date(year, monthIndex - 1, 1));
@@ -33,7 +36,7 @@ export const MonthlyGrid: React.FC = () => {
     setCurrentDate(new Date());
   };
 
-  // 1. Calculate daily completions array for the top glowing wave chart & bottom mini bars
+  // 1. Calculate daily completions array for top glowing wave chart & bottom mini bars
   const dailyCounts = days.map(dateStr => {
     const log = dayLogs[dateStr];
     return {
@@ -48,7 +51,6 @@ export const MonthlyGrid: React.FC = () => {
   const totalMonthlyGoalSum = activeHabits.reduce((acc, h) => acc + (h.monthlyGoal || 10), 0) || 151;
   const overallRate = Math.min(100, Math.round((totalCompletionsInMonth / totalMonthlyGoalSum) * 100));
 
-  // Determine performance badge & rating
   const getRatingStatus = (rate: number) => {
     if (rate >= 80) return { label: 'LEGENDARY DISCIPLINE', emoji: '🔥 🔥 🔥', color: 'text-emerald-400' };
     if (rate >= 50) return { label: 'SOLID EFFORT', emoji: '⚡ ⚡ ⚡', color: 'text-cyan-400' };
@@ -59,9 +61,9 @@ export const MonthlyGrid: React.FC = () => {
 
   // 2. Wave Chart Geometry (svg bezier curve)
   const chartHeight = 110;
-  const chartWidth = 920;
-  const paddingLeft = 30;
-  const paddingRight = 30;
+  const chartWidth = 940;
+  const paddingLeft = 32;
+  const paddingRight = 32;
   const paddingTop = 25;
   const paddingBottom = 22;
 
@@ -90,16 +92,34 @@ export const MonthlyGrid: React.FC = () => {
 
   const waveAreaD = `${wavePathD} L ${chartPoints[chartPoints.length - 1].x} ${chartHeight - paddingBottom} L ${chartPoints[0].x} ${chartHeight - paddingBottom} Z`;
 
-  // 3. Rings calculation for the bottom section
+  // 3. Rings calculation
   const monthlyProgressPct = (totalCompletionsInMonth / totalMonthlyGoalSum) * 100;
-  
-  // Normalized 29/31 days progress
-  const activeDaysSoFar = Math.min(29, totalDays);
-  const normalizedPct = 31.9; // From user's excel or calculated
-  const momentumPct = 100; // >100% from user's excel
+  const normalizedPct = 31.9;
 
-  // 4. Amount spent total
+  // 4. Amount spent calculations
   const totalAmountSpent = dailyCounts.reduce((acc, d) => (d.spent !== undefined ? acc + d.spent : acc), 0);
+  const daysWithSpending = dailyCounts.filter(d => d.spent !== undefined && d.spent > 0);
+
+  // Handle saving spending from the clear entry bar
+  const handleSaveSelectedSpend = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const dayStr = String(selectedSpendDay).padStart(2, '0');
+    const mStr = String(monthIndex + 1).padStart(2, '0');
+    const dateKey = `${year}-${mStr}-${dayStr}`;
+    const amount = spendAmountInput.trim() === '' ? undefined : parseFloat(spendAmountInput);
+    setDaySpending(dateKey, amount);
+    addToast('Spending Recorded', `Day ${selectedSpendDay}: $${amount || 0} updated`, 'info');
+  };
+
+  // Sync entry box when day clicked
+  const handlePickSpendDay = (dayNum: number) => {
+    setSelectedSpendDay(dayNum);
+    const dayStr = String(dayNum).padStart(2, '0');
+    const mStr = String(monthIndex + 1).padStart(2, '0');
+    const dateKey = `${year}-${mStr}-${dayStr}`;
+    const existing = dayLogs[dateKey]?.amountSpent;
+    setSpendAmountInput(existing !== undefined ? String(existing) : '');
+  };
 
   return (
     <div className="space-y-6">
@@ -119,14 +139,14 @@ export const MonthlyGrid: React.FC = () => {
               <div className="flex items-center gap-1 ml-auto">
                 <button
                   onClick={prevMonth}
-                  className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition"
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition"
                   title="Previous Month"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={nextMonth}
-                  className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition"
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition"
                   title="Next Month"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -210,9 +230,8 @@ export const MonthlyGrid: React.FC = () => {
               />
 
               {/* Digits on / above graph points matching Excel */}
-              {chartPoints.map((pt, idx) => (
+              {chartPoints.map((pt) => (
                 <g key={pt.date}>
-                  {/* Subtle vertical tick */}
                   <line
                     x1={pt.x}
                     y1={pt.y}
@@ -221,8 +240,6 @@ export const MonthlyGrid: React.FC = () => {
                     stroke="rgba(255, 255, 255, 0.06)"
                     strokeDasharray="2 2"
                   />
-
-                  {/* Digit value above point */}
                   <text
                     x={pt.x}
                     y={pt.count > 0 ? pt.y - 7 : chartHeight - paddingBottom - 4}
@@ -257,18 +274,18 @@ export const MonthlyGrid: React.FC = () => {
         {/* ==================================================================== */}
         {/* MIDDLE SECTION: Habits x Days Matrix with Custom Dotted Cells & 'x'   */}
         {/* ==================================================================== */}
-        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#0d121c]/90">
-          <table className="w-full border-collapse text-left select-none">
+        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#0d121c]/95 shadow-inner">
+          <table className="w-full border-collapse text-left select-none table-fixed min-w-[1100px]">
             <thead>
-              <tr className="border-b border-white/10 bg-slate-900/90 text-[11px] font-mono">
-                {/* Habit name header */}
-                <th className="sticky left-0 z-20 bg-slate-900/95 backdrop-blur-md p-3 min-w-[210px] uppercase tracking-wider text-slate-300 border-r border-white/10">
+              <tr className="border-b border-white/10 bg-slate-900/95 text-[11px] font-mono">
+                {/* Habit name header - Fixed width */}
+                <th className="sticky left-0 z-30 bg-[#0e1320] p-3 w-52 min-w-[210px] max-w-[210px] uppercase tracking-wider text-slate-300 border-r-2 border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.5)]">
                   HABIT
                 </th>
 
-                {/* Goal header */}
-                <th className="p-3 text-center min-w-[55px] uppercase tracking-wider text-slate-300 border-r border-white/10">
-                  GOAL
+                {/* Goal header - Editable instruction */}
+                <th className="p-3 text-center w-20 min-w-[75px] max-w-[75px] uppercase tracking-wider text-cyan-300 border-r border-white/10" title="Click any goal number below to edit">
+                  GOAL ✎
                 </th>
 
                 {/* Days 1 to 31 Header */}
@@ -282,7 +299,7 @@ export const MonthlyGrid: React.FC = () => {
                     <th
                       key={dateStr}
                       onClick={() => setSelectedDate(dateStr)}
-                      className={`p-1.5 text-center min-w-[28px] max-w-[32px] cursor-pointer transition-colors ${
+                      className={`p-1.5 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-colors ${
                         isCurrent
                           ? 'bg-cyan-500/20 text-cyan-300 font-bold'
                           : 'text-slate-400 hover:text-white'
@@ -299,7 +316,7 @@ export const MonthlyGrid: React.FC = () => {
                 })}
 
                 {/* Progress Column Header */}
-                <th className="p-3 text-center min-w-[130px] uppercase tracking-wider text-slate-300 border-l border-white/10">
+                <th className="p-3 text-center w-36 min-w-[140px] uppercase tracking-wider text-slate-300 border-l border-white/10">
                   PROGRESS
                 </th>
               </tr>
@@ -315,22 +332,35 @@ export const MonthlyGrid: React.FC = () => {
 
                 return (
                   <tr key={habit.id} className="hover:bg-white/[0.02] transition-colors group">
-                    {/* Fixed Habit Column */}
-                    <td className="sticky left-0 z-10 bg-[#121722]/95 backdrop-blur-md p-2.5 border-r border-white/10">
-                      <div className="flex items-center gap-2">
+                    {/* Fixed Habit Column - Strictly pinned to left */}
+                    <td className="sticky left-0 z-20 bg-[#0e1320] p-2.5 w-52 min-w-[210px] max-w-[210px] border-r-2 border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.5)]">
+                      <div className="flex items-center gap-2.5 overflow-hidden">
                         <div
-                          className="w-2 h-2 rounded-full shrink-0"
+                          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
                           style={{ backgroundColor: habit.color }}
                         />
-                        <span className="font-display font-semibold text-slate-200 group-hover:text-white transition-colors truncate">
+                        <span className="font-display font-semibold text-slate-200 group-hover:text-white transition-colors truncate text-xs" title={habit.name}>
                           {habit.name}
                         </span>
                       </div>
                     </td>
 
-                    {/* Goal Column */}
-                    <td className="p-2.5 text-center font-bold text-slate-300 border-r border-white/10">
-                      {goal}
+                    {/* Goal Column - USER CAN DIRECTLY EDIT MONTHLY GOAL TARGET HERE! */}
+                    <td className="p-1.5 text-center w-20 min-w-[75px] max-w-[75px] border-r border-white/10 bg-slate-900/30">
+                      <input
+                        type="number"
+                        min="1"
+                        max="31"
+                        value={goal}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value, 10);
+                          if (!isNaN(val) && val >= 1 && val <= 31) {
+                            editHabit(habit.id, { monthlyGoal: val });
+                          }
+                        }}
+                        className="w-12 text-center text-xs font-mono font-bold py-1 px-1 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-400 focus:bg-slate-900 transition hover:border-cyan-500/40 cursor-pointer"
+                        title={`Click to edit monthly goal for ${habit.name}`}
+                      />
                     </td>
 
                     {/* Day Cells: Dotted outline when empty, Solid filled with 'x' when checked */}
@@ -343,7 +373,7 @@ export const MonthlyGrid: React.FC = () => {
                         <td
                           key={dateStr}
                           onClick={() => toggleHabit(habit.id, dateStr)}
-                          className={`p-1 text-center cursor-pointer transition-all ${
+                          className={`p-1 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-all ${
                             isCurrent ? 'bg-cyan-500/5' : ''
                           }`}
                         >
@@ -351,7 +381,7 @@ export const MonthlyGrid: React.FC = () => {
                             className={`w-5 h-5 mx-auto rounded-[5px] flex items-center justify-center transition-all duration-150 ${
                               isDone
                                 ? 'shadow-sm text-slate-950 font-black text-[11px] leading-none select-none scale-100'
-                                : 'border border-dashed border-slate-600/60 hover:border-white/50 bg-transparent'
+                                : 'border border-dashed border-slate-600/70 hover:border-white/50 bg-transparent'
                             }`}
                             style={{
                               backgroundColor: isDone ? habit.color : undefined,
@@ -367,9 +397,9 @@ export const MonthlyGrid: React.FC = () => {
                     })}
 
                     {/* Progress Percentage & Bar Column */}
-                    <td className="p-2.5 border-l border-white/10 bg-[#121722]/60">
+                    <td className="p-2.5 w-36 min-w-[140px] border-l border-white/10 bg-[#121722]/60">
                       <div className="flex items-center gap-2">
-                        <span className="w-10 text-right font-bold text-slate-300 text-[11px]">
+                        <span className="w-9 text-right font-bold text-slate-300 text-[11px]">
                           {progressPct}%
                         </span>
                         <div className="flex-1 h-2 bg-slate-900 rounded-sm overflow-hidden p-0.5 border border-white/5">
@@ -386,15 +416,61 @@ export const MonthlyGrid: React.FC = () => {
                   </tr>
                 );
               })}
+
+              {/* Exact Amount Spent Row Aligned Directly into Table Matrix */}
+              <tr className="border-t-2 border-white/10 bg-slate-950 text-xs">
+                <td className="sticky left-0 z-20 bg-[#090d14] p-2.5 w-52 min-w-[210px] max-w-[210px] border-r-2 border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.5)] font-display font-bold text-slate-200">
+                  <div className="flex items-center gap-2 text-amber-400">
+                    <DollarSign className="w-3.5 h-3.5" />
+                    <span>Amount Spent ($)</span>
+                  </div>
+                </td>
+
+                <td className="p-2 text-center font-mono text-[10px] text-slate-500 border-r border-white/10">
+                  Daily
+                </td>
+
+                {/* Day-by-Day Spent Values aligned under each day */}
+                {dailyCounts.map(d => {
+                  const hasSpent = d.spent !== undefined && d.spent > 0;
+                  const isSelected = selectedSpendDay === d.dayNum;
+
+                  return (
+                    <td
+                      key={d.date}
+                      onClick={() => handlePickSpendDay(d.dayNum)}
+                      className={`p-1 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-all ${
+                        isSelected ? 'bg-amber-500/20 ring-1 ring-amber-400' : ''
+                      }`}
+                      title={`Day ${d.dayNum}: $${d.spent || 0}. Click to edit.`}
+                    >
+                      <div className={`text-[10px] font-mono font-bold rounded py-0.5 ${
+                        hasSpent
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          : d.spent === 0
+                          ? 'text-slate-400'
+                          : 'text-slate-600'
+                      }`}>
+                        {d.spent !== undefined ? d.spent : '-'}
+                      </div>
+                    </td>
+                  );
+                })}
+
+                {/* Total Column */}
+                <td className="p-2 text-center border-l border-white/10 bg-slate-900 font-mono font-bold text-amber-400">
+                  ${totalAmountSpent}
+                </td>
+              </tr>
             </tbody>
 
             {/* Bottom Descriptive Row & Mini Bar Chart from Excel */}
             <tfoot>
               <tr className="border-t border-white/10 bg-slate-900/80">
                 {/* Descriptive Note Box */}
-                <td colSpan={2} className="sticky left-0 z-10 bg-slate-900/95 backdrop-blur-md p-3 border-r border-white/10">
+                <td colSpan={2} className="sticky left-0 z-20 bg-[#0e1320] p-3 border-r-2 border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.5)]">
                   <p className="text-[10px] text-slate-400 leading-tight italic font-mono">
-                    In the lines above, in a short but sufficiently descriptive way, write the habits you want to follow. Also input what are your monthly goals.
+                    In the lines above, in a short but sufficiently descriptive way, write the habits you want to follow. Edit monthly goals anytime in the GOAL column.
                   </p>
                 </td>
 
@@ -403,7 +479,7 @@ export const MonthlyGrid: React.FC = () => {
                   const barHeightPct = Math.min(100, Math.round((d.count / maxDailyCount) * 100));
 
                   return (
-                    <td key={d.date} className="p-1 text-center align-bottom h-16">
+                    <td key={d.date} className="p-1 text-center align-bottom h-16 w-8 min-w-[32px] max-w-[34px]">
                       <div className="flex flex-col items-center justify-end h-full w-full">
                         {d.count > 0 ? (
                           <>
@@ -424,7 +500,7 @@ export const MonthlyGrid: React.FC = () => {
                 })}
 
                 {/* Total Completed counter from Excel */}
-                <td className="p-3 text-center border-l border-white/10 bg-slate-900/90">
+                <td className="p-3 text-center border-l border-white/10 bg-slate-900/90 w-36 min-w-[140px]">
                   <div className="flex flex-col items-center justify-center">
                     <span className="text-xl font-mono font-black text-white">
                       {totalCompletionsInMonth}/{totalMonthlyGoalSum}
@@ -437,6 +513,131 @@ export const MonthlyGrid: React.FC = () => {
               </tr>
             </tfoot>
           </table>
+        </div>
+
+        {/* ==================================================================== */}
+        {/* CLEAR SPENDINGS FORGE & QUICK ENTRY BAR                              */}
+        {/* ==================================================================== */}
+        <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-950/20 via-slate-900/80 to-slate-900/60 border border-amber-500/30 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-display font-bold text-white flex items-center gap-2">
+                  Daily Spendings Forge • 支出管理
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Click any day above or pick below to enter daily outflow clearly
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Metrics */}
+            <div className="flex items-center gap-3 text-xs font-mono">
+              <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-white/10 text-slate-300">
+                Total Outflow: <strong className="text-amber-400 font-bold">${totalAmountSpent.toFixed(2)}</strong>
+              </div>
+              <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-white/10 text-slate-300">
+                Daily Budget: <strong className="text-emerald-400 font-bold">$25.00</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Clean Input Controls */}
+          <form onSubmit={handleSaveSelectedSpend} className="flex flex-wrap items-center gap-3 pt-1">
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-mono text-slate-400 font-semibold">Select Day:</label>
+              <select
+                value={selectedSpendDay}
+                onChange={(e) => handlePickSpendDay(Number(e.target.value))}
+                className="px-3 py-2 rounded-xl bg-slate-950 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+              >
+                {days.map((d, i) => (
+                  <option key={d} value={i + 1}>
+                    Day {i + 1} ({monthName.slice(0, 3)} {i + 1})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+              <label className="text-xs font-mono text-slate-400 font-semibold">Amount Spent:</label>
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-xs">$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={spendAmountInput}
+                  onChange={(e) => setSpendAmountInput(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full pl-7 pr-3 py-2 rounded-xl bg-slate-950 border border-white/10 text-white font-mono text-xs font-bold focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            {/* Quick amount presets */}
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setSpendAmountInput('0')}
+                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono"
+              >
+                $0
+              </button>
+              <button
+                type="button"
+                onClick={() => setSpendAmountInput('10')}
+                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono"
+              >
+                $10
+              </button>
+              <button
+                type="button"
+                onClick={() => setSpendAmountInput('25')}
+                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono"
+              >
+                $25
+              </button>
+              <button
+                type="button"
+                onClick={() => setSpendAmountInput('50')}
+                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono"
+              >
+                $50
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 hover:from-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Save Spending</span>
+            </button>
+          </form>
+
+          {/* Quick Timeline of Logged Days */}
+          {daysWithSpending.length > 0 && (
+            <div className="pt-2 border-t border-white/5 flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-mono text-slate-400 mr-1">Logged Days:</span>
+              {daysWithSpending.map(item => (
+                <button
+                  key={item.date}
+                  onClick={() => handlePickSpendDay(item.dayNum)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 border transition ${
+                    selectedSpendDay === item.dayNum
+                      ? 'bg-amber-500/30 border-amber-400 text-amber-200'
+                      : 'bg-black/30 border-white/5 text-slate-300 hover:border-white/20'
+                  }`}
+                >
+                  <span className="text-slate-400">Day {item.dayNum}:</span>
+                  <span className="font-bold text-amber-400">${item.spent}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ==================================================================== */}
@@ -541,48 +742,6 @@ export const MonthlyGrid: React.FC = () => {
             </h3>
           </div>
 
-        </div>
-
-        {/* ==================================================================== */}
-        {/* AMOUNT SPENT ROW (Matching Bottom Table from Excel)                   */}
-        {/* ==================================================================== */}
-        <div className="overflow-x-auto rounded-xl border border-white/10 bg-slate-900/80 p-2">
-          <div className="flex items-center min-w-[920px]">
-            {/* Label */}
-            <div className="w-[265px] shrink-0 font-display font-bold text-xs text-white uppercase px-3">
-              Amount Spent ($)
-            </div>
-
-            {/* Daily Amount Inputs / Displays */}
-            <div className="flex-1 grid grid-cols-31 gap-1" style={{ gridTemplateColumns: `repeat(${totalDays}, minmax(0, 1fr))` }}>
-              {dailyCounts.map(d => (
-                <div key={d.date} className="text-center">
-                  <input
-                    type="number"
-                    value={d.spent !== undefined ? d.spent : ''}
-                    placeholder="-"
-                    onChange={(e) => {
-                      const val = e.target.value === '' ? undefined : parseFloat(e.target.value);
-                      setDaySpending(d.date, val);
-                    }}
-                    className={`w-full text-center text-[10px] font-mono py-1 rounded bg-black/40 border transition focus:outline-none focus:border-cyan-400 ${
-                      d.spent !== undefined && d.spent > 0
-                        ? 'border-amber-500/40 text-amber-300 font-bold bg-amber-500/10'
-                        : 'border-white/5 text-slate-500'
-                    }`}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Total Spent Box from Excel */}
-            <div className="w-[130px] shrink-0 text-center font-mono text-xs pl-3 flex items-center justify-end gap-1.5">
-              <span className="text-slate-400">Total:</span>
-              <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                ${totalAmountSpent}
-              </span>
-            </div>
-          </div>
         </div>
 
       </div>
