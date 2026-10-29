@@ -1,0 +1,16 @@
+{
+  "short_name": "Kata",
+  "name": "Kata • 習慣 — Habit Command Center",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0a0d14",
+  "theme_color": "#0a0d14",
+  "display": "standalone",
+  "orientation": "portrait"
+}
