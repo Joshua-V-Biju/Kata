@@ -1,5 +1,4 @@
 import { DayLog, Habit, VoltronBlock } from '../types';
-import { getTodayStr } from './dates';
 
 export const SEED_HABITS: Habit[] = [
   {
@@ -218,12 +217,11 @@ export const SEED_TIMETABLE: VoltronBlock[] = [
   { id: 'sun-prep', dayOfWeek: 0, startTime: '20:00', endTime: '21:30', title: 'Week Ahead Planning & Journaling', isVoltronSprint: false, linkedHabitId: 'habit-journal', color: '#fb923c' }
 ];
 
-// Seed ONLY the exact checkmarks from the user's Excel sheet!
-// Every other day is strictly 0 checkmarks!
+// Exact checkmarks & spendings from the Excel sheet:
+// Leftmost column is October 1, Rightmost column is October 31.
 export const generateSeedDayLogs = (): Record<string, DayLog> => {
   const logs: Record<string, DayLog> = {};
 
-  // Exact checkmark mapping from the Excel sheet:
   const excelDayCheckmarks: Record<number, { habits: string[]; spent?: number }> = {
     10: {
       habits: ['habit-animation', 'habit-japanese', 'habit-declutter', 'habit-workout', 'habit-budget', 'habit-mods'] // 6 done
@@ -243,33 +241,38 @@ export const generateSeedDayLogs = (): Record<string, DayLog> => {
       habits: ['habit-japanese', 'habit-declutter', 'habit-workout', 'habit-budget', 'habit-mods'] // 5 done
     },
     22: {
-      habits: ['habit-japanese', 'habit-reading', 'habit-budget', 'habit-bible', 'habit-mods'], // 5 done
-      spent: 25
+      habits: ['habit-japanese', 'habit-reading', 'habit-budget', 'habit-bible', 'habit-mods'] // 5 done
     },
     23: {
       habits: ['habit-japanese', 'habit-java', 'habit-budget', 'habit-bible', 'habit-mods'] // 5 done
     },
     24: {
-      habits: ['habit-journal'] // 1 done
+      habits: ['habit-journal'], // 1 done
+      spent: 25 // from user's image media_1793304872027_3fa45b91.png
     },
     25: {
-      habits: ['habit-reading', 'habit-declutter', 'habit-workout', 'habit-budget', 'habit-bible', 'habit-mods', 'habit-sleep', 'habit-animation'], // 8 done
-      spent: 25
+      habits: ['habit-reading', 'habit-declutter', 'habit-workout', 'habit-budget', 'habit-bible', 'habit-mods', 'habit-sleep', 'habit-animation'] // 8 done
     },
     26: {
-      habits: ['habit-workout', 'habit-budget', 'habit-mods'], // 3 done
-      spent: 55
+      habits: ['habit-workout', 'habit-budget', 'habit-mods'] // 3 done
     },
     27: {
       habits: ['habit-japanese', 'habit-declutter', 'habit-workout', 'habit-budget', 'habit-mods', 'habit-sleep'], // 6 done
-      spent: 35
+      spent: 25 // from user's image
+    },
+    28: {
+      habits: [],
+      spent: 55 // from user's image
+    },
+    29: {
+      habits: [],
+      spent: 35 // from user's image
     },
     30: {
       habits: ['habit-animation', 'habit-japanese'] // 2 done
     }
   };
 
-  // Populate for August 2026 (the exact month in the user's Excel) AND for the current month (October 2026)
   const targetMonths = ['2026-08', '2026-10'];
 
   targetMonths.forEach(yearMonth => {

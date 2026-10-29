@@ -6,7 +6,7 @@ import { soundEngine } from '../utils/sound';
 import { generateDailyQuests, getRankInfo, getXpForLevel, INITIAL_BADGES } from '../utils/gamification';
 import { generateSeedDayLogs, SEED_HABITS, SEED_TIMETABLE } from '../utils/seeds';
 
-const LOCAL_STORAGE_KEY = 'kata_habit_app_state_v2';
+const LOCAL_STORAGE_KEY = 'kata_habit_app_state_v3';
 
 export interface SprintTimerState {
   active: boolean;
@@ -131,25 +131,13 @@ const calculateTotalCompletions = (logs: Record<string, DayLog>): number => {
   return Object.values(logs).reduce((acc, log) => acc + log.completedHabitIds.length, 0);
 };
 
-// Load or create initial state
+// Load or create initial state with rock-solid fallback for every key
 const getInitialState = () => {
   const today = getTodayStr();
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.habits && parsed.dayLogs) {
-        return parsed;
-      }
-    }
-  } catch (e) {
-    console.warn('Failed to parse saved state, using seeds', e);
-  }
-
   const initialLogs = generateSeedDayLogs();
   const rank = getRankInfo(3);
 
-  return {
+  const defaultState = {
     habits: SEED_HABITS,
     dayLogs: initialLogs,
     timetable: SEED_TIMETABLE,
@@ -175,11 +163,11 @@ const getInitialState = () => {
     },
     dailyQuests: generateDailyQuests(initialLogs[today], false),
     comboMultiplier: 1.0,
-    toasts: [],
+    toasts: [] as ToastMessage[],
     sprintTimer: {
       active: false,
       blockId: null,
-      remainingSeconds: 7200, // 2 hours = 7200s
+      remainingSeconds: 7200,
       totalSeconds: 7200,
       isPaused: false
     },
@@ -190,6 +178,34 @@ const getInitialState = () => {
       rankKanji: '鍛錬生'
     }
   };
+
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object') {
+        return {
+          ...defaultState,
+          ...parsed,
+          habits: Array.isArray(parsed.habits) && parsed.habits.length > 0 ? parsed.habits : defaultState.habits,
+          dayLogs: parsed.dayLogs && typeof parsed.dayLogs === 'object' ? parsed.dayLogs : defaultState.dayLogs,
+          timetable: Array.isArray(parsed.timetable) ? parsed.timetable : defaultState.timetable,
+          badges: Array.isArray(parsed.badges) ? parsed.badges : defaultState.badges,
+          userStats: { ...defaultState.userStats, ...(parsed.userStats || {}) },
+          settings: { ...defaultState.settings, ...(parsed.settings || {}) },
+          selectedDate: parsed.selectedDate || defaultState.selectedDate,
+          dailyQuests: defaultState.dailyQuests,
+          sprintTimer: defaultState.sprintTimer,
+          toasts: [],
+          levelUpModal: defaultState.levelUpModal
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to parse saved state, using seeds', e);
+  }
+
+  return defaultState;
 };
 
 export const useKataStore = create<KataState>((set, get) => {

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useKataStore } from '../../store/useKataStore';
+import { Habit } from '../../types';
 import { getDaysInMonth, getTodayStr, isWeekend, getDayOfWeekIndex, getDayShortName } from '../../utils/dates';
-import { ChevronLeft, ChevronRight, DollarSign, Plus, Check, Edit3, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, DollarSign, Check, X, Target, Edit3 } from 'lucide-react';
 
 export const MonthlyGrid: React.FC = () => {
   const { habits, dayLogs, toggleHabit, editHabit, setDaySpending, setSelectedDate, addToast } = useKataStore();
   const todayStr = getTodayStr();
 
-  // Allow switching between months, defaulting to August (from Excel) or current date
-  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 7, 1)); // Default to August 2026 matching excel seed
+  // Default to October 2026 as requested (monthIndex 9 is October)
+  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 9, 1));
 
   const year = currentDate.getFullYear();
   const monthIndex = currentDate.getMonth();
@@ -19,6 +20,10 @@ export const MonthlyGrid: React.FC = () => {
   const endDateStr = `${monthName} ${totalDays}, ${year}`;
 
   const activeHabits = habits.filter(h => !h.archived).sort((a, b) => a.order - b.order);
+
+  // Interactive Goal Target Popover State (No up/down arrows!)
+  const [editingGoalHabit, setEditingGoalHabit] = useState<Habit | null>(null);
+  const [goalInputValue, setGoalInputValue] = useState<string>('');
 
   // Spendings Quick Editor State
   const [selectedSpendDay, setSelectedSpendDay] = useState<number>(12);
@@ -100,6 +105,24 @@ export const MonthlyGrid: React.FC = () => {
   const totalAmountSpent = dailyCounts.reduce((acc, d) => (d.spent !== undefined ? acc + d.spent : acc), 0);
   const daysWithSpending = dailyCounts.filter(d => d.spent !== undefined && d.spent > 0);
 
+  // Open Goal Popover
+  const handleOpenGoalEditor = (habit: Habit) => {
+    setEditingGoalHabit(habit);
+    setGoalInputValue(String(habit.monthlyGoal || 10));
+  };
+
+  // Save Goal Target
+  const handleSaveGoal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGoalHabit) return;
+    const num = parseInt(goalInputValue, 10);
+    if (!isNaN(num) && num >= 1 && num <= 31) {
+      editHabit(editingGoalHabit.id, { monthlyGoal: num });
+      addToast('Goal Target Updated', `${editingGoalHabit.name} target set to ${num} days/month`, 'success');
+      setEditingGoalHabit(null);
+    }
+  };
+
   // Handle saving spending from the clear entry bar
   const handleSaveSelectedSpend = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -111,7 +134,6 @@ export const MonthlyGrid: React.FC = () => {
     addToast('Spending Recorded', `Day ${selectedSpendDay}: $${amount || 0} updated`, 'info');
   };
 
-  // Sync entry box when day clicked
   const handlePickSpendDay = (dayNum: number) => {
     setSelectedSpendDay(dayNum);
     const dayStr = String(dayNum).padStart(2, '0');
@@ -283,8 +305,8 @@ export const MonthlyGrid: React.FC = () => {
                   HABIT
                 </th>
 
-                {/* Goal header - Editable instruction */}
-                <th className="p-3 text-center w-20 min-w-[75px] max-w-[75px] uppercase tracking-wider text-cyan-300 border-r border-white/10" title="Click any goal number below to edit">
+                {/* Goal header - Click to edit target */}
+                <th className="p-3 text-center w-20 min-w-[75px] max-w-[75px] uppercase tracking-wider text-cyan-300 border-r border-white/10" title="Click any goal number to edit target without arrow spinners">
                   GOAL ✎
                 </th>
 
@@ -345,22 +367,17 @@ export const MonthlyGrid: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* Goal Column - USER CAN DIRECTLY EDIT MONTHLY GOAL TARGET HERE! */}
+                    {/* Goal Column - Clean click-to-edit badge WITHOUT any up/down arrows! */}
                     <td className="p-1.5 text-center w-20 min-w-[75px] max-w-[75px] border-r border-white/10 bg-slate-900/30">
-                      <input
-                        type="number"
-                        min="1"
-                        max="31"
-                        value={goal}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value, 10);
-                          if (!isNaN(val) && val >= 1 && val <= 31) {
-                            editHabit(habit.id, { monthlyGoal: val });
-                          }
-                        }}
-                        className="w-12 text-center text-xs font-mono font-bold py-1 px-1 rounded-lg bg-black/40 border border-white/10 text-white focus:outline-none focus:border-cyan-400 focus:bg-slate-900 transition hover:border-cyan-500/40 cursor-pointer"
+                      <button
+                        type="button"
+                        onClick={() => handleOpenGoalEditor(habit)}
+                        className="w-11 py-1 px-1 rounded-lg bg-black/40 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400 font-mono text-xs font-bold text-white transition cursor-pointer flex items-center justify-center gap-1 mx-auto group/btn shadow-sm"
                         title={`Click to edit monthly goal for ${habit.name}`}
-                      />
+                      >
+                        <span>{goal}</span>
+                        <Edit3 className="w-2.5 h-2.5 text-slate-500 group-hover/btn:text-cyan-400" />
+                      </button>
                     </td>
 
                     {/* Day Cells: Dotted outline when empty, Solid filled with 'x' when checked */}
@@ -442,13 +459,13 @@ export const MonthlyGrid: React.FC = () => {
                       className={`p-1 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-all ${
                         isSelected ? 'bg-amber-500/20 ring-1 ring-amber-400' : ''
                       }`}
-                      title={`Day ${d.dayNum}: $${d.spent || 0}. Click to edit.`}
+                      title={`Day ${d.dayNum}: $${d.spent !== undefined ? d.spent : 0}. Click to edit.`}
                     >
                       <div className={`text-[10px] font-mono font-bold rounded py-0.5 ${
                         hasSpent
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                           : d.spent === 0
-                          ? 'text-slate-400'
+                          ? 'text-slate-400 bg-black/20'
                           : 'text-slate-600'
                       }`}>
                         {d.spent !== undefined ? d.spent : '-'}
@@ -529,7 +546,7 @@ export const MonthlyGrid: React.FC = () => {
                   Daily Spendings Forge • 支出管理
                 </h4>
                 <p className="text-xs text-slate-400">
-                  Click any day above or pick below to enter daily outflow clearly
+                  Click any day in the table above or select below to record daily spending clearly
                 </p>
               </div>
             </div>
@@ -618,7 +635,7 @@ export const MonthlyGrid: React.FC = () => {
             </button>
           </form>
 
-          {/* Quick Timeline of Logged Days */}
+          {/* Quick Timeline of Logged Days matching October exact image */}
           {daysWithSpending.length > 0 && (
             <div className="pt-2 border-t border-white/5 flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-mono text-slate-400 mr-1">Logged Days:</span>
@@ -628,11 +645,11 @@ export const MonthlyGrid: React.FC = () => {
                   onClick={() => handlePickSpendDay(item.dayNum)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 border transition ${
                     selectedSpendDay === item.dayNum
-                      ? 'bg-amber-500/30 border-amber-400 text-amber-200'
+                      ? 'bg-amber-500/30 border-amber-400 text-amber-200 shadow'
                       : 'bg-black/30 border-white/5 text-slate-300 hover:border-white/20'
                   }`}
                 >
-                  <span className="text-slate-400">Day {item.dayNum}:</span>
+                  <span className="text-slate-400">{monthName.slice(0, 3)} {item.dayNum}:</span>
                   <span className="font-bold text-amber-400">${item.spent}</span>
                 </button>
               ))}
@@ -745,6 +762,86 @@ export const MonthlyGrid: React.FC = () => {
         </div>
 
       </div>
+
+      {/* ==================================================================== */}
+      {/* INTERACTIVE GOAL POPUP MODAL (NO SPINNER ARROWS!)                    */}
+      {/* ==================================================================== */}
+      {editingGoalHabit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-sm p-6 rounded-3xl bg-[#121722] border-2 border-cyan-400/50 shadow-2xl text-center space-y-4">
+            <button
+              onClick={() => setEditingGoalHabit(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+              <Target className="w-6 h-6" />
+            </div>
+
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-widest text-cyan-400 font-bold block">
+                EDIT MONTHLY TARGET
+              </span>
+              <h3 className="text-lg font-display font-bold text-white mt-0.5">
+                {editingGoalHabit.name}
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                How many days per month do you aim to complete this habit?
+              </p>
+            </div>
+
+            <form onSubmit={handleSaveGoal} className="space-y-4 pt-2">
+              {/* Clean text input with NO spinner arrows */}
+              <div className="relative max-w-[140px] mx-auto">
+                <input
+                  type="text"
+                  pattern="[0-9]*"
+                  autoFocus
+                  value={goalInputValue}
+                  onChange={(e) => setGoalInputValue(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="20"
+                  className="w-full text-center text-3xl font-mono font-black py-2.5 px-3 rounded-2xl bg-black border-2 border-cyan-400 text-white focus:outline-none shadow-[0_0_15px_rgba(0,242,254,0.3)] tracking-wider"
+                />
+                <span className="block text-[10px] font-mono text-slate-500 mt-1">
+                  Days / Month (1–31)
+                </span>
+              </div>
+
+              {/* Quick preset chips */}
+              <div className="flex items-center justify-center gap-1.5 pt-1">
+                {['5', '10', '15', '20', '25'].map(val => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setGoalInputValue(val)}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 text-slate-300 text-xs font-mono font-semibold transition border border-white/5"
+                  >
+                    {val}d
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingGoalHabit(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 text-slate-950 text-xs font-bold uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition"
+                >
+                  Save Target
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
