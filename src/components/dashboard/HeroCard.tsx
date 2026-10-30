@@ -10,6 +10,16 @@ export const HeroCard: React.FC = () => {
   const todayStr = getTodayStr();
   const isToday = selectedDate === todayStr;
 
+  // Compute yesterday string
+  const yesterdayObj = new Date();
+  yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+  const yYear = yesterdayObj.getFullYear();
+  const yMonth = String(yesterdayObj.getMonth() + 1).padStart(2, '0');
+  const yDay = String(yesterdayObj.getDate()).padStart(2, '0');
+  const yesterdayStr = `${yYear}-${yMonth}-${yDay}`;
+  const yesterdayLog = dayLogs[yesterdayStr];
+  const yesterdayDoneCount = yesterdayLog?.completedHabitIds?.length || 0;
+
   const currentLog = dayLogs[selectedDate] || { date: selectedDate, completedHabitIds: [] };
   const dayOfWeek = getDayOfWeekIndex(selectedDate);
   const scheduledHabits = habits.filter(h => !h.archived && h.scheduleDays.includes(dayOfWeek));
@@ -43,11 +53,34 @@ export const HeroCard: React.FC = () => {
         {/* Center: Hero Performance Status */}
         <div className="flex-1 text-center lg:text-left space-y-3">
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold tracking-wider uppercase">
-              <Calendar className="w-3.5 h-3.5" />
-              {formatDateDisplay(selectedDate)}
-              {isToday && <span className="ml-1 text-[10px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300">TODAY</span>}
-            </span>
+            {/* Seamless Date Switcher Pills: Today & Yesterday */}
+            <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-white/5 border border-white/10">
+              <button
+                type="button"
+                onClick={() => setSelectedDate(todayStr)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold tracking-wider uppercase transition cursor-pointer ${
+                  isToday
+                    ? 'bg-cyan-500/20 border border-cyan-400 text-cyan-300 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                <span>Today ({formatDateDisplay(todayStr)})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedDate(yesterdayStr)}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold tracking-wider uppercase transition cursor-pointer ${
+                  selectedDate === yesterdayStr
+                    ? 'bg-purple-500/20 border border-purple-400 text-purple-300 shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="View or log habits for yesterday"
+              >
+                <span>Yesterday ({yesterdayDoneCount} done)</span>
+              </button>
+            </div>
 
             {/* Streak Pill */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">
@@ -72,16 +105,6 @@ export const HeroCard: React.FC = () => {
               {status.subtitle}
             </p>
           </div>
-
-          {/* Quick Date Switcher if not today */}
-          {!isToday && (
-            <button
-              onClick={() => setSelectedDate(todayStr)}
-              className="text-xs text-cyan-400 hover:text-cyan-300 underline font-medium"
-            >
-              ← Return to Today
-            </button>
-          )}
 
           {/* Level & XP Progression Bar */}
           <div className="pt-2 max-w-md">

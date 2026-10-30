@@ -245,8 +245,20 @@ const getInitialForgeState = () => {
           ...defaultState,
           ...parsed,
           equipment: Array.isArray(parsed.equipment) ? parsed.equipment : defaultState.equipment,
-          workouts: Array.isArray(parsed.workouts) && parsed.workouts.length > 0 ? parsed.workouts : defaultState.workouts,
-          cindySessions: Array.isArray(parsed.cindySessions) && parsed.cindySessions.length > 0 ? parsed.cindySessions : defaultState.cindySessions,
+          workouts: (() => {
+            const raw = [
+              ...(Array.isArray(parsed.workouts) ? parsed.workouts : []),
+              ...defaultState.workouts
+            ];
+            return raw.filter((w, idx, arr) => arr.findIndex(x => x.id === w.id) === idx);
+          })(),
+          cindySessions: (() => {
+            const raw = [
+              ...(Array.isArray(parsed.cindySessions) ? parsed.cindySessions : []),
+              ...initialCindy
+            ];
+            return raw.filter((s, idx, arr) => arr.findIndex(x => x.id === s.id) === idx);
+          })(),
           customExercises: Array.isArray(parsed.customExercises) ? parsed.customExercises : defaultState.customExercises,
           settings: { ...defaultState.settings, ...(parsed.settings || {}) },
           stats: { ...defaultState.stats, ...(parsed.stats || {}) },

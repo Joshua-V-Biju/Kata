@@ -83,7 +83,7 @@ interface KataState {
 }
 
 // Compute active streak (consecutive days with at least 1 completed habit)
-const calculateStreak = (logs: Record<string, DayLog>, today: string): { current: number; longest: number } => {
+const calculateStreak = (logs: Record<string, DayLog>, today: string, preservedStreak: number = 0): { current: number; longest: number } => {
   let current = 0;
   let datePointer = new Date(today);
 
@@ -132,7 +132,10 @@ const calculateStreak = (logs: Record<string, DayLog>, today: string): { current
     }
   }
 
-  return { current, longest: Math.max(current, longest, 7) };
+  const effectiveCurrent = Math.max(current, preservedStreak);
+  const effectiveLongest = Math.max(effectiveCurrent, longest, preservedStreak, 7);
+
+  return { current: effectiveCurrent, longest: effectiveLongest };
 };
 
 // Calculate total completions across all days
@@ -196,18 +199,31 @@ const getInitialState = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed && typeof parsed === 'object') {
+        const savedLogs = parsed.dayLogs && typeof parsed.dayLogs === 'object'
+          ? { ...defaultState.dayLogs, ...parsed.dayLogs }
+          : defaultState.dayLogs;
+
+        const savedStats = {
+          ...defaultState.userStats,
+          ...(parsed.userStats || {})
+        };
+
+        const todayCompletions = savedLogs[today]?.completedHabitIds?.length || 0;
+        const savedQuests = generateDailyQuests(savedLogs[today], (savedStats.voltronSprintsCompleted || 0) > 0);
+
         return {
           ...defaultState,
           ...parsed,
           habits: Array.isArray(parsed.habits) && parsed.habits.length > 0 ? parsed.habits : defaultState.habits,
-          dayLogs: parsed.dayLogs && typeof parsed.dayLogs === 'object' ? { ...defaultState.dayLogs, ...parsed.dayLogs } : defaultState.dayLogs,
+          dayLogs: savedLogs,
           timetable: Array.isArray(parsed.timetable) ? parsed.timetable : defaultState.timetable,
           badges: Array.isArray(parsed.badges) ? parsed.badges : defaultState.badges,
-          userStats: { ...defaultState.userStats, ...(parsed.userStats || {}) },
+          userStats: savedStats,
           settings: { ...defaultState.settings, ...(parsed.settings || {}) },
-          selectedDate: today,
+          selectedDate: typeof parsed.selectedDate === 'string' && parsed.selectedDate ? parsed.selectedDate : today,
+          comboMultiplier: typeof parsed.comboMultiplier === 'number' ? parsed.comboMultiplier : 1.0,
           lastSeenQuoteDate: typeof parsed.lastSeenQuoteDate === 'string' ? parsed.lastSeenQuoteDate : '',
-          dailyQuests: defaultState.dailyQuests,
+          dailyQuests: savedQuests,
           sprintTimer: defaultState.sprintTimer,
           toasts: [],
           levelUpModal: defaultState.levelUpModal,
@@ -237,6 +253,8 @@ export const useKataStore = create<KataState>((set, get) => {
         badges: current.badges,
         userStats: current.userStats,
         settings: current.settings,
+        selectedDate: current.selectedDate,
+        comboMultiplier: current.comboMultiplier,
         lastSeenQuoteDate: current.lastSeenQuoteDate
       };
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(toSave));
@@ -248,7 +266,10 @@ export const useKataStore = create<KataState>((set, get) => {
   return {
     ...initial,
 
-    setSelectedDate: (date: string) => set({ selectedDate: date }),
+    setSelectedDate: (date: string) => {
+      set({ selectedDate: date });
+      persist({});
+    },
 
     openDailyQuoteModal: () => set({ showDailyQuoteModal: true }),
 
@@ -334,7 +355,7 @@ export const useKataStore = create<KataState>((set, get) => {
         }
 
         const rank = getRankInfo(currLevel);
-        const streak = calculateStreak(newDayLogs, getTodayStr());
+        const streak = calculateStreak(newDayLogs, getTodayStr(), state.userStats.currentStreak);
 
         newStats = {
           ...newStats,
@@ -342,7 +363,7 @@ export const useKataStore = create<KataState>((set, get) => {
           level: currLevel,
           rankTitle: rank.title,
           rankKanji: rank.kanji,
-          currentStreak: streak.current,
+          currentStreak: Math.max(streak.current, state.userStats.currentStreak),
           longestStreak: Math.max(streak.longest, newStats.longestStreak),
           totalCompletions: newStats.totalCompletions + 1
         };
@@ -360,7 +381,7 @@ export const useKataStore = create<KataState>((set, get) => {
           });
         }
       } else {
-        // Unticked habit: Revert XP, multiplier, streak, and completion count
+        // Unticked habit: Revert XP without down-leveling or wiping streak!
         const dayOfWeek = getDayOfWeekIndex(targetDate);
         const scheduledToday = state.habits.filter(h => !h.archived && h.scheduleDays.includes(dayOfWeek));
         // If prior to unticking, all scheduled habits were completed, user had received +100 bonus
@@ -369,24 +390,19 @@ export const useKataStore = create<KataState>((set, get) => {
         const deductedXp = Math.round(25 * state.comboMultiplier) + (wasAllDone ? 100 : 0);
         newMultiplier = Math.max(1.0, Number((newMultiplier - 0.2).toFixed(1)));
 
-        let currXp = newStats.xp - deductedXp;
+        // Floor at 0 XP within the current level. NEVER down-level a user!
+        let currXp = Math.max(0, newStats.xp - deductedXp);
         let currLevel = newStats.level;
 
-        while (currXp < 0 && currLevel > 1) {
-          currLevel--;
-          currXp += getXpForLevel(currLevel);
-        }
-        if (currXp < 0) currXp = 0;
-
         const rank = getRankInfo(currLevel);
-        const streak = calculateStreak(newDayLogs, getTodayStr());
+        const streak = calculateStreak(newDayLogs, getTodayStr(), state.userStats.currentStreak);
         newStats = {
           ...newStats,
           xp: currXp,
           level: currLevel,
           rankTitle: rank.title,
           rankKanji: rank.kanji,
-          currentStreak: streak.current,
+          currentStreak: Math.max(streak.current, state.userStats.currentStreak),
           totalCompletions: Math.max(0, newStats.totalCompletions - 1)
         };
       }
@@ -433,16 +449,12 @@ export const useKataStore = create<KataState>((set, get) => {
       let newStats = { ...state.userStats };
 
       if (isAlreadyCompleted) {
-        // Toggle OFF: Unmark the sprint block and revert the 150 XP
+        // Toggle OFF: Unmark the sprint block and revert the 150 XP without down-leveling!
         const newCompletedBlocks = completedBlockIds.filter(id => id !== blockId);
         
-        let currXp = newStats.xp - 150;
+        // Floor at 0 XP within the current level. NEVER down-level!
+        let currXp = Math.max(0, newStats.xp - 150);
         let currLevel = newStats.level;
-        while (currXp < 0 && currLevel > 1) {
-          currLevel--;
-          currXp += getXpForLevel(currLevel);
-        }
-        if (currXp < 0) currXp = 0;
 
         const rank = getRankInfo(currLevel);
         newStats = {
