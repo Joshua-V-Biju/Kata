@@ -84,7 +84,7 @@ export const ProgressionTreesView: React.FC = () => {
           Calisthenics Progression Trees
         </h1>
         <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
-          At home, progressive overload isn’t just adding 5kg; it’s mastering leverage, tempo, and unilateral control. Fulfill the unlock criteria to advance to each higher tier.
+          At home, progressive overload is about mastering leverage, tempo, and control. Complete the criteria to unlock higher tiers. Tap ✔ to mark a tier mastered.
         </p>
       </div>
 

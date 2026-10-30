@@ -1,27 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useForgeStore } from '../../../store/useForgeStore';
-import { STARTER_ROUTINES, AVAILABLE_EQUIPMENT } from '../../../utils/forgeData';
+import { STARTER_ROUTINES } from '../../../utils/forgeData';
 import { ALL_FORGE_EXERCISES } from '../../../utils/forgeExercises';
 import { ExerciseLoggerCard } from './ExerciseLoggerCard';
 import { RestTimerBar } from './RestTimerBar';
 import { AddExerciseModal } from './AddExerciseModal';
 import { WorkoutFinishModal } from './WorkoutFinishModal';
 import { RoutinePreviewModal } from './RoutinePreviewModal';
-import { WorkoutDetailModal } from './WorkoutDetailModal';
 import { ExerciseLibraryView } from '../exercises/ExerciseLibraryView';
 import { CindyWorkoutView } from '../cindy/CindyWorkoutView';
-import { ForgeRoutine, WorkoutSession } from '../../../types/forge';
+import { ForgeRoutine } from '../../../types/forge';
 import {
   Flame,
   Plus,
   Play,
   Clock,
   Dumbbell,
-  CheckCircle2,
-  Trophy,
   Zap,
-  RotateCcw,
-  Sliders,
   ChevronRight,
   Shield,
   Activity,
@@ -33,9 +28,10 @@ import {
 
 interface Props {
   onOpenArmory: () => void;
+  onNavigateToTracker?: () => void;
 }
 
-export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
+export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory, onNavigateToTracker }) => {
   const {
     activeWorkout,
     startWorkout,
@@ -47,7 +43,7 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
     workouts
   } = useForgeStore();
 
-  const [workoutSubTab, setWorkoutSubTab] = useState<'train' | 'cindy' | 'history' | 'library'>('train');
+  const [workoutSubTab, setWorkoutSubTab] = useState<'train' | 'cindy' | 'library'>('train');
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [finishSummary, setFinishSummary] = useState<{
     volumeKg: number;
@@ -55,9 +51,8 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
     prCount: number;
   } | null>(null);
 
-  // Preview modals
+  // Preview routine blueprint modal
   const [previewRoutine, setPreviewRoutine] = useState<ForgeRoutine | null>(null);
-  const [inspectWorkout, setInspectWorkout] = useState<WorkoutSession | null>(null);
 
   // Timer tickers
   useEffect(() => {
@@ -76,11 +71,6 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
   const handleFinish = () => {
     const summary = finishWorkout();
     setFinishSummary(summary);
-  };
-
-  const handleRepeatWorkout = (pastWorkout: WorkoutSession) => {
-    // Start workout with past session's exercises
-    startWorkout(undefined, `Repeat: ${pastWorkout.name}`);
   };
 
   // Compute live active workout stats
@@ -226,7 +216,7 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
   return (
     <div className="space-y-6 animate-fade-in pb-16">
       
-      {/* Sub-Navigation Pills: Clean 4-way toggle */}
+      {/* Sub-Navigation Pills: Clean 3-way toggle + Monthly Tracker Link */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-3 gap-3">
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#14161d] border border-white/5 overflow-x-auto max-w-full scrollbar-none">
           <button
@@ -257,19 +247,6 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
 
           <button
             type="button"
-            onClick={() => setWorkoutSubTab('history')}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer whitespace-nowrap ${
-              workoutSubTab === 'history'
-                ? 'bg-orange-500/15 text-orange-300 border border-orange-500/30'
-                : 'text-slate-400 hover:text-slate-200 border border-transparent'
-            }`}
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Past Workouts ({workouts.length})</span>
-          </button>
-
-          <button
-            type="button"
             onClick={() => setWorkoutSubTab('library')}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer whitespace-nowrap ${
               workoutSubTab === 'library'
@@ -282,14 +259,28 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
           </button>
         </div>
 
-        <button
-          type="button"
-          onClick={() => startWorkout(undefined, 'Freestyle Forge Session')}
-          className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600/90 hover:bg-orange-500 text-slate-950 font-display font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-sm shrink-0"
-        >
-          <Play className="w-3.5 h-3.5 fill-slate-950" />
-          <span>Quick Empty Session</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {onNavigateToTracker && (
+            <button
+              type="button"
+              onClick={onNavigateToTracker}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-orange-300 border border-white/5 text-xs font-display font-bold transition cursor-pointer shrink-0"
+              title="Open full workout history calendar"
+            >
+              <Calendar className="w-3.5 h-3.5 text-orange-400" />
+              <span>Monthly Tracker ({workouts.length})</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => startWorkout(undefined, 'Freestyle Forge Session')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-600/90 hover:bg-orange-500 text-slate-950 font-display font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-sm shrink-0"
+          >
+            <Play className="w-3.5 h-3.5 fill-slate-950" />
+            <span>Freestyle Session</span>
+          </button>
+        </div>
       </div>
 
       {/* ------------------------------------------------------------------ */}
@@ -297,6 +288,31 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
       {/* ------------------------------------------------------------------ */}
       {workoutSubTab === 'train' && (
         <div className="space-y-6 animate-fade-in">
+          
+          {/* Beginner-Friendly 3-Step Quick Guide */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#14161f] border border-orange-500/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-orange-400" />
+                <span className="text-xs font-display font-bold uppercase tracking-wider text-orange-300">
+                  Beginner Guide • 3 Simple Steps
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                <strong className="text-white">1. Choose a routine</strong> below or tap Freestyle &bull; <strong className="text-white">2. Log your reps &amp; weight</strong> and tap <strong className="text-orange-400 font-mono">✔</strong> after each set &bull; <strong className="text-white">3. Tap Finish</strong> to auto-complete today's Kata habit!
+              </p>
+            </div>
+            {onNavigateToTracker && (
+              <button
+                type="button"
+                onClick={onNavigateToTracker}
+                className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-orange-300 hover:text-white border border-white/5 text-xs font-mono flex items-center gap-1.5 transition whitespace-nowrap self-start md:self-auto shrink-0"
+              >
+                <Calendar className="w-3.5 h-3.5 text-orange-400" />
+                <span>Past Workouts in Tracker &rarr;</span>
+              </button>
+            )}
+          </div>
           
           {/* Hero Banner */}
           <div className="relative overflow-hidden rounded-3xl forge-card p-6 sm:p-8 border-2 border-orange-500/30 shadow-2xl">
@@ -477,76 +493,35 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
             </div>
           </div>
 
-          {/* Quick Recent History Spotlight */}
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-display font-bold text-white flex items-center gap-2">
-                <Clock className="w-4 h-4 text-orange-400" />
-                <span>Recent Logged Workouts</span>
-              </h2>
+          {/* Monthly Tracker Quick Portal Card */}
+          <div className="p-5 rounded-2xl bg-[#14161f] border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-2xl bg-orange-500/10 text-orange-400">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <h4 className="font-display font-bold text-white text-sm flex items-center gap-2">
+                  <span>Workout Calendar &amp; Monthly History</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">
+                    {workouts.length} {workouts.length === 1 ? 'workout' : 'workouts'} logged
+                  </span>
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Every past workout session, total volume, and set breakdown is tracked on your calendar.
+                </p>
+              </div>
+            </div>
+
+            {onNavigateToTracker && (
               <button
                 type="button"
-                onClick={() => setWorkoutSubTab('history')}
-                className="text-xs font-mono text-orange-400 hover:text-orange-300 transition cursor-pointer"
+                onClick={onNavigateToTracker}
+                className="py-2.5 px-4 rounded-xl bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/30 text-orange-300 font-display font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
               >
-                View All History ({workouts.length}) &rarr;
+                <span>Open Monthly Tracker</span>
+                <ChevronRight className="w-4 h-4" />
               </button>
-            </div>
-
-            <div className="space-y-2.5">
-              {workouts.slice(0, 3).map(w => {
-                const durM = Math.floor(w.durationSeconds / 60);
-                const dateObj = new Date(w.startedAt);
-                const dateStr = dateObj.toLocaleDateString(undefined, {
-                  month: 'short',
-                  day: 'numeric'
-                });
-
-                return (
-                  <div
-                    key={w.id}
-                    onClick={() => setInspectWorkout(w)}
-                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-orange-500/30 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer group"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-display font-bold text-white text-sm group-hover:text-orange-400 transition-colors">
-                          {w.name}
-                        </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">
-                          {dateStr}
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-400">
-                        <span>{durM} mins</span>
-                        <span>•</span>
-                        <span className="text-amber-400">{w.totalVolumeKg.toLocaleString()} kg vol</span>
-                        <span>•</span>
-                        <span>{w.exercises.length} exercises</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 font-mono text-xs font-bold flex items-center gap-1">
-                        <Zap className="w-3.5 h-3.5 fill-orange-400" />
-                        <span>+{w.ironEarned} Iron</span>
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setInspectWorkout(w);
-                        }}
-                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono transition"
-                      >
-                        <Eye className="w-4 h-4 text-orange-400" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            )}
           </div>
 
         </div>
@@ -558,89 +533,6 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
       {workoutSubTab === 'cindy' && (
         <div className="animate-fade-in">
           <CindyWorkoutView />
-        </div>
-      )}
-
-      {/* ------------------------------------------------------------------ */}
-      {/* TAB 3: DETAILED WORKOUT HISTORY (ALL LOGS WITH ACCORDIONS)           */}
-      {/* ------------------------------------------------------------------ */}
-      {workoutSubTab === 'history' && (
-        <div className="space-y-4 animate-fade-in">
-          <div className="p-6 rounded-3xl forge-card border border-white/10 space-y-1">
-            <h2 className="text-xl font-display font-black text-white">
-              Workout Archive &amp; Logs
-            </h2>
-            <p className="text-xs text-slate-400">
-              Click any past workout session to inspect all recorded sets, weights, reps, tempo, and notes.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {workouts.map(w => {
-              const durM = Math.floor(w.durationSeconds / 60);
-              const dateStr = new Date(w.startedAt).toLocaleDateString(undefined, {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric'
-              });
-
-              return (
-                <div
-                  key={w.id}
-                  onClick={() => setInspectWorkout(w)}
-                  className="p-5 rounded-2xl forge-card border border-white/10 hover:border-orange-500/40 transition-all cursor-pointer space-y-3"
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-xl bg-orange-600/20 text-orange-400">
-                        <Dumbbell className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h3 className="font-display font-bold text-white text-base">
-                          {w.name}
-                        </h3>
-                        <span className="text-xs font-mono text-slate-400">
-                          {dateStr} • {durM} mins duration
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="px-2.5 py-1 rounded-lg bg-black/40 text-amber-400 font-mono text-xs font-bold border border-white/5">
-                        {w.totalVolumeKg.toLocaleString()} kg
-                      </span>
-                      <span className="px-2.5 py-1 rounded-lg bg-orange-600/20 text-orange-400 font-mono text-xs font-bold border border-orange-500/30">
-                        +{w.ironEarned} Iron
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Exercise summary list */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-2 border-t border-white/5">
-                    {w.exercises.map((ex, idx) => (
-                      <div
-                        key={idx}
-                        className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-xs font-mono flex items-center justify-between"
-                      >
-                        <span className="text-slate-200 truncate">{ex.name}</span>
-                        <span className="text-orange-400 font-bold shrink-0 ml-2">
-                          {ex.sets.filter(s => s.completed).length} sets
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs font-mono text-slate-500 pt-1">
-                    <span>{w.exercises.length} Exercises total</span>
-                    <span className="text-orange-400 flex items-center gap-1 font-bold">
-                      <span>View Set Breakdown</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
       )}
 
@@ -659,14 +551,6 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
         isOpen={Boolean(previewRoutine)}
         onClose={() => setPreviewRoutine(null)}
         onStart={(r) => startWorkout(r)}
-      />
-
-      {/* Workout Detail & Set Inspector Modal */}
-      <WorkoutDetailModal
-        workout={inspectWorkout}
-        isOpen={Boolean(inspectWorkout)}
-        onClose={() => setInspectWorkout(null)}
-        onRepeat={handleRepeatWorkout}
       />
 
     </div>

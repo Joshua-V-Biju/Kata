@@ -45,10 +45,10 @@ export const MomentumRings: React.FC = () => {
 
   const ringItems = [
     {
-      title: 'Monthly Progress',
+      title: 'Monthly Goal',
       kanji: '月間達成',
       percentage: monthlyPercent,
-      valueText: `${monthCompletionsCount} / ${totalMonthlyGoal}`,
+      valueText: `${monthCompletionsCount} of ${totalMonthlyGoal} habits`,
       icon: Target,
       color: '#00f2fe',
       gradientId: 'grad-monthly',
@@ -56,10 +56,10 @@ export const MomentumRings: React.FC = () => {
       glowClass: 'shadow-glow-cyan',
     },
     {
-      title: 'Normalized Progress',
-      kanji: '本日基準',
+      title: "Today's Habits",
+      kanji: '本日達成',
       percentage: normalizedPercent,
-      valueText: `${scheduledToday.filter(h => currentDayLog.completedHabitIds.includes(h.id)).length} of ${scheduledToday.length} due`,
+      valueText: `${scheduledToday.filter(h => currentDayLog.completedHabitIds.includes(h.id)).length} of ${scheduledToday.length} done`,
       icon: Activity,
       color: '#00e5a3',
       gradientId: 'grad-normalized',
@@ -67,10 +67,10 @@ export const MomentumRings: React.FC = () => {
       glowClass: 'shadow-glow-mint',
     },
     {
-      title: '3-Day Momentum',
+      title: '3-Day Consistency',
       kanji: '三日勢',
       percentage: momentumPercent,
-      valueText: `${momentumPercent}% average velocity`,
+      valueText: `${momentumPercent}% average`,
       icon: Flame,
       color: '#ff6b8b',
       gradientId: 'grad-momentum',

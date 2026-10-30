@@ -50,10 +50,10 @@ export const TodayHabitsList: React.FC<TodayHabitsListProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-display font-extrabold text-white flex items-center gap-2">
-            Command Center Protocol • 今日の習慣
+            Today's Habits • 今日の習慣
           </h2>
           <p className="text-xs text-slate-400">
-            Tap cards to log completions & ignite disciplinary XP
+            Tap any card to check off your habit for today
           </p>
         </div>
 

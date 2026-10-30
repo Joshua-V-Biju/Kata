@@ -58,10 +58,10 @@ export const CompletionsChart: React.FC = () => {
           </div>
           <div>
             <h2 className="text-base font-display font-bold text-white flex items-center gap-2">
-              Daily Completion Trajectory • 軌跡
+              14-Day Completion History • 軌跡
             </h2>
             <p className="text-xs text-slate-400">
-              14-Day discipline rhythm & completion volume
+              Track your daily consistency over the past 2 weeks
             </p>
           </div>
         </div>

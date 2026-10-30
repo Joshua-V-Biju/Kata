@@ -153,7 +153,7 @@ export const HeroCard: React.FC = () => {
               </span>
             </div>
           </div>
-          <span className="text-[11px] font-medium text-slate-400 mt-1">Today's Alignment</span>
+          <span className="text-[11px] font-medium text-slate-400 mt-1">Today's Progress</span>
         </div>
 
       </div>

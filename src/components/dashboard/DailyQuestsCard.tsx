@@ -15,10 +15,10 @@ export const DailyQuestsCard: React.FC = () => {
           </div>
           <div className="min-w-0">
             <h2 className="text-sm md:text-base font-display font-bold text-white truncate flex items-center gap-2">
-              Daily Trials • 日々の鍛錬
+              Daily Quests • 日々の鍛錬
             </h2>
             <p className="text-[11px] text-slate-400 truncate">
-              Complete trials to surge bonus XP
+              Complete tasks today for bonus XP
             </p>
           </div>
         </div>

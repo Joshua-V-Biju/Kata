@@ -254,7 +254,10 @@ export const App: React.FC = () => {
         {currentMode === 'forge' && (
           <>
             {forgeTab === 'workout' && (
-              <WorkoutLoggerView onOpenArmory={() => setShowArmoryModal(true)} />
+              <WorkoutLoggerView
+                onOpenArmory={() => setShowArmoryModal(true)}
+                onNavigateToTracker={() => setForgeTab('tracker')}
+              />
             )}
 
             {forgeTab === 'tracker' && (
