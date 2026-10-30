@@ -423,7 +423,7 @@ export const CindyWorkoutView: React.FC = () => {
                 {completedRounds * 30} Total Base Reps Logged
               </span>
 
-              {/* Instant +1 Complete Round Button */}
+              {/* Instant Complete Round Button */}
               <button
                 type="button"
                 onClick={handleCompleteRound}
@@ -431,7 +431,7 @@ export const CindyWorkoutView: React.FC = () => {
                 className="w-full py-4 rounded-2xl bg-orange-600 hover:bg-orange-500 disabled:opacity-40 text-slate-950 font-display font-bold text-base uppercase tracking-wider active:scale-[0.99] transition cursor-pointer flex items-center justify-center gap-2 shadow-sm"
               >
                 <Plus className="w-5 h-5 stroke-[2.5]" />
-                <span>+1 ROUND COMPLETED (30 REPS)</span>
+                <span>1 ROUND COMPLETED (30 REPS)</span>
               </button>
             </div>
 
@@ -526,27 +526,30 @@ export const CindyWorkoutView: React.FC = () => {
                   onClick={() => setPartialReps(prev => Math.max(0, prev - 1))}
                   disabled={!isWorkoutActive}
                   className="flex-1 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-mono font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+                  title="Subtract 1 rep"
                 >
                   <Minus className="w-3.5 h-3.5" />
-                  <span>-1 Rep</span>
+                  <span>1 Rep</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPartialReps(prev => prev + 1)}
                   disabled={!isWorkoutActive}
                   className="flex-1 py-2 rounded-xl bg-slate-900 hover:bg-orange-600 hover:text-slate-950 text-slate-300 text-xs font-mono font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+                  title="Add 1 rep"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+1 Rep</span>
+                  <span>1 Rep</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPartialReps(prev => prev + 5)}
                   disabled={!isWorkoutActive}
                   className="flex-1 py-2 rounded-xl bg-slate-900 hover:bg-orange-600 hover:text-slate-950 text-slate-300 text-xs font-mono font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+                  title="Add 5 reps"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+5 Reps</span>
+                  <span>5 Reps</span>
                 </button>
               </div>
             </div>
