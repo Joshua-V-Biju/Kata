@@ -29,19 +29,11 @@ import { HabitFormModal } from './components/manager/HabitFormModal';
 
 // Forge Views & Components
 import { EmberEffect } from './components/forge/layout/EmberEffect';
-import { ForgeNavigation, ForgeTab } from './components/forge/layout/ForgeNavigation';
+import { ForgeNavigation, ForgeHubTab } from './components/forge/layout/ForgeNavigation';
 import { WorkoutLoggerView } from './components/forge/logger/WorkoutLoggerView';
-import { ArmoryView } from './components/forge/armory/ArmoryView';
-import { ForgeStatsView } from './components/forge/stats/ForgeStatsView';
-import { ForgeSettingsView } from './components/forge/settings/ForgeSettingsView';
-import { ProgressionTreesView } from './components/forge/progression/ProgressionTreesView';
-import { ExerciseLibraryView } from './components/forge/exercises/ExerciseLibraryView';
-import { PrWallView } from './components/forge/prs/PrWallView';
-import { BossLiftsView } from './components/forge/boss/BossLiftsView';
-import { MuscleMapView } from './components/forge/muscle/MuscleMapView';
-import { RecoveryView } from './components/forge/recovery/RecoveryView';
-import { NutritionView } from './components/forge/nutrition/NutritionView';
-import { SafetyHealthView } from './components/forge/safety/SafetyHealthView';
+import { ProgressionHubView } from './components/forge/progression/ProgressionHubView';
+import { BodyBiologyHubView } from './components/forge/body/BodyBiologyHubView';
+import { ArmoryCommandHubView } from './components/forge/armory/ArmoryCommandHubView';
 import { EquipmentOnboardingModal } from './components/forge/onboarding/EquipmentOnboardingModal';
 
 export const App: React.FC = () => {
@@ -51,7 +43,7 @@ export const App: React.FC = () => {
   });
 
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
-  const [forgeTab, setForgeTab] = useState<ForgeTab>('workout');
+  const [forgeTab, setForgeTab] = useState<ForgeHubTab>('workout');
   const [showSettings, setShowSettings] = useState(false);
   const [showHabitManager, setShowHabitManager] = useState(false);
   const [showHabitForm, setShowHabitForm] = useState(false);
@@ -265,47 +257,15 @@ export const App: React.FC = () => {
             )}
 
             {forgeTab === 'progression' && (
-              <ProgressionTreesView />
+              <ProgressionHubView />
             )}
 
-            {forgeTab === 'exercises' && (
-              <ExerciseLibraryView />
-            )}
-
-            {forgeTab === 'prs' && (
-              <PrWallView />
-            )}
-
-            {forgeTab === 'boss' && (
-              <BossLiftsView />
-            )}
-
-            {forgeTab === 'muscle' && (
-              <MuscleMapView />
-            )}
-
-            {forgeTab === 'recovery' && (
-              <RecoveryView />
-            )}
-
-            {forgeTab === 'nutrition' && (
-              <NutritionView />
+            {forgeTab === 'body' && (
+              <BodyBiologyHubView />
             )}
 
             {forgeTab === 'armory' && (
-              <ArmoryView onOpenOnboarding={() => setShowArmoryModal(true)} />
-            )}
-
-            {forgeTab === 'stats' && (
-              <ForgeStatsView />
-            )}
-
-            {forgeTab === 'safety' && (
-              <SafetyHealthView />
-            )}
-
-            {forgeTab === 'settings' && (
-              <ForgeSettingsView />
+              <ArmoryCommandHubView onOpenOnboarding={() => setShowArmoryModal(true)} />
             )}
           </>
         )}

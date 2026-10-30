@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useForgeStore } from '../../../store/useForgeStore';
 import { STARTER_ROUTINES, AVAILABLE_EQUIPMENT } from '../../../utils/forgeData';
+import { ALL_FORGE_EXERCISES } from '../../../utils/forgeExercises';
 import { ExerciseLoggerCard } from './ExerciseLoggerCard';
 import { RestTimerBar } from './RestTimerBar';
 import { AddExerciseModal } from './AddExerciseModal';
 import { WorkoutFinishModal } from './WorkoutFinishModal';
+import { RoutinePreviewModal } from './RoutinePreviewModal';
+import { WorkoutDetailModal } from './WorkoutDetailModal';
+import { ExerciseLibraryView } from '../exercises/ExerciseLibraryView';
+import { ForgeRoutine, WorkoutSession } from '../../../types/forge';
 import {
   Flame,
   Plus,
@@ -18,7 +23,11 @@ import {
   Sliders,
   ChevronRight,
   Shield,
-  Activity
+  Activity,
+  Eye,
+  BookOpen,
+  Calendar,
+  Sparkles
 } from 'lucide-react';
 
 interface Props {
@@ -37,12 +46,17 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
     workouts
   } = useForgeStore();
 
+  const [workoutSubTab, setWorkoutSubTab] = useState<'train' | 'history' | 'library'>('train');
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [finishSummary, setFinishSummary] = useState<{
     volumeKg: number;
     ironEarned: number;
     prCount: number;
   } | null>(null);
+
+  // Preview modals
+  const [previewRoutine, setPreviewRoutine] = useState<ForgeRoutine | null>(null);
+  const [inspectWorkout, setInspectWorkout] = useState<WorkoutSession | null>(null);
 
   // Timer tickers
   useEffect(() => {
@@ -61,6 +75,11 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
   const handleFinish = () => {
     const summary = finishWorkout();
     setFinishSummary(summary);
+  };
+
+  const handleRepeatWorkout = (pastWorkout: WorkoutSession) => {
+    // Start workout with past session's exercises
+    startWorkout(undefined, `Repeat: ${pastWorkout.name}`);
   };
 
   // Compute live active workout stats
@@ -87,7 +106,7 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
       <div className="space-y-6 animate-fade-in pb-16">
         
         {/* Sticky Active Header Bar */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#12141c] border-2 border-orange-500/40 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div className="p-4 sm:p-5 rounded-3xl bg-[#12141c] border-2 border-orange-500/50 shadow-2xl flex flex-wrap items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
@@ -102,17 +121,17 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
 
           {/* Live Metrics */}
           <div className="flex items-center gap-3 font-mono text-xs">
-            <div className="px-3 py-1.5 rounded-xl bg-black/40 border border-white/5 flex items-center gap-2">
+            <div className="px-3 py-1.5 rounded-xl bg-black/50 border border-white/5 flex items-center gap-2">
               <Clock className="w-4 h-4 text-orange-400" />
               <span className="text-base font-bold text-white">{elapsedFormatted}</span>
             </div>
 
-            <div className="px-3 py-1.5 rounded-xl bg-black/40 border border-white/5 flex items-center gap-2">
+            <div className="px-3 py-1.5 rounded-xl bg-black/50 border border-white/5 flex items-center gap-2">
               <span className="text-slate-400">Sets:</span>
               <span className="text-base font-bold text-amber-400">{liveCompletedSets}</span>
             </div>
 
-            <div className="hidden sm:flex px-3 py-1.5 rounded-xl bg-black/40 border border-white/5 items-center gap-2">
+            <div className="hidden sm:flex px-3 py-1.5 rounded-xl bg-black/50 border border-white/5 items-center gap-2">
               <span className="text-slate-400">Vol:</span>
               <span className="text-base font-bold text-orange-400">{liveTotalVolume}kg</span>
             </div>
@@ -206,120 +225,301 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
   return (
     <div className="space-y-6 animate-fade-in pb-16">
       
-      {/* Hero Start Session Banner */}
-      <div className="relative overflow-hidden rounded-3xl forge-card p-6 sm:p-8 border-2 border-orange-500/30 shadow-2xl">
-        <div className="absolute -right-6 -bottom-8 text-9xl font-display font-black text-orange-500/[0.03] select-none pointer-events-none">
-          鍛錬
-        </div>
-
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-xs font-mono font-bold tracking-wider uppercase">
-              <Flame className="w-3.5 h-3.5 fill-orange-400 animate-pulse" />
-              <span>HOME HYPERTROPHY COMMAND</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-display font-black text-white tracking-tight">
-              Ready to Forge Armor?
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300/80 leading-relaxed">
-              Log sets with auto-rest timers, tempo controls, and progressive overload tracking. Every workout finished automatically ticks Kata's “Workout/Yoga” habit.
-            </p>
-          </div>
+      {/* Sub-Navigation Pills: Clean 3-way toggle */}
+      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="flex items-center gap-2 p-1 rounded-2xl bg-[#10121a] border border-white/5">
+          <button
+            type="button"
+            onClick={() => setWorkoutSubTab('train')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer ${
+              workoutSubTab === 'train'
+                ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-slate-950 shadow-md font-black'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Dumbbell className="w-3.5 h-3.5" />
+            <span>Train &amp; Routines</span>
+          </button>
 
           <button
             type="button"
-            onClick={() => startWorkout(undefined, 'Freestyle Forge Session')}
-            className="w-full md:w-auto py-4 px-8 rounded-2xl bg-gradient-to-r from-orange-600 via-amber-500 to-red-600 hover:from-orange-500 hover:to-red-500 text-slate-950 font-display font-black text-sm uppercase tracking-wider shadow-xl shadow-orange-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer shrink-0"
+            onClick={() => setWorkoutSubTab('history')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer ${
+              workoutSubTab === 'history'
+                ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-slate-950 shadow-md font-black'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
-            <Play className="w-4 h-4 fill-slate-950" />
-            <span>START EMPTY WORKOUT</span>
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Past Workouts ({workouts.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setWorkoutSubTab('library')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer ${
+              workoutSubTab === 'library'
+                ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-slate-950 shadow-md font-black'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>150+ Exercises</span>
           </button>
         </div>
-      </div>
 
-      {/* Armory Status Ribbon */}
-      <div className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <Shield className="w-4 h-4 text-orange-400" />
-          <span className="text-xs font-mono text-slate-300">
-            Active Armory: <strong>{equipment.length} equipment items</strong> configured
-          </span>
-        </div>
         <button
           type="button"
-          onClick={onOpenArmory}
-          className="text-xs font-mono text-orange-400 hover:text-orange-300 flex items-center gap-1 transition"
+          onClick={() => startWorkout(undefined, 'Freestyle Forge Session')}
+          className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-slate-950 font-display font-black text-xs uppercase tracking-wider transition cursor-pointer shadow-md shadow-orange-500/20"
         >
-          <span>Modify Armory</span>
-          <ChevronRight className="w-3 h-3" />
+          <Play className="w-3.5 h-3.5 fill-slate-950" />
+          <span>Quick Empty Session</span>
         </button>
       </div>
 
-      {/* Starter Routines Grid */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base font-display font-bold text-white flex items-center gap-2">
-            <Activity className="w-4 h-4 text-orange-400" />
-            <span>Recommended Home Routines</span>
-          </h2>
-          <span className="text-[11px] font-mono text-slate-500">
-            Calibrated for your gear
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {STARTER_ROUTINES.map(routine => (
-            <div
-              key={routine.id}
-              className="forge-card p-5 rounded-2xl border border-white/10 hover:border-orange-500/40 transition-all flex flex-col justify-between gap-4 group"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 font-bold uppercase">
-                    {routine.daysPerWeek} Days / Wk
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-500">
-                    {routine.exerciseIds.length} Exercises
-                  </span>
+      {/* ------------------------------------------------------------------ */}
+      {/* TAB 1: TRAIN & ROUTINES BROWSER                                     */}
+      {/* ------------------------------------------------------------------ */}
+      {workoutSubTab === 'train' && (
+        <div className="space-y-6 animate-fade-in">
+          
+          {/* Hero Banner */}
+          <div className="relative overflow-hidden rounded-3xl forge-card p-6 sm:p-8 border-2 border-orange-500/30 shadow-2xl">
+            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="space-y-2 max-w-xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/15 border border-orange-500/30 text-orange-400 text-xs font-mono font-bold tracking-wider uppercase">
+                  <Flame className="w-3.5 h-3.5 fill-orange-400 animate-pulse" />
+                  <span>HOME TRAINING CENTER</span>
                 </div>
-                <h3 className="font-display font-bold text-white text-base group-hover:text-orange-400 transition-colors">
-                  {routine.name}
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {routine.description}
+                <h1 className="text-2xl sm:text-3xl font-display font-black text-white tracking-tight">
+                  Choose a Routine or Inspect Exercises
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Click any routine to view its complete exercise lineup, sets, reps, and gear before you start. Every workout completed automatically ticks your Kata habit.
                 </p>
               </div>
 
               <button
                 type="button"
-                onClick={() => startWorkout(routine)}
-                className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-orange-500 hover:text-slate-950 text-slate-200 font-display font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                onClick={() => startWorkout(undefined, 'Freestyle Forge Session')}
+                className="w-full md:w-auto py-3.5 px-6 rounded-2xl bg-gradient-to-r from-orange-600 via-amber-500 to-red-600 hover:from-orange-500 hover:to-red-500 text-slate-950 font-display font-black text-xs uppercase tracking-wider shadow-xl shadow-orange-500/30 hover:scale-[1.02] transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
               >
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>Launch Routine</span>
+                <Play className="w-4 h-4 fill-slate-950" />
+                <span>START FREESTYLE SESSION</span>
               </button>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Workouts Log History */}
-      <div className="space-y-3 pt-2">
-        <h2 className="text-base font-display font-bold text-white flex items-center gap-2">
-          <Clock className="w-4 h-4 text-orange-400" />
-          <span>Recent Forge History</span>
-        </h2>
-
-        {workouts.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 font-mono text-xs rounded-2xl bg-black/20 border border-white/5">
-            No completed workouts yet. Forge your first session today!
           </div>
-        ) : (
-          <div className="space-y-2.5">
-            {workouts.slice(0, 5).map(w => {
+
+          {/* Armory Status Ribbon */}
+          <div className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <Shield className="w-4 h-4 text-orange-400" />
+              <span className="text-xs font-mono text-slate-300">
+                Active Armory: <strong>{equipment.length} equipment items</strong> configured
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenArmory}
+              className="text-xs font-mono text-orange-400 hover:text-orange-300 flex items-center gap-1 transition cursor-pointer"
+            >
+              <span>Edit Equipment</span>
+              <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* Starter Routines Grid with Preview Capabilities */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-display font-bold text-white flex items-center gap-2">
+                <Activity className="w-4 h-4 text-orange-400" />
+                <span>Featured Home Routines (Click to Preview)</span>
+              </h2>
+              <span className="text-[11px] font-mono text-slate-500">
+                Full exercise lineups visible
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {STARTER_ROUTINES.map(routine => {
+                // Find exercise names for quick glance preview
+                const previewExNames = routine.exerciseIds
+                  .slice(0, 3)
+                  .map(id => ALL_FORGE_EXERCISES.find(e => e.id === id)?.name || id);
+
+                return (
+                  <div
+                    key={routine.id}
+                    className="forge-card p-5 rounded-2xl border border-white/10 hover:border-orange-500/40 transition-all flex flex-col justify-between gap-4 group cursor-pointer"
+                    onClick={() => setPreviewRoutine(routine)}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-orange-500/10 text-orange-400 font-bold uppercase">
+                          {routine.daysPerWeek} Days / Wk
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
+                          <Eye className="w-3 h-3 text-orange-400" />
+                          <span>Tap to Preview</span>
+                        </span>
+                      </div>
+
+                      <div>
+                        <h3 className="font-display font-bold text-white text-base group-hover:text-orange-400 transition-colors">
+                          {routine.name}
+                        </h3>
+                        <p className="text-xs text-slate-400 leading-relaxed mt-1">
+                          {routine.description}
+                        </p>
+                      </div>
+
+                      {/* Mini exercise preview tags */}
+                      <div className="space-y-1.5 pt-2 border-t border-white/5">
+                        <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">
+                          Exercises ({routine.exerciseIds.length}):
+                        </span>
+                        <div className="space-y-1">
+                          {previewExNames.map((name, i) => (
+                            <div key={i} className="text-xs font-mono text-slate-300 flex items-center gap-1.5 truncate">
+                              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0" />
+                              <span className="truncate">{name}</span>
+                            </div>
+                          ))}
+                          {routine.exerciseIds.length > 3 && (
+                            <div className="text-[10px] font-mono text-orange-400 pl-3">
+                              +{routine.exerciseIds.length - 3} more movements...
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewRoutine(routine);
+                        }}
+                        className="flex-1 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-display font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-orange-400" />
+                        <span>Preview</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startWorkout(routine);
+                        }}
+                        className="flex-1 py-2 px-3 rounded-xl bg-orange-600 hover:bg-orange-500 text-slate-950 font-display font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center justify-center gap-1.5 shadow"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-slate-950" />
+                        <span>Start</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick Recent History Spotlight */}
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-display font-bold text-white flex items-center gap-2">
+                <Clock className="w-4 h-4 text-orange-400" />
+                <span>Recent Logged Workouts</span>
+              </h2>
+              <button
+                type="button"
+                onClick={() => setWorkoutSubTab('history')}
+                className="text-xs font-mono text-orange-400 hover:text-orange-300 transition cursor-pointer"
+              >
+                View All History ({workouts.length}) &rarr;
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {workouts.slice(0, 3).map(w => {
+                const durM = Math.floor(w.durationSeconds / 60);
+                const dateObj = new Date(w.startedAt);
+                const dateStr = dateObj.toLocaleDateString(undefined, {
+                  month: 'short',
+                  day: 'numeric'
+                });
+
+                return (
+                  <div
+                    key={w.id}
+                    onClick={() => setInspectWorkout(w)}
+                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-orange-500/30 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer group"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-display font-bold text-white text-sm group-hover:text-orange-400 transition-colors">
+                          {w.name}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">
+                          {dateStr}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-400">
+                        <span>{durM} mins</span>
+                        <span>•</span>
+                        <span className="text-amber-400">{w.totalVolumeKg.toLocaleString()} kg vol</span>
+                        <span>•</span>
+                        <span>{w.exercises.length} exercises</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 font-mono text-xs font-bold flex items-center gap-1">
+                        <Zap className="w-3.5 h-3.5 fill-orange-400" />
+                        <span>+{w.ironEarned} Iron</span>
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setInspectWorkout(w);
+                        }}
+                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono transition"
+                      >
+                        <Eye className="w-4 h-4 text-orange-400" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* TAB 2: DETAILED WORKOUT HISTORY (ALL LOGS WITH ACCORDIONS)           */}
+      {/* ------------------------------------------------------------------ */}
+      {workoutSubTab === 'history' && (
+        <div className="space-y-4 animate-fade-in">
+          <div className="p-6 rounded-3xl forge-card border border-white/10 space-y-1">
+            <h2 className="text-xl font-display font-black text-white">
+              Workout Archive &amp; Logs
+            </h2>
+            <p className="text-xs text-slate-400">
+              Click any past workout session to inspect all recorded sets, weights, reps, tempo, and notes.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {workouts.map(w => {
               const durM = Math.floor(w.durationSeconds / 60);
-              const dateObj = new Date(w.startedAt);
-              const dateStr = dateObj.toLocaleDateString(undefined, {
+              const dateStr = new Date(w.startedAt).toLocaleDateString(undefined, {
+                weekday: 'short',
                 month: 'short',
                 day: 'numeric'
               });
@@ -327,38 +527,87 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory }) => {
               return (
                 <div
                   key={w.id}
-                  className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  onClick={() => setInspectWorkout(w)}
+                  className="p-5 rounded-2xl forge-card border border-white/10 hover:border-orange-500/40 transition-all cursor-pointer space-y-3"
                 >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-display font-bold text-white text-sm">
-                        {w.name}
-                      </span>
-                      <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-white/5 text-slate-400">
-                        {dateStr}
-                      </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-xl bg-orange-600/20 text-orange-400">
+                        <Dumbbell className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="font-display font-bold text-white text-base">
+                          {w.name}
+                        </h3>
+                        <span className="text-xs font-mono text-slate-400">
+                          {dateStr} • {durM} mins duration
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-400">
-                      <span>{durM} mins</span>
-                      <span>•</span>
-                      <span className="text-amber-400">{w.totalVolumeKg.toLocaleString()} kg vol</span>
-                      <span>•</span>
-                      <span>{w.exercises.length} exercises</span>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="px-2.5 py-1 rounded-lg bg-black/40 text-amber-400 font-mono text-xs font-bold border border-white/5">
+                        {w.totalVolumeKg.toLocaleString()} kg
+                      </span>
+                      <span className="px-2.5 py-1 rounded-lg bg-orange-600/20 text-orange-400 font-mono text-xs font-bold border border-orange-500/30">
+                        +{w.ironEarned} Iron
+                      </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 font-mono text-xs font-bold flex items-center gap-1">
-                      <Zap className="w-3.5 h-3.5 fill-orange-400" />
-                      <span>+{w.ironEarned} Iron</span>
+                  {/* Exercise summary list */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-2 border-t border-white/5">
+                    {w.exercises.map((ex, idx) => (
+                      <div
+                        key={idx}
+                        className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-xs font-mono flex items-center justify-between"
+                      >
+                        <span className="text-slate-200 truncate">{ex.name}</span>
+                        <span className="text-orange-400 font-bold shrink-0 ml-2">
+                          {ex.sets.filter(s => s.completed).length} sets
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs font-mono text-slate-500 pt-1">
+                    <span>{w.exercises.length} Exercises total</span>
+                    <span className="text-orange-400 flex items-center gap-1 font-bold">
+                      <span>View Set Breakdown</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>
               );
             })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------ */}
+      {/* TAB 3: 150+ EXERCISE LIBRARY                                        */}
+      {/* ------------------------------------------------------------------ */}
+      {workoutSubTab === 'library' && (
+        <div className="animate-fade-in">
+          <ExerciseLibraryView />
+        </div>
+      )}
+
+      {/* Routine Blueprint Preview Modal */}
+      <RoutinePreviewModal
+        routine={previewRoutine}
+        isOpen={Boolean(previewRoutine)}
+        onClose={() => setPreviewRoutine(null)}
+        onStart={(r) => startWorkout(r)}
+      />
+
+      {/* Workout Detail & Set Inspector Modal */}
+      <WorkoutDetailModal
+        workout={inspectWorkout}
+        isOpen={Boolean(inspectWorkout)}
+        onClose={() => setInspectWorkout(null)}
+        onRepeat={handleRepeatWorkout}
+      />
 
     </div>
   );

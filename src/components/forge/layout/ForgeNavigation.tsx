@@ -1,117 +1,48 @@
 import React from 'react';
-import {
-  Dumbbell,
-  Shield,
-  Zap,
-  Settings,
-  Flame,
-  Activity,
-  Trophy,
-  Swords,
-  BookOpen,
-  HeartPulse,
-  Utensils,
-  ShieldAlert
-} from 'lucide-react';
+import { Dumbbell, Flame, Activity, Shield } from 'lucide-react';
 
-export type ForgeTab =
-  | 'workout'
-  | 'progression'
-  | 'exercises'
-  | 'prs'
-  | 'boss'
-  | 'muscle'
-  | 'recovery'
-  | 'nutrition'
-  | 'armory'
-  | 'stats'
-  | 'safety'
-  | 'settings';
+export type ForgeHubTab = 'workout' | 'progression' | 'body' | 'armory';
 
 interface Props {
-  activeTab: ForgeTab;
-  onTabChange: (tab: ForgeTab) => void;
+  activeTab: ForgeHubTab;
+  onTabChange: (tab: ForgeHubTab) => void;
 }
 
 export const ForgeNavigation: React.FC<Props> = ({ activeTab, onTabChange }) => {
-  const tabs: { key: ForgeTab; label: string; icon: React.ReactNode; kanji?: string }[] = [
+  const tabs: { key: ForgeHubTab; label: string; kanji: string; icon: React.ReactNode; desc: string }[] = [
     {
       key: 'workout',
-      label: 'Workout',
+      label: 'Workouts',
       kanji: '鍛錬',
-      icon: <Dumbbell className="w-3.5 h-3.5" />
+      icon: <Dumbbell className="w-4 h-4" />,
+      desc: 'Routines, History & Logger'
     },
     {
       key: 'progression',
-      label: 'Skill Trees',
+      label: 'Progression',
       kanji: '系統樹',
-      icon: <Flame className="w-3.5 h-3.5" />
+      icon: <Flame className="w-4 h-4" />,
+      desc: 'Trees, Bosses & PRs'
     },
     {
-      key: 'exercises',
-      label: 'Library',
-      kanji: '目録',
-      icon: <BookOpen className="w-3.5 h-3.5" />
-    },
-    {
-      key: 'prs',
-      label: 'PR Wall',
-      kanji: '最高記録',
-      icon: <Trophy className="w-3.5 h-3.5" />
-    },
-    {
-      key: 'boss',
-      label: 'Boss Lifts',
-      kanji: '強敵',
-      icon: <Swords className="w-3.5 h-3.5" />
-    },
-    {
-      key: 'muscle',
-      label: 'Muscle Map',
+      key: 'body',
+      label: 'Body & Radar',
       kanji: '負荷図',
-      icon: <Activity className="w-3.5 h-3.5" />
-    },
-    {
-      key: 'recovery',
-      label: 'Recovery',
-      kanji: '再生',
-      icon: <HeartPulse className="w-3.5 h-3.5" />
-    },
-    {
-      key: 'nutrition',
-      label: 'Fueling',
-      kanji: '栄養',
-      icon: <Utensils className="w-3.5 h-3.5" />
+      icon: <Activity className="w-4 h-4" />,
+      desc: 'Muscle Map, Recovery & Fuel'
     },
     {
       key: 'armory',
-      label: 'Armory',
-      kanji: '装備',
-      icon: <Shield className="w-3.5 h-3.5" />
-    },
-    {
-      key: 'stats',
-      label: 'Iron & Heat',
-      kanji: '鉄と熱',
-      icon: <Zap className="w-3.5 h-3.5" />
-    },
-    {
-      key: 'safety',
-      label: 'Safety',
-      kanji: '安全',
-      icon: <ShieldAlert className="w-3.5 h-3.5" />
-    },
-    {
-      key: 'settings',
-      label: 'Settings',
-      kanji: '設定',
-      icon: <Settings className="w-3.5 h-3.5" />
+      label: 'Armory & Command',
+      kanji: '装備・設定',
+      icon: <Shield className="w-4 h-4" />,
+      desc: 'Gear, Ranks & Safety'
     }
   ];
 
   return (
     <nav className="w-full flex items-center justify-center py-2 px-3 sm:px-4 relative z-20">
-      <div className="flex items-center gap-1 p-1 rounded-2xl bg-[#0f1118]/90 backdrop-blur-md border border-orange-500/20 shadow-xl overflow-x-auto max-w-full scrollbar-none">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 rounded-2xl bg-[#0f1118]/90 backdrop-blur-md border border-orange-500/20 shadow-xl w-full max-w-4xl">
         {tabs.map(tab => {
           const isActive = activeTab === tab.key;
           return (
@@ -119,19 +50,28 @@ export const ForgeNavigation: React.FC<Props> = ({ activeTab, onTabChange }) => 
               key={tab.key}
               type="button"
               onClick={() => onTabChange(tab.key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-display font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+              className={`flex items-center justify-center sm:justify-start gap-2.5 px-3 sm:px-4 py-2.5 rounded-xl transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-slate-950 shadow-md shadow-orange-500/20 scale-[1.02]'
+                  ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-slate-950 shadow-md shadow-orange-500/20 scale-[1.01]'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
               }`}
             >
-              {tab.icon}
-              <span>{tab.label}</span>
-              {tab.kanji && (
-                <span className={`text-[9px] font-mono opacity-60 hidden md:inline ${isActive ? 'text-slate-900 font-black' : ''}`}>
-                  {tab.kanji}
-                </span>
-              )}
+              <div className={`p-1.5 rounded-lg shrink-0 ${isActive ? 'bg-black/20 text-slate-950' : 'text-orange-400 bg-orange-600/10'}`}>
+                {tab.icon}
+              </div>
+              <div className="text-left">
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-xs font-display font-black leading-tight ${isActive ? 'text-slate-950' : 'text-white'}`}>
+                    {tab.label}
+                  </span>
+                  <span className={`text-[9px] font-mono opacity-70 hidden md:inline ${isActive ? 'text-slate-900 font-bold' : 'text-slate-400'}`}>
+                    {tab.kanji}
+                  </span>
+                </div>
+                <div className={`text-[10px] font-mono truncate hidden lg:block ${isActive ? 'text-slate-900/80 font-medium' : 'text-slate-500'}`}>
+                  {tab.desc}
+                </div>
+              </div>
             </button>
           );
         })}
