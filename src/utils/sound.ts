@@ -134,6 +134,73 @@ class SoundEngine {
     });
   }
 
+  // Industrial metallic anvil strike for Forge mode PRs & completed sets
+  public playAnvilHit() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    
+    // Low body impact (metallic iron thud)
+    const lowOsc = ctx.createOscillator();
+    const lowGain = ctx.createGain();
+    lowOsc.type = 'triangle';
+    lowOsc.frequency.setValueAtTime(140, now);
+    lowOsc.frequency.exponentialRampToValueAtTime(45, now + 0.25);
+
+    lowGain.gain.setValueAtTime(0.001, now);
+    lowGain.gain.linearRampToValueAtTime(0.35, now + 0.015);
+    lowGain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+
+    lowOsc.connect(lowGain);
+    lowGain.connect(ctx.destination);
+    lowOsc.start(now);
+    lowOsc.stop(now + 0.46);
+
+    // High anvil ping (steel resonance)
+    const highOsc = ctx.createOscillator();
+    const highGain = ctx.createGain();
+    highOsc.type = 'sine';
+    highOsc.frequency.setValueAtTime(2480, now);
+    highOsc.frequency.exponentialRampToValueAtTime(1240, now + 0.35);
+
+    highGain.gain.setValueAtTime(0.001, now);
+    highGain.gain.linearRampToValueAtTime(0.18, now + 0.01);
+    highGain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+
+    highOsc.connect(highGain);
+    highGain.connect(ctx.destination);
+    highOsc.start(now);
+    highOsc.stop(now + 0.72);
+  }
+
+  // Rest timer countdown beep (low ping for 3, 2, 1; high gong for Go)
+  public playRestBeep(isGo: boolean = false) {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    if (isGo) {
+      osc.frequency.setValueAtTime(880, now);
+      osc.frequency.exponentialRampToValueAtTime(1760, now + 0.15);
+      gain.gain.setValueAtTime(0.25, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    } else {
+      osc.frequency.setValueAtTime(587.33, now); // D5
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    }
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + (isGo ? 0.52 : 0.16));
+  }
+
   // Synthesized Cyber Ambient Binaural Focus Drone (108 Hz + 114 Hz binaural beat)
   public toggleFocusDrone(): boolean {
     if (this.isDronePlaying) {
