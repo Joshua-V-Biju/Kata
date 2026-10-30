@@ -57,13 +57,17 @@ export const YearHeatmap: React.FC = () => {
   const getCellColor = (level: number) => {
     switch (level) {
       case 4:
-        return 'bg-[#ff6b8b] shadow-[0_0_8px_rgba(255,107,139,0.7)]'; // Fiery Coral
+        // Peak discipline: The greenest and brightest with intense neon aura!
+        return 'bg-[#00ff88] shadow-[0_0_12px_rgba(0,255,136,0.95)] ring-1 ring-white/60';
       case 3:
-        return 'bg-[#00e5a3] shadow-[0_0_6px_rgba(0,229,163,0.6)]'; // Mint
+        // Strong consistency: Rich vibrant emerald green
+        return 'bg-[#10b981] shadow-[0_0_7px_rgba(16,185,129,0.7)]';
       case 2:
-        return 'bg-[#00f2fe] shadow-[0_0_5px_rgba(0,242,254,0.5)]'; // Neon Cyan
+        // Moderate activity: Warm glowing orange/amber
+        return 'bg-[#fb923c] shadow-[0_0_6px_rgba(251,146,60,0.65)]';
       case 1:
-        return 'bg-cyan-900/60 border border-cyan-500/20'; // Soft subtle cyan
+        // Lesser activity: The reddest! Vivid fiery crimson red with radiant glow
+        return 'bg-[#ff2b4e] shadow-[0_0_8px_rgba(255,43,78,0.85)] border border-rose-400/40';
       default:
         return 'bg-slate-900/40 border border-white/5';
     }
@@ -95,13 +99,17 @@ export const YearHeatmap: React.FC = () => {
 
         {/* Legend */}
         <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-          <span>Less</span>
-          <div className="w-2.5 h-2.5 rounded bg-slate-900 border border-white/5" />
-          <div className="w-2.5 h-2.5 rounded bg-cyan-900/60" />
-          <div className="w-2.5 h-2.5 rounded bg-[#00f2fe]" />
-          <div className="w-2.5 h-2.5 rounded bg-[#00e5a3]" />
-          <div className="w-2.5 h-2.5 rounded bg-[#ff6b8b]" />
-          <span>More</span>
+          <div className="flex items-center gap-1 mr-1">
+            <div className="w-2.5 h-2.5 rounded-sm bg-slate-900 border border-white/10" title="0 completions (None)" />
+            <span className="text-[10px] text-slate-500 font-mono">0</span>
+          </div>
+          <span className="text-slate-700">|</span>
+          <span className="font-semibold text-rose-400">Less</span>
+          <div className="w-2.5 h-2.5 rounded-sm bg-[#ff2b4e] shadow-[0_0_6px_rgba(255,43,78,0.85)]" title="1–2 completions (The Reddest)" />
+          <div className="w-2.5 h-2.5 rounded-sm bg-[#fb923c] shadow-[0_0_5px_rgba(251,146,60,0.65)]" title="3–4 completions" />
+          <div className="w-2.5 h-2.5 rounded-sm bg-[#10b981] shadow-[0_0_5px_rgba(16,185,129,0.7)]" title="5–7 completions" />
+          <div className="w-2.5 h-2.5 rounded-sm bg-[#00ff88] shadow-[0_0_10px_rgba(0,255,136,1)] ring-1 ring-white/50" title="8+ completions (The Greenest & Brightest)" />
+          <span className="font-semibold text-emerald-400">More</span>
         </div>
       </div>
 
@@ -140,9 +148,23 @@ export const YearHeatmap: React.FC = () => {
 
         {/* Hover Tooltip */}
         {hoveredDay && (
-          <div className="absolute top-0 right-4 px-3 py-1 rounded-xl bg-slate-900/95 border border-cyan-400/40 text-xs shadow-xl pointer-events-none flex items-center gap-2 animate-pop z-20">
-            <span className="text-cyan-300 font-semibold">{formatDateDisplay(hoveredDay.date)}:</span>
-            <span className="text-white font-mono font-bold">{hoveredDay.count} completions</span>
+          <div className="absolute top-0 right-4 px-3.5 py-1.5 rounded-xl bg-slate-900/95 border border-white/10 text-xs shadow-2xl pointer-events-none flex items-center gap-2 animate-pop z-20 backdrop-blur-md">
+            <span className="text-slate-300 font-medium">{formatDateDisplay(hoveredDay.date)}:</span>
+            <span
+              className={`font-mono font-bold px-1.5 py-0.5 rounded text-[11px] ${
+                hoveredDay.count >= 8
+                  ? 'bg-emerald-500/20 text-[#00ff88] border border-emerald-400/40 shadow-[0_0_8px_rgba(0,255,136,0.3)]'
+                  : hoveredDay.count >= 5
+                  ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                  : hoveredDay.count >= 3
+                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                  : hoveredDay.count >= 1
+                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                  : 'bg-white/5 text-slate-400 border border-white/5'
+              }`}
+            >
+              {hoveredDay.count} {hoveredDay.count === 1 ? 'completion' : 'completions'}
+            </span>
           </div>
         )}
       </div>
