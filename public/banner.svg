@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070a12" />
+      <stop offset="50%" stop-color="#0b1120" />
+      <stop offset="100%" stop-color="#05070c" />
+    </linearGradient>
+
+    <radialGradient id="cyanGlow" cx="15%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#00f2fe" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#00f2fe" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="pinkGlow" cx="85%" cy="70%" r="55%">
+      <stop offset="0%" stop-color="#ff2b4e" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#ff2b4e" stop-opacity="0" />
+    </radialGradient>
+
+    <radialGradient id="goldGlow" cx="50%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Blade & Accent Gradients -->
+    <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f2fe" />
+      <stop offset="45%" stop-color="#38bdf8" />
+      <stop offset="75%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#ff2b4e" />
+    </linearGradient>
+
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="50%" stop-color="#f0f9ff" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+
+    <linearGradient id="pillGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(0, 242, 254, 0.2)" />
+      <stop offset="100%" stop-color="rgba(255, 43, 78, 0.15)" />
+    </linearGradient>
+
+    <!-- Filters for Neon Glow -->
+    <filter id="intenseGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur1" />
+      <feGaussianBlur stdDeviation="20" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Base Canvas -->
+  <rect width="1200" height="420" rx="28" fill="url(#bgGrad)" />
+  <rect width="1200" height="420" rx="28" fill="url(#cyanGlow)" />
+  <rect width="1200" height="420" rx="28" fill="url(#pinkGlow)" />
+  <rect width="1200" height="420" rx="28" fill="url(#goldGlow)" />
+
+  <!-- Outer Glass Border -->
+  <rect x="1" y="1" width="1198" height="418" rx="27" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1.5" />
+
+  <!-- Cyber Grid Pattern (Subtle Ambient) -->
+  <g opacity="0.06" stroke="#00f2fe" stroke-width="1">
+    <line x1="0" y1="70" x2="1200" y2="70" />
+    <line x1="0" y1="140" x2="1200" y2="140" />
+    <line x1="0" y1="210" x2="1200" y2="210" />
+    <line x1="0" y1="280" x2="1200" y2="280" />
+    <line x1="0" y1="350" x2="1200" y2="350" />
+    <line x1="120" y1="0" x2="120" y2="420" />
+    <line x1="240" y1="0" x2="240" y2="420" />
+    <line x1="360" y1="0" x2="360" y2="420" />
+    <line x1="480" y1="0" x2="480" y2="420" />
+    <line x1="600" y1="0" x2="600" y2="420" />
+    <line x1="720" y1="0" x2="720" y2="420" />
+    <line x1="840" y1="0" x2="840" y2="420" />
+    <line x1="960" y1="0" x2="960" y2="420" />
+    <line x1="1080" y1="0" x2="1080" y2="420" />
+  </g>
+
+  <!-- Large Stylized Background Kanji (Watermarks) -->
+  <g font-family="'Zen Maru Gothic', 'Hiragino Sans', 'Noto Sans JP', sans-serif" font-weight="900" select-none="true" pointer-events="none">
+    <text x="960" y="320" font-size="280" fill="rgba(255, 255, 255, 0.018)" text-anchor="middle">型</text>
+    <text x="180" y="240" font-size="160" fill="rgba(0, 242, 254, 0.025)" text-anchor="middle">習慣</text>
+    <text x="1050" y="160" font-size="110" fill="rgba(255, 43, 78, 0.025)" text-anchor="middle">継続</text>
+  </g>
+
+  <!-- Glowing Katana Energy Slash Lines -->
+  <path d="M -50 360 Q 400 240 1250 80" stroke="url(#bladeGrad)" stroke-width="4" fill="none" opacity="0.8" filter="url(#intenseGlow)" />
+  <path d="M 50 390 Q 550 260 1220 120" stroke="#00f2fe" stroke-width="1.5" fill="none" opacity="0.5" />
+  <path d="M -20 340 Q 300 220 1150 70" stroke="#ff2b4e" stroke-width="1" fill="none" opacity="0.4" />
+
+  <!-- Left Focal Crest: Katana Crest Shield -->
+  <g transform="translate(110, 110)">
+    <!-- Rotating Ambient Rings -->
+    <circle cx="100" cy="100" r="88" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" />
+    <circle cx="100" cy="100" r="74" stroke="#00f2fe" stroke-width="2.5" stroke-dasharray="10 14" opacity="0.6" filter="url(#softGlow)" />
+    <circle cx="100" cy="100" r="58" stroke="#ff2b4e" stroke-width="2" stroke-dasharray="8 8" opacity="0.5" />
+    
+    <!-- Central Hexagon / Diamond Core -->
+    <polygon points="100,32 158,66 158,134 100,168 42,134 42,66" fill="#0d1424" stroke="rgba(0, 242, 254, 0.4)" stroke-width="2" />
+    
+    <!-- Large Kanji Symbol: 型 (Kata - Form / Discipline) -->
+    <text x="100" y="125" text-anchor="middle" font-family="'Zen Maru Gothic', 'Hiragino Sans', sans-serif" font-weight="900" font-size="68" fill="#00f2fe" filter="url(#intenseGlow)">型</text>
+    <text x="100" y="125" text-anchor="middle" font-family="'Zen Maru Gothic', 'Hiragino Sans', sans-serif" font-weight="900" font-size="68" fill="#ffffff">型</text>
+
+    <!-- Orbital Energy Sparkles -->
+    <circle cx="160" cy="50" r="4.5" fill="#00ff88" filter="url(#softGlow)" />
+    <circle cx="36" cy="140" r="3.5" fill="#ff2b4e" filter="url(#softGlow)" />
+    <circle cx="100" cy="192" r="3" fill="#00f2fe" filter="url(#softGlow)" />
+  </g>
+
+  <!-- Central Title Typography -->
+  <g transform="translate(370, 130)">
+    <!-- Top Pill: Anime Status Badge -->
+    <g transform="translate(0, 0)">
+      <rect width="320" height="30" rx="15" fill="url(#pillGrad)" stroke="rgba(0, 242, 254, 0.35)" stroke-width="1" />
+      <circle cx="16" cy="15" r="4.5" fill="#00ff88" filter="url(#softGlow)" />
+      <text x="28" y="19" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" fill="#38bdf8" letter-spacing="2">PERSONAL COMMAND CENTER</text>
+      <text x="242" y="19" font-family="'Zen Maru Gothic', sans-serif" font-size="11" font-weight="900" fill="#f43f5e">極限集中</text>
+    </g>
+
+    <!-- Main Title: KATA • 習慣 -->
+    <g transform="translate(0, 68)">
+      <text x="0" y="0" font-family="'Zen Maru Gothic', 'Inter', system-ui, sans-serif" font-weight="900" font-size="74" fill="url(#textGrad)" letter-spacing="4">
+        KATA
+      </text>
+      <text x="255" y="-6" font-family="'Zen Maru Gothic', sans-serif" font-weight="900" font-size="44" fill="#38bdf8" filter="url(#softGlow)">
+        • 習慣
+      </text>
+      <text x="255" y="-6" font-family="'Zen Maru Gothic', sans-serif" font-weight="900" font-size="44" fill="#ffffff">
+        • 習慣
+      </text>
+    </g>
+
+    <!-- Subtitle: Art Form Discipline Statement -->
+    <g transform="translate(0, 108)">
+      <text x="0" y="0" font-family="'Inter', system-ui, sans-serif" font-size="16" font-weight="500" fill="#94a3b8" letter-spacing="0.5">
+        Anime-inspired habit tracking command center, 2-Hour Voltron Sprint chamber,
+      </text>
+      <text x="0" y="24" font-family="'Inter', system-ui, sans-serif" font-size="16" font-weight="500" fill="#94a3b8" letter-spacing="0.5">
+        dynamic heatmaps &amp; game-like discipline progression.
+      </text>
+    </g>
+
+    <!-- Feature Tags Row -->
+    <g transform="translate(0, 160)">
+      <!-- Tag 1: Local-First -->
+      <rect x="0" y="0" width="120" height="28" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+      <text x="60" y="18" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" fill="#38bdf8">⚡ LOCAL-FIRST</text>
+
+      <!-- Tag 2: Voltron Sprint -->
+      <rect x="130" y="0" width="138" height="28" rx="8" fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.3)" stroke-width="1" />
+      <text x="199" y="18" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" fill="#fbbf24">⚡ VOLTRON SPRINT</text>
+
+      <!-- Tag 3: RPG Gamification -->
+      <rect x="278" y="0" width="130" height="28" rx="8" fill="rgba(255,43,78,0.08)" stroke="rgba(255,43,78,0.3)" stroke-width="1" />
+      <text x="343" y="18" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" fill="#fb7185">🎮 SURGE XP &amp; LVL</text>
+
+      <!-- Tag 4: Heatmap -->
+      <rect x="418" y="0" width="128" height="28" rx="8" fill="rgba(0,255,136,0.08)" stroke="rgba(0,255,136,0.3)" stroke-width="1" />
+      <text x="482" y="18" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="600" fill="#00ff88">🔥 365D HEATMAP</text>
+    </g>
+  </g>
+
+  <!-- Right Decorative Elements: HUD Telemetry Rings & Floating Sakura Petals -->
+  <g transform="translate(1040, 210)">
+    <!-- Concentric Tech Rings -->
+    <circle cx="0" cy="0" r="130" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+    <circle cx="0" cy="0" r="100" stroke="#00f2fe" stroke-width="2" stroke-dasharray="16 20" opacity="0.4" />
+    <circle cx="0" cy="0" r="75" stroke="#ff2b4e" stroke-width="1.5" stroke-dasharray="6 12" opacity="0.3" />
+    <circle cx="0" cy="0" r="50" stroke="#00ff88" stroke-width="2" stroke-dasharray="4 8" opacity="0.5" />
+    <circle cx="0" cy="0" r="12" fill="#00f2fe" opacity="0.8" filter="url(#intenseGlow)" />
+  </g>
+
+  <!-- Floating Sakura Petals -->
+  <g fill="#ffb7c5" opacity="0.65" filter="url(#softGlow)">
+    <!-- Petal 1 -->
+    <path d="M 280 80 C 290 70 305 75 300 90 C 295 105 270 95 280 80 Z" transform="rotate(25 285 85)" />
+    <!-- Petal 2 -->
+    <path d="M 980 90 C 990 80 1005 85 1000 100 C 995 115 970 105 980 90 Z" transform="rotate(-15 985 95)" />
+    <!-- Petal 3 -->
+    <path d="M 920 330 C 930 320 945 325 940 340 C 935 355 910 345 920 330 Z" transform="rotate(40 925 335)" />
+    <!-- Petal 4 -->
+    <path d="M 160 330 C 170 320 185 325 180 340 C 175 355 150 345 160 330 Z" transform="rotate(-30 165 335)" />
+    <!-- Petal 5 -->
+    <path d="M 680 50 C 690 40 705 45 700 60 C 695 75 670 65 680 50 Z" transform="rotate(15 685 55)" />
+  </g>
+</svg>

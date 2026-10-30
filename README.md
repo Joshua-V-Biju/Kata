@@ -1,9 +1,11 @@
 # Kata • 習慣 — Anime-Inspired Personal Command Center
 
+<p align="center">
+  <img src="public/banner.svg" alt="Kata • 習慣 Banner" width="100%" />
+</p>
+
 > **“Discipline is not a spreadsheet; it is an art form.”**  
 > A clean, minimalist, game-like habit tracker and time-block command center built for high focus and personal mastery.
-
-![Kata Banner](/icon.svg)
 
 ---
 
