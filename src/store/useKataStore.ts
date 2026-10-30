@@ -5,6 +5,7 @@ import { fireCheckmarkConfetti, fireLevelUpConfetti } from '../utils/confetti';
 import { soundEngine } from '../utils/sound';
 import { generateDailyQuests, getRankInfo, getXpForLevel, INITIAL_BADGES } from '../utils/gamification';
 import { generateSeedDayLogs, SEED_HABITS, SEED_TIMETABLE } from '../utils/seeds';
+import { getDailyQuote, getRandomQuote, MotivationQuote } from '../utils/quotes';
 
 const LOCAL_STORAGE_KEY = 'kata_habit_app_state_v3';
 
@@ -36,11 +37,19 @@ interface KataState {
   toasts: ToastMessage[];
   sprintTimer: SprintTimerState;
   levelUpModal: LevelUpModalState;
+  lastSeenQuoteDate: string;
+  showDailyQuoteModal: boolean;
+  currentQuote: MotivationQuote;
 
   // Actions
   setSelectedDate: (date: string) => void;
   toggleHabit: (habitId: string, dateStr?: string) => void;
   completeVoltronSprint: (blockId: string) => void;
+  
+  // Daily Motivation Quote
+  openDailyQuoteModal: () => void;
+  closeDailyQuoteModal: (markSeen?: boolean) => void;
+  rollNewQuote: () => void;
   
   // Habit Management
   addHabit: (habit: Omit<Habit, 'id' | 'order' | 'createdAt'>) => void;
@@ -176,7 +185,10 @@ const getInitialState = () => {
       newLevel: 3,
       rankTitle: 'Rookie',
       rankKanji: '鍛錬生'
-    }
+    },
+    lastSeenQuoteDate: '',
+    showDailyQuoteModal: false,
+    currentQuote: getDailyQuote(today)
   };
 
   try {
@@ -194,10 +206,13 @@ const getInitialState = () => {
           userStats: { ...defaultState.userStats, ...(parsed.userStats || {}) },
           settings: { ...defaultState.settings, ...(parsed.settings || {}) },
           selectedDate: parsed.selectedDate || defaultState.selectedDate,
+          lastSeenQuoteDate: typeof parsed.lastSeenQuoteDate === 'string' ? parsed.lastSeenQuoteDate : '',
           dailyQuests: defaultState.dailyQuests,
           sprintTimer: defaultState.sprintTimer,
           toasts: [],
-          levelUpModal: defaultState.levelUpModal
+          levelUpModal: defaultState.levelUpModal,
+          showDailyQuoteModal: false,
+          currentQuote: getDailyQuote(today)
         };
       }
     }
@@ -221,7 +236,8 @@ export const useKataStore = create<KataState>((set, get) => {
         timetable: current.timetable,
         badges: current.badges,
         userStats: current.userStats,
-        settings: current.settings
+        settings: current.settings,
+        lastSeenQuoteDate: current.lastSeenQuoteDate
       };
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(toSave));
     } catch (e) {
@@ -233,6 +249,28 @@ export const useKataStore = create<KataState>((set, get) => {
     ...initial,
 
     setSelectedDate: (date: string) => set({ selectedDate: date }),
+
+    openDailyQuoteModal: () => set({ showDailyQuoteModal: true }),
+
+    closeDailyQuoteModal: (markSeen = true) => {
+      const today = getTodayStr();
+      set(state => {
+        const nextState = {
+          showDailyQuoteModal: false,
+          ...(markSeen ? { lastSeenQuoteDate: today } : {})
+        };
+        return nextState;
+      });
+      if (markSeen) {
+        persist({ lastSeenQuoteDate: today });
+      }
+    },
+
+    rollNewQuote: () => {
+      const current = get().currentQuote;
+      const nextQuote = getRandomQuote(current?.id);
+      set({ currentQuote: nextQuote });
+    },
 
     toggleHabit: (habitId: string, dateStr?: string) => {
       const state = get();

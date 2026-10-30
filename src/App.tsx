@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useKataStore } from './store/useKataStore';
+import { getTodayStr } from './utils/dates';
 import { Header } from './components/layout/Header';
 import { Navigation, TabKey } from './components/layout/Navigation';
 import { SakuraEffect } from './components/layout/SakuraEffect';
 import { ToastContainer } from './components/layout/ToastContainer';
 import { LevelUpModal } from './components/layout/LevelUpModal';
+import { DailyQuoteModal } from './components/dashboard/DailyQuoteModal';
+import { DailyQuoteBanner } from './components/dashboard/DailyQuoteBanner';
 
 import { HeroCard } from './components/dashboard/HeroCard';
 import { MomentumRings } from './components/dashboard/MomentumRings';
@@ -38,8 +41,18 @@ export const App: React.FC = () => {
     sprintTimer,
     pauseSprintTimer,
     resumeSprintTimer,
-    settings
+    settings,
+    lastSeenQuoteDate,
+    openDailyQuoteModal
   } = useKataStore();
+
+  // Auto-trigger daily motivation quote when opening the app on a new day
+  useEffect(() => {
+    const today = getTodayStr();
+    if (lastSeenQuoteDate !== today) {
+      openDailyQuoteModal();
+    }
+  }, [lastSeenQuoteDate, openDailyQuoteModal]);
 
   // Handle keyboard shortcuts (1-9 toggles habit, Space toggles sprint timer, Esc closes modals)
   useEffect(() => {
@@ -108,6 +121,9 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 relative z-10 pb-24 md:pb-12">
         {activeTab === 'dashboard' && (
           <div className="space-y-6 animate-fade-in">
+            {/* Daily Heavy Motivation Mandate Banner */}
+            <DailyQuoteBanner />
+
             {/* Hero Card */}
             <HeroCard />
 
@@ -168,6 +184,9 @@ export const App: React.FC = () => {
 
       {/* Celebratory Level-Up Anime Modal */}
       <LevelUpModal />
+
+      {/* Daily Heavy Motivation Mandate Modal */}
+      <DailyQuoteModal />
 
       {/* Voltron Sprint 2-Hour Focus Timer Modal */}
       {showSprintModal && (
