@@ -31,6 +31,7 @@ import { HabitFormModal } from './components/manager/HabitFormModal';
 import { EmberEffect } from './components/forge/layout/EmberEffect';
 import { ForgeNavigation, ForgeHubTab } from './components/forge/layout/ForgeNavigation';
 import { WorkoutLoggerView } from './components/forge/logger/WorkoutLoggerView';
+import { ForgeWorkoutTrackerView } from './components/forge/tracker/ForgeWorkoutTrackerView';
 import { ProgressionHubView } from './components/forge/progression/ProgressionHubView';
 import { BodyBiologyHubView } from './components/forge/body/BodyBiologyHubView';
 import { ArmoryCommandHubView } from './components/forge/armory/ArmoryCommandHubView';
@@ -140,7 +141,7 @@ export const App: React.FC = () => {
     <div
       className={`min-h-screen relative flex flex-col transition-colors duration-300 ${
         settings.theme === 'light' ? 'light' : 'dark'
-      } ${currentMode === 'forge' ? 'forge-theme bg-[#08090c]' : 'bg-[#0a0d14]'}`}
+      } ${currentMode === 'forge' ? 'forge-theme bg-[#111318] text-slate-200' : 'bg-[#0f1219] text-slate-200'}`}
     >
       
       {/* Dynamic Ambient Background Effect */}
@@ -254,6 +255,10 @@ export const App: React.FC = () => {
           <>
             {forgeTab === 'workout' && (
               <WorkoutLoggerView onOpenArmory={() => setShowArmoryModal(true)} />
+            )}
+
+            {forgeTab === 'tracker' && (
+              <ForgeWorkoutTrackerView />
             )}
 
             {forgeTab === 'progression' && (

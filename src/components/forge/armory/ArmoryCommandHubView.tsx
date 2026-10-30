@@ -16,15 +16,15 @@ export const ArmoryCommandHubView: React.FC<Props> = ({ onOpenOnboarding }) => {
     <div className="space-y-6 animate-fade-in pb-16">
       
       {/* Segmented Top Bar */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-3">
-        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#10121a] border border-white/5 overflow-x-auto max-w-full scrollbar-none">
+      <div className="flex items-center justify-between border-b border-white/5 pb-3">
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#14161d] border border-white/5 overflow-x-auto max-w-full scrollbar-none">
           <button
             type="button"
             onClick={() => setSubTab('armory')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer whitespace-nowrap ${
               subTab === 'armory'
-                ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-orange-500/15 text-orange-300 border border-orange-500/30'
+                : 'text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
             <Shield className="w-3.5 h-3.5" />
@@ -36,8 +36,8 @@ export const ArmoryCommandHubView: React.FC<Props> = ({ onOpenOnboarding }) => {
             onClick={() => setSubTab('stats')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer whitespace-nowrap ${
               subTab === 'stats'
-                ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-orange-500/15 text-orange-300 border border-orange-500/30'
+                : 'text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
             <Zap className="w-3.5 h-3.5" />
@@ -49,8 +49,8 @@ export const ArmoryCommandHubView: React.FC<Props> = ({ onOpenOnboarding }) => {
             onClick={() => setSubTab('safety')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer whitespace-nowrap ${
               subTab === 'safety'
-                ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-orange-500/15 text-orange-300 border border-orange-500/30'
+                : 'text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
             <ShieldAlert className="w-3.5 h-3.5" />
@@ -62,8 +62,8 @@ export const ArmoryCommandHubView: React.FC<Props> = ({ onOpenOnboarding }) => {
             onClick={() => setSubTab('settings')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-display font-bold transition-all cursor-pointer whitespace-nowrap ${
               subTab === 'settings'
-                ? 'bg-gradient-to-r from-orange-600 to-amber-500 text-slate-950 shadow-md font-black'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-orange-500/15 text-orange-300 border border-orange-500/30'
+                : 'text-slate-400 hover:text-slate-200 border border-transparent'
             }`}
           >
             <Settings className="w-3.5 h-3.5" />

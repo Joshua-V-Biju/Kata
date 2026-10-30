@@ -148,3 +148,18 @@ export interface ForgeRoutine {
   requiredEquipment: EquipmentId[];
   exerciseIds: string[];
 }
+
+export interface CindySession {
+  id: string;
+  date: string; // ISO string
+  rounds: number;
+  partialReps: number;
+  totalReps: number;
+  pullupsCount: number;
+  pushupsCount: number;
+  squatsCount: number;
+  durationSeconds: number; // e.g. 1200
+  pacePerRoundSeconds: number;
+  notes?: string;
+  isPr?: boolean;
+}
