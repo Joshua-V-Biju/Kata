@@ -31,7 +31,7 @@ export const PrWallView: React.FC = () => {
       }
 
       ex.sets.forEach(s => {
-        if (s.completed) {
+        if (s.completed || s.reps > 0) {
           recordsMap[ex.name].totalSetsPerformed++;
           if (s.reps > recordsMap[ex.name].maxReps) {
             recordsMap[ex.name].maxReps = s.reps;
@@ -60,7 +60,7 @@ export const PrWallView: React.FC = () => {
     const found = w.exercises.find(e => e.name === selectedExName);
     if (found) {
       found.sets.forEach(s => {
-        if (s.completed) {
+        if (s.completed || s.reps > 0) {
           exerciseHistory.push({
             date: new Date(w.startedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
             reps: s.reps,

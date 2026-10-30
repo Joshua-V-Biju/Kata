@@ -60,26 +60,9 @@ const SEED_CINDY_SESSIONS: CindySession[] = [
 ];
 
 export const CindyWorkoutView: React.FC = () => {
-  const { settings } = useForgeStore();
+  const { settings, cindySessions, recordCindySession, deleteCindySession } = useForgeStore();
 
-  // Load history of Cindy sessions
-  const [sessions, setSessions] = useState<CindySession[]>(() => {
-    try {
-      const saved = localStorage.getItem(CINDY_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return SEED_CINDY_SESSIONS;
-  });
-
-  const persistSessions = (newSessions: CindySession[]) => {
-    setSessions(newSessions);
-    try {
-      localStorage.setItem(CINDY_STORAGE_KEY, JSON.stringify(newSessions));
-    } catch (e) {}
-  };
+  const sessions = cindySessions && cindySessions.length > 0 ? cindySessions : SEED_CINDY_SESSIONS;
 
   // Timer & AMRAP Active State
   const TOTAL_DURATION_SECONDS = 1200; // 20 minutes
@@ -234,27 +217,7 @@ export const CindyWorkoutView: React.FC = () => {
       isPr
     };
 
-    const nextList = [newSession, ...sessions];
-    persistSessions(nextList);
-
-    // Auto-tick Kata's "Workouts/Yoga" habit if enabled!
-    if (settings.syncToKataWorkoutHabit) {
-      try {
-        const todayStr = getTodayStr();
-        const kataState = useKataStore.getState();
-        const currentLog = kataState.dayLogs[todayStr];
-        if (!currentLog || !currentLog.completedHabitIds.includes('habit-workout')) {
-          kataState.toggleHabit('habit-workout', todayStr);
-          kataState.addToast(
-            'Cindy Benchmark Saved!',
-            '“Workout/Yoga” automatically checked off in Kata!',
-            'success'
-          );
-        }
-      } catch (e) {
-        console.warn('Kata sync error', e);
-      }
-    }
+    recordCindySession(newSession);
 
     soundEngine.playLevelUp();
     fireLevelUpConfetti();
@@ -269,8 +232,7 @@ export const CindyWorkoutView: React.FC = () => {
 
   const handleDeleteSession = (id: string) => {
     if (window.confirm('Delete this Cindy record?')) {
-      const next = sessions.filter(s => s.id !== id);
-      persistSessions(next);
+      deleteCindySession(id);
     }
   };
 

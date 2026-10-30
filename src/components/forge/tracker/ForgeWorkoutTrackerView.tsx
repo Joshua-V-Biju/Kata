@@ -17,26 +17,15 @@ import {
   Plus
 } from 'lucide-react';
 
-const CINDY_STORAGE_KEY = 'forge_cindy_sessions_v1';
-
 export const ForgeWorkoutTrackerView: React.FC = () => {
-  const { workouts, startWorkout } = useForgeStore();
+  const { workouts, cindySessions, startWorkout } = useForgeStore();
 
-  // Load Cindy sessions from storage
-  const [cindySessions] = useState<CindySession[]>(() => {
-    try {
-      const saved = localStorage.getItem(CINDY_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (e) {}
-    return [];
+  // Track active month and year (defaults dynamically to current month)
+  const [activeDate, setActiveDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
   });
-
-  // Track active month and year
-  const [activeDate, setActiveDate] = useState(() => new Date(2026, 9, 1)); // Default to October 2026
-  const [selectedDayNumber, setSelectedDayNumber] = useState<number>(new Date().getDate());
+  const [selectedDayNumber, setSelectedDayNumber] = useState<number>(() => new Date().getDate());
   const [inspectWorkout, setInspectWorkout] = useState<WorkoutSession | null>(null);
 
   const year = activeDate.getFullYear();

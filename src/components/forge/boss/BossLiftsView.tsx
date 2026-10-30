@@ -26,7 +26,7 @@ export const BossLiftsView: React.FC = () => {
       w.exercises.forEach(ex => {
         if (ex.name.toLowerCase().includes(exName.toLowerCase())) {
           ex.sets.forEach(s => {
-            if (s.completed && s.reps > max) max = s.reps;
+            if ((s.completed || s.reps > 0) && s.reps > max) max = s.reps;
           });
         }
       });

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import {
   ActiveWorkoutState,
+  CindySession,
   EquipmentId,
   Exercise,
   ForgeRank,
@@ -112,6 +113,7 @@ export interface ForgeState {
   equipment: EquipmentId[];
   onboardingCompleted: boolean;
   workouts: WorkoutSession[];
+  cindySessions: CindySession[];
   activeWorkout: ActiveWorkoutState;
   customExercises: Exercise[];
   settings: ForgeSettings;
@@ -134,6 +136,10 @@ export interface ForgeState {
   removeSet: (exerciseId: string, setId: string) => void;
   tickWorkoutTimer: () => void;
 
+  // Cindy Benchmark Execution
+  recordCindySession: (cindySession: CindySession) => void;
+  deleteCindySession: (id: string) => void;
+
   // Rest Timer
   startRestTimer: (durationSeconds?: number, exerciseName?: string) => void;
   pauseRestTimer: () => void;
@@ -149,11 +155,54 @@ export interface ForgeState {
   resetForgeData: () => void;
 }
 
+const SEED_CINDY_SESSIONS: CindySession[] = [
+  {
+    id: 'cindy-seed-1',
+    date: '2026-10-20T17:00:00.000Z',
+    rounds: 14,
+    partialReps: 8,
+    totalReps: 428,
+    pullupsCount: 75,
+    pushupsCount: 143,
+    squatsCount: 210,
+    durationSeconds: 1200,
+    pacePerRoundSeconds: 83,
+    notes: 'Paced conservatively. Broke push-ups into 5+5 starting round 8.',
+    isPr: false
+  },
+  {
+    id: 'cindy-seed-2',
+    date: '2026-10-26T17:00:00.000Z',
+    rounds: 16,
+    partialReps: 5,
+    totalReps: 485,
+    pullupsCount: 85,
+    pushupsCount: 160,
+    squatsCount: 240,
+    durationSeconds: 1200,
+    pacePerRoundSeconds: 74,
+    notes: 'Much better grip endurance. Strict dead-hang on all pull-ups.',
+    isPr: true
+  }
+];
+
 const getInitialForgeState = () => {
+  let initialCindy = SEED_CINDY_SESSIONS;
+  try {
+    const savedCindy = localStorage.getItem('forge_cindy_sessions_v1');
+    if (savedCindy) {
+      const parsedCindy = JSON.parse(savedCindy);
+      if (Array.isArray(parsedCindy) && parsedCindy.length > 0) {
+        initialCindy = parsedCindy;
+      }
+    }
+  } catch (e) {}
+
   const defaultState = {
     equipment: ['bodyweight', 'pullup_bar', 'chair_table'] as EquipmentId[],
     onboardingCompleted: false,
     workouts: SEED_WORKOUTS,
+    cindySessions: initialCindy,
     customExercises: [] as Exercise[],
     activeWorkout: {
       isActive: false,
@@ -197,11 +246,12 @@ const getInitialForgeState = () => {
           ...parsed,
           equipment: Array.isArray(parsed.equipment) ? parsed.equipment : defaultState.equipment,
           workouts: Array.isArray(parsed.workouts) && parsed.workouts.length > 0 ? parsed.workouts : defaultState.workouts,
+          cindySessions: Array.isArray(parsed.cindySessions) && parsed.cindySessions.length > 0 ? parsed.cindySessions : defaultState.cindySessions,
           customExercises: Array.isArray(parsed.customExercises) ? parsed.customExercises : defaultState.customExercises,
           settings: { ...defaultState.settings, ...(parsed.settings || {}) },
           stats: { ...defaultState.stats, ...(parsed.stats || {}) },
           onboardingCompleted: Boolean(parsed.onboardingCompleted),
-          activeWorkout: defaultState.activeWorkout
+          activeWorkout: parsed.activeWorkout?.isActive ? parsed.activeWorkout : defaultState.activeWorkout
         };
       }
     }
@@ -222,11 +272,16 @@ export const useForgeStore = create<ForgeState>((set, get) => {
         equipment: state.equipment,
         onboardingCompleted: state.onboardingCompleted,
         workouts: state.workouts,
+        cindySessions: state.cindySessions,
+        activeWorkout: state.activeWorkout,
         customExercises: state.customExercises,
         settings: state.settings,
         stats: state.stats
       };
       localStorage.setItem(FORGE_STORAGE_KEY, JSON.stringify(toSave));
+      if (Array.isArray(state.cindySessions)) {
+        localStorage.setItem('forge_cindy_sessions_v1', JSON.stringify(state.cindySessions));
+      }
     } catch (e) {
       console.warn('LocalStorage Forge save error', e);
     }
@@ -330,6 +385,7 @@ export const useForgeStore = create<ForgeState>((set, get) => {
         }
       });
 
+      persist();
       soundEngine.playAnvilHit();
     },
 
@@ -347,6 +403,7 @@ export const useForgeStore = create<ForgeState>((set, get) => {
           }
         }
       });
+      persist();
     },
 
     addExerciseToWorkout: (exercise: Exercise) => {
@@ -383,6 +440,7 @@ export const useForgeStore = create<ForgeState>((set, get) => {
           }
         };
       });
+      persist();
       soundEngine.playAnvilHit();
     },
 
@@ -399,6 +457,7 @@ export const useForgeStore = create<ForgeState>((set, get) => {
           }
         };
       });
+      persist();
     },
 
     addSetToExercise: (exerciseId: string, type: SetType = 'normal') => {
@@ -434,6 +493,7 @@ export const useForgeStore = create<ForgeState>((set, get) => {
           }
         };
       });
+      persist();
     },
 
     repeatLastSet: (exerciseId: string) => {
@@ -460,6 +520,7 @@ export const useForgeStore = create<ForgeState>((set, get) => {
           }
         };
       });
+      persist();
     },
 
     completeSet: (exerciseId: string, setId: string) => {
@@ -490,6 +551,7 @@ export const useForgeStore = create<ForgeState>((set, get) => {
           session: { ...state.activeWorkout.session, exercises }
         }
       });
+      persist();
 
       if (justCompleted) {
         soundEngine.playAnvilHit();
@@ -517,6 +579,131 @@ export const useForgeStore = create<ForgeState>((set, get) => {
           }
         };
       });
+      persist();
+    },
+
+    recordCindySession: (cindySession: CindySession) => {
+      const state = get();
+      const nextCindyList = [cindySession, ...state.cindySessions.filter(c => c.id !== cindySession.id)];
+
+      // Synthesize a full WorkoutSession so Cindy integrates seamlessly into PRs, calendar, and stats
+      const cindyVolume = (cindySession.pullupsCount * 50) + (cindySession.pushupsCount * 50) + (cindySession.squatsCount * 50);
+      const ironEarned = 150 + (cindySession.isPr ? 50 : 0);
+      const totalCindySets = (cindySession.rounds * 3) + (cindySession.partialReps > 0 ? 1 : 0);
+
+      const cindyWorkout: WorkoutSession = {
+        id: cindySession.id,
+        name: `Cindy AMRAP Benchmark (${cindySession.rounds} Rds + ${cindySession.partialReps} Reps)`,
+        startedAt: cindySession.date,
+        completedAt: cindySession.date,
+        durationSeconds: cindySession.durationSeconds,
+        totalVolumeKg: cindyVolume,
+        ironEarned,
+        prCount: cindySession.isPr ? 1 : 0,
+        notes: cindySession.notes || 'Cindy 20-min AMRAP benchmark completed.',
+        exercises: [
+          {
+            id: `cindy-pu-${cindySession.id}`,
+            exerciseId: 'pullup-strict',
+            name: 'Strict Pull-up (Overhand)',
+            sets: [
+              {
+                id: `s-pu-${cindySession.id}`,
+                setNumber: 1,
+                type: 'normal',
+                reps: cindySession.pullupsCount,
+                weightKg: 0,
+                tempo: 'AMRAP',
+                rpe: 10,
+                completed: true
+              }
+            ]
+          },
+          {
+            id: `cindy-push-${cindySession.id}`,
+            exerciseId: 'pushup-standard',
+            name: 'Standard Push-up',
+            sets: [
+              {
+                id: `s-push-${cindySession.id}`,
+                setNumber: 1,
+                type: 'normal',
+                reps: cindySession.pushupsCount,
+                weightKg: 0,
+                tempo: 'AMRAP',
+                rpe: 10,
+                completed: true
+              }
+            ]
+          },
+          {
+            id: `cindy-sq-${cindySession.id}`,
+            exerciseId: 'squat-bodyweight',
+            name: 'Bodyweight Squat',
+            sets: [
+              {
+                id: `s-sq-${cindySession.id}`,
+                setNumber: 1,
+                type: 'normal',
+                reps: cindySession.squatsCount,
+                weightKg: 0,
+                tempo: 'AMRAP',
+                rpe: 10,
+                completed: true
+              }
+            ]
+          }
+        ]
+      };
+
+      // Auto-tick Kata's "Workouts/Yoga" habit if enabled
+      if (state.settings.syncToKataWorkoutHabit) {
+        try {
+          const todayStr = getTodayStr();
+          const kataState = useKataStore.getState();
+          const workoutHabit = kataState.habits.find(h =>
+            h.id === 'habit-workout' ||
+            h.name.toLowerCase().includes('workout') ||
+            h.name.toLowerCase().includes('yoga')
+          );
+          if (workoutHabit) {
+            const currentLog = kataState.dayLogs[todayStr];
+            if (!currentLog || !currentLog.completedHabitIds.includes(workoutHabit.id)) {
+              kataState.toggleHabit(workoutHabit.id, todayStr);
+              kataState.addToast(
+                'Cindy Benchmark Saved!',
+                '“Workout/Yoga” automatically checked off in Kata!',
+                'success'
+              );
+            }
+          }
+        } catch (e) {
+          console.warn('Kata sync error from Cindy', e);
+        }
+      }
+
+      set({
+        cindySessions: nextCindyList,
+        workouts: [cindyWorkout, ...state.workouts.filter(w => w.id !== cindySession.id)],
+        stats: {
+          ...state.stats,
+          iron: state.stats.iron + ironEarned,
+          totalWorkouts: state.stats.totalWorkouts + 1,
+          totalVolumeKg: state.stats.totalVolumeKg + cindyVolume,
+          totalSets: state.stats.totalSets + totalCindySets,
+          heat: Math.min(100, state.stats.heat + 25)
+        }
+      });
+
+      persist();
+    },
+
+    deleteCindySession: (id: string) => {
+      set(state => ({
+        cindySessions: state.cindySessions.filter(c => c.id !== id),
+        workouts: state.workouts.filter(w => w.id !== id)
+      }));
+      persist();
     },
 
     tickWorkoutTimer: () => {
@@ -636,20 +823,22 @@ export const useForgeStore = create<ForgeState>((set, get) => {
       const session = state.activeWorkout.session;
       const completedAt = new Date().toISOString();
 
-      // Compute total volume & total completed sets
+      // Compute total volume & total completed sets, ensuring any set with reps > 0 is marked completed
       let totalVolume = 0;
       let totalCompletedSets = 0;
 
-      session.exercises.forEach(ex => {
-        ex.sets.forEach(s => {
-          if (s.completed) {
+      const finalizedExercises = session.exercises.map(ex => ({
+        ...ex,
+        sets: ex.sets.map(s => {
+          const isDone = s.completed || s.reps > 0;
+          if (isDone) {
             totalCompletedSets++;
-            // If bodyweight (0kg), count bodyweight estimate of 50kg for volume work
             const effectiveWeight = s.weightKg > 0 ? s.weightKg : 50;
             totalVolume += s.reps * effectiveWeight;
           }
-        });
-      });
+          return { ...s, completed: isDone };
+        })
+      }));
 
       // Calculate Iron earned: +50 base for workout, +5 per set, +25 PR bonus
       const prCount = Math.floor(totalCompletedSets / 4) + 1; // Simulated PRs based on hard sets
@@ -659,6 +848,7 @@ export const useForgeStore = create<ForgeState>((set, get) => {
         ...session,
         completedAt,
         durationSeconds: state.activeWorkout.elapsedSeconds,
+        exercises: finalizedExercises,
         totalVolumeKg: totalVolume,
         ironEarned,
         prCount
@@ -669,14 +859,21 @@ export const useForgeStore = create<ForgeState>((set, get) => {
         try {
           const todayStr = getTodayStr();
           const kataState = useKataStore.getState();
-          const currentLog = kataState.dayLogs[todayStr];
-          if (!currentLog || !currentLog.completedHabitIds.includes('habit-workout')) {
-            kataState.toggleHabit('habit-workout', todayStr);
-            kataState.addToast(
-              'Kata Bridge Activated',
-              '“Workout/Yoga” marked completed in Kata!',
-              'success'
-            );
+          const workoutHabit = kataState.habits.find(h =>
+            h.id === 'habit-workout' ||
+            h.name.toLowerCase().includes('workout') ||
+            h.name.toLowerCase().includes('yoga')
+          );
+          if (workoutHabit) {
+            const currentLog = kataState.dayLogs[todayStr];
+            if (!currentLog || !currentLog.completedHabitIds.includes(workoutHabit.id)) {
+              kataState.toggleHabit(workoutHabit.id, todayStr);
+              kataState.addToast(
+                'Kata Bridge Activated',
+                '“Workout/Yoga” marked completed in Kata!',
+                'success'
+              );
+            }
           }
         } catch (e) {
           console.warn('Kata sync error', e);

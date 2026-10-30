@@ -8,8 +8,11 @@ export const MonthlyGrid: React.FC = () => {
   const { habits, dayLogs, toggleHabit, editHabit, setDaySpending, setSelectedDate, addToast } = useKataStore();
   const todayStr = getTodayStr();
 
-  // Default to October 2026 as requested (monthIndex 9 is October)
-  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 9, 1));
+  // Default to current active month dynamically
+  const [currentDate, setCurrentDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
 
   const year = currentDate.getFullYear();
   const monthIndex = currentDate.getMonth();
