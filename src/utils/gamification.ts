@@ -1,7 +1,19 @@
 import { Badge, DailyQuest, DayLog, Habit, RankTitle, UserStats } from '../types';
 
+/**
+ * Progressive Level Scaling Curve:
+ * Higher levels require progressively and exponentially more disciplined practice to level up:
+ * - Level 1: 150 XP (Fast starter gratification: ~5 habits or 1 Voltron sprint)
+ * - Level 2: 382 XP
+ * - Level 3: 661 XP
+ * - Level 5: 1,317 XP (Wanderer rank)
+ * - Level 10: 3,361 XP (Adept rank)
+ * - Level 20: 8,574 XP (Sage rank)
+ * - Level 35: 18,348 XP (Legend rank)
+ */
 export const getXpForLevel = (level: number): number => {
-  return Math.floor(150 * Math.pow(1.15, level - 1));
+  const safeLevel = Math.max(1, Math.floor(level));
+  return Math.round(150 * Math.pow(safeLevel, 1.35));
 };
 
 export const getRankInfo = (level: number): { title: RankTitle; kanji: string; color: string } => {

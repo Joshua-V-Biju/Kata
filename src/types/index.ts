@@ -17,6 +17,7 @@ export interface Habit {
 export interface DayLog {
   date: string; // YYYY-MM-DD
   completedHabitIds: string[];
+  completedBlockIds?: string[]; // IDs of timetable / Voltron sprint blocks completed on this date
   amountSpent?: number;
   savingsDeposited?: number;
   mood?: 'zen' | 'energized' | 'calm' | 'focused' | 'fatigued' | 'inspired';

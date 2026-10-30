@@ -360,11 +360,32 @@ export const useKataStore = create<KataState>((set, get) => {
           });
         }
       } else {
-        // Unticked habit
+        // Unticked habit: Revert XP, multiplier, streak, and completion count
+        const dayOfWeek = getDayOfWeekIndex(targetDate);
+        const scheduledToday = state.habits.filter(h => !h.archived && h.scheduleDays.includes(dayOfWeek));
+        // If prior to unticking, all scheduled habits were completed, user had received +100 bonus
+        const wasAllDone = scheduledToday.length > 0 && scheduledToday.every(h => dayLog.completedHabitIds.includes(h.id));
+        
+        const deductedXp = Math.round(25 * state.comboMultiplier) + (wasAllDone ? 100 : 0);
         newMultiplier = Math.max(1.0, Number((newMultiplier - 0.2).toFixed(1)));
+
+        let currXp = newStats.xp - deductedXp;
+        let currLevel = newStats.level;
+
+        while (currXp < 0 && currLevel > 1) {
+          currLevel--;
+          currXp += getXpForLevel(currLevel);
+        }
+        if (currXp < 0) currXp = 0;
+
+        const rank = getRankInfo(currLevel);
         const streak = calculateStreak(newDayLogs, getTodayStr());
         newStats = {
           ...newStats,
+          xp: currXp,
+          level: currLevel,
+          rankTitle: rank.title,
+          rankKanji: rank.kanji,
           currentStreak: streak.current,
           totalCompletions: Math.max(0, newStats.totalCompletions - 1)
         };
@@ -388,6 +409,12 @@ export const useKataStore = create<KataState>((set, get) => {
           `${habit.name} logged (${newMultiplier}x combo)`,
           'xp'
         );
+      } else if (isAlreadyCompleted && habit) {
+        state.addToast(
+          `Habit Unchecked`,
+          `${habit.name} reverted (-${Math.round(25 * state.comboMultiplier)} XP)`,
+          'info'
+        );
       }
 
       persist({});
@@ -398,22 +425,76 @@ export const useKataStore = create<KataState>((set, get) => {
       const block = state.timetable.find(b => b.id === blockId);
       const today = getTodayStr();
 
+      let dayLogs = { ...state.dayLogs };
+      const currentLog = dayLogs[today] || { date: today, completedHabitIds: [], completedBlockIds: [] };
+      const completedBlockIds = currentLog.completedBlockIds || [];
+      const isAlreadyCompleted = completedBlockIds.includes(blockId);
+
+      let newStats = { ...state.userStats };
+
+      if (isAlreadyCompleted) {
+        // Toggle OFF: Unmark the sprint block and revert the 150 XP
+        const newCompletedBlocks = completedBlockIds.filter(id => id !== blockId);
+        
+        let currXp = newStats.xp - 150;
+        let currLevel = newStats.level;
+        while (currXp < 0 && currLevel > 1) {
+          currLevel--;
+          currXp += getXpForLevel(currLevel);
+        }
+        if (currXp < 0) currXp = 0;
+
+        const rank = getRankInfo(currLevel);
+        newStats = {
+          ...newStats,
+          xp: currXp,
+          level: currLevel,
+          rankTitle: rank.title,
+          rankKanji: rank.kanji,
+          voltronSprintsCompleted: Math.max(0, newStats.voltronSprintsCompleted - 1),
+          totalCompletions: Math.max(0, newStats.totalCompletions - 1)
+        };
+
+        dayLogs[today] = {
+          ...currentLog,
+          completedBlockIds: newCompletedBlocks
+        };
+
+        const updatedQuests = generateDailyQuests(dayLogs[today], newStats.voltronSprintsCompleted > 0);
+
+        set({
+          dayLogs,
+          userStats: newStats,
+          dailyQuests: updatedQuests
+        });
+
+        state.addToast(
+          'Block Unmarked',
+          `${block?.title || 'Block'} unmarked (-150 XP reverted)`,
+          'info'
+        );
+        persist({});
+        return;
+      }
+
+      // First time completing today: Award 150 XP
+      const newCompletedBlocks = [...completedBlockIds, blockId];
       soundEngine.playSprintDone();
       fireLevelUpConfetti();
 
-      // Tick linked habit if exists
-      let dayLogs = { ...state.dayLogs };
-      const currentLog = dayLogs[today] || { date: today, completedHabitIds: [] };
-
-      if (block?.linkedHabitId && !currentLog.completedHabitIds.includes(block.linkedHabitId)) {
-        dayLogs[today] = {
-          ...currentLog,
-          completedHabitIds: [...currentLog.completedHabitIds, block.linkedHabitId]
-        };
+      // Tick linked habit if exists and not yet ticked
+      let completedHabits = currentLog.completedHabitIds;
+      if (block?.linkedHabitId && !completedHabits.includes(block.linkedHabitId)) {
+        completedHabits = [...completedHabits, block.linkedHabitId];
       }
 
+      dayLogs[today] = {
+        ...currentLog,
+        completedHabitIds: completedHabits,
+        completedBlockIds: newCompletedBlocks
+      };
+
       // Award 150 bonus XP
-      let newStats = { ...state.userStats };
       let currXp = newStats.xp + 150;
       let currLevel = newStats.level;
       let xpNeeded = getXpForLevel(currLevel);

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { soundEngine } from '../../utils/sound';
 import { fireLevelUpConfetti } from '../../utils/confetti';
+import { getTodayStr } from '../../utils/dates';
 import {
   Zap, Play, Pause, RotateCcw, CheckCircle2, Shield, Headphones,
   Volume2, VolumeX, Sparkles, Target, Plus, Trash2, Maximize2, Minimize2, X
@@ -22,7 +23,8 @@ export const VoltronCockpit: React.FC<VoltronCockpitProps> = ({ onClose, isModal
     tickSprintTimer,
     completeVoltronSprint,
     timetable,
-    habits
+    habits,
+    dayLogs
   } = useKataStore();
 
   const [activeLion, setActiveLion] = useState<'black' | 'red' | 'blue' | 'green' | 'yellow'>('red');
@@ -334,13 +336,24 @@ export const VoltronCockpit: React.FC<VoltronCockpitProps> = ({ onClose, isModal
               )}
 
               {/* Complete & Claim XP */}
-              <button
-                onClick={handleClaimMission}
-                className="px-6 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-display font-bold text-sm tracking-wider uppercase shadow-[0_0_25px_rgba(0,229,163,0.4)] flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-              >
-                <CheckCircle2 className="w-5 h-5" />
-                <span>COMPLETE (+150 XP)</span>
-              </button>
+              {(() => {
+                const currentBlockId = sprintTimer.blockId || 'voltron-mon';
+                const isMissionDoneToday = !!dayLogs[getTodayStr()]?.completedBlockIds?.includes(currentBlockId);
+                return (
+                  <button
+                    onClick={handleClaimMission}
+                    className={`px-6 py-4 rounded-2xl font-display font-bold text-sm tracking-wider uppercase flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer ${
+                      isMissionDoneToday
+                        ? 'bg-emerald-950/80 border-2 border-emerald-400 text-emerald-300 shadow-[0_0_25px_rgba(0,229,163,0.4)]'
+                        : 'bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 shadow-[0_0_25px_rgba(0,229,163,0.4)]'
+                    }`}
+                    title={isMissionDoneToday ? 'Mission completed today (+150 XP claimed). Click to toggle/unmark.' : 'Complete sprint and earn +150 XP'}
+                  >
+                    <CheckCircle2 className="w-5 h-5" />
+                    <span>{isMissionDoneToday ? 'CLAIMED (+150 XP)' : 'COMPLETE (+150 XP)'}</span>
+                  </button>
+                );
+              })()}
 
             </div>
 

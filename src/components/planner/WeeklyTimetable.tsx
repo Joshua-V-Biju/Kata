@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { VoltronBlock } from '../../types';
-import { getDayShortName } from '../../utils/dates';
+import { getDayShortName, getTodayStr } from '../../utils/dates';
 import { VoltronCockpit } from './VoltronCockpit';
 import { BlockEditModal } from './BlockEditModal';
 import { Zap, Clock, Plus, Edit2, Play, CheckCircle2, LayoutGrid, Radio } from 'lucide-react';
 
 export const WeeklyTimetable: React.FC = () => {
   const { timetable, habits, startSprintTimer, sprintTimer, completeVoltronSprint, dayLogs } = useKataStore();
+  const todayStr = getTodayStr();
   
   const [plannerViewMode, setPlannerViewMode] = useState<'cockpit' | 'timetable'>('timetable');
 
@@ -185,6 +186,7 @@ export const WeeklyTimetable: React.FC = () => {
               dayBlocks.map(block => {
                 const isLive = isBlockCurrent(block);
                 const linkedHabit = habits.find(h => h.id === block.linkedHabitId);
+                const isBlockDoneToday = !!dayLogs[todayStr]?.completedBlockIds?.includes(block.id);
 
                 return (
                   <div
@@ -249,26 +251,49 @@ export const WeeklyTimetable: React.FC = () => {
 
                     <div className="flex items-center gap-2 self-end md:self-center shrink-0">
                       {block.isVoltronSprint ? (
-                        <button
-                          onClick={() => handleLaunchSprint(block)}
-                          className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-purple-500/25 transition-all hover:scale-105 active:scale-95"
-                        >
-                          <Play className="w-3.5 h-3.5 fill-white" />
-                          <span>Launch Voltron Cockpit</span>
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleLaunchSprint(block)}
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-purple-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                          >
+                            <Play className="w-3.5 h-3.5 fill-white" />
+                            <span>Launch Cockpit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => completeVoltronSprint(block.id)}
+                            className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                              isBlockDoneToday
+                                ? 'bg-emerald-500/20 border border-emerald-400/50 text-emerald-300'
+                                : 'bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/30 text-slate-300 hover:text-emerald-300'
+                            }`}
+                            title={isBlockDoneToday ? 'Sprint claimed (+150 XP). Click to unmark.' : 'Mark sprint complete (+150 XP)'}
+                          >
+                            <CheckCircle2 className={`w-3.5 h-3.5 ${isBlockDoneToday ? 'fill-emerald-400/25 text-emerald-300' : ''}`} />
+                            <span>{isBlockDoneToday ? 'Done' : 'Mark Done'}</span>
+                          </button>
+                        </>
                       ) : block.linkedHabitId ? (
                         <button
+                          type="button"
                           onClick={() => completeVoltronSprint(block.id)}
-                          className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center gap-1.5 transition"
+                          className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                            isBlockDoneToday
+                              ? 'bg-emerald-500/20 border border-emerald-400/50 text-emerald-300'
+                              : 'bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300'
+                          }`}
+                          title={isBlockDoneToday ? 'Completed today (+150 XP claimed). Click to unmark.' : 'Mark complete (+150 XP)'}
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Mark Done</span>
+                          <CheckCircle2 className={`w-3.5 h-3.5 ${isBlockDoneToday ? 'fill-emerald-400/25 text-emerald-300' : ''}`} />
+                          <span>{isBlockDoneToday ? 'Done (+150 XP Claimed)' : 'Mark Done (+150 XP)'}</span>
                         </button>
                       ) : null}
 
                       <button
+                        type="button"
                         onClick={() => setEditingBlock(block)}
-                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition"
+                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
                         title="Edit Block"
                       >
                         <Edit2 className="w-4 h-4" />
