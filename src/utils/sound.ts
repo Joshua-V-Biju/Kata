@@ -201,6 +201,34 @@ class SoundEngine {
     osc.stop(now + (isGo ? 0.52 : 0.16));
   }
 
+  // Rest timer completion chime
+  public playRestComplete() {
+    this.playRestBeep(true);
+  }
+
+  // Subtle UI click sound
+  public playClick() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(900, now);
+    osc.frequency.exponentialRampToValueAtTime(450, now + 0.04);
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.08, now + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+
   // Synthesized Cyber Ambient Binaural Focus Drone (108 Hz + 114 Hz binaural beat)
   public toggleFocusDrone(): boolean {
     if (this.isDronePlaying) {

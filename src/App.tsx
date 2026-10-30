@@ -34,6 +34,14 @@ import { WorkoutLoggerView } from './components/forge/logger/WorkoutLoggerView';
 import { ArmoryView } from './components/forge/armory/ArmoryView';
 import { ForgeStatsView } from './components/forge/stats/ForgeStatsView';
 import { ForgeSettingsView } from './components/forge/settings/ForgeSettingsView';
+import { ProgressionTreesView } from './components/forge/progression/ProgressionTreesView';
+import { ExerciseLibraryView } from './components/forge/exercises/ExerciseLibraryView';
+import { PrWallView } from './components/forge/prs/PrWallView';
+import { BossLiftsView } from './components/forge/boss/BossLiftsView';
+import { MuscleMapView } from './components/forge/muscle/MuscleMapView';
+import { RecoveryView } from './components/forge/recovery/RecoveryView';
+import { NutritionView } from './components/forge/nutrition/NutritionView';
+import { SafetyHealthView } from './components/forge/safety/SafetyHealthView';
 import { EquipmentOnboardingModal } from './components/forge/onboarding/EquipmentOnboardingModal';
 
 export const App: React.FC = () => {
@@ -256,12 +264,44 @@ export const App: React.FC = () => {
               <WorkoutLoggerView onOpenArmory={() => setShowArmoryModal(true)} />
             )}
 
+            {forgeTab === 'progression' && (
+              <ProgressionTreesView />
+            )}
+
+            {forgeTab === 'exercises' && (
+              <ExerciseLibraryView />
+            )}
+
+            {forgeTab === 'prs' && (
+              <PrWallView />
+            )}
+
+            {forgeTab === 'boss' && (
+              <BossLiftsView />
+            )}
+
+            {forgeTab === 'muscle' && (
+              <MuscleMapView />
+            )}
+
+            {forgeTab === 'recovery' && (
+              <RecoveryView />
+            )}
+
+            {forgeTab === 'nutrition' && (
+              <NutritionView />
+            )}
+
             {forgeTab === 'armory' && (
               <ArmoryView onOpenOnboarding={() => setShowArmoryModal(true)} />
             )}
 
             {forgeTab === 'stats' && (
               <ForgeStatsView />
+            )}
+
+            {forgeTab === 'safety' && (
+              <SafetyHealthView />
             )}
 
             {forgeTab === 'settings' && (
