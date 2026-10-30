@@ -8,7 +8,7 @@ import { Zap, Clock, Plus, Edit2, Play, CheckCircle2, LayoutGrid, Radio } from '
 
 export const WeeklyTimetable: React.FC = () => {
   const { timetable, habits, startSprintTimer, sprintTimer, completeVoltronSprint, dayLogs } = useKataStore();
-  const todayStr = getTodayStr();
+  const todayStr = getTodayStr(); // Cached today date string for fast O(1) timetable checks
   
   const [plannerViewMode, setPlannerViewMode] = useState<'cockpit' | 'timetable'>('timetable');
 
