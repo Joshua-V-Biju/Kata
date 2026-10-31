@@ -195,20 +195,35 @@ const getInitialState = () => {
   };
 
   try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
+    const rawSaved = localStorage.getItem(LOCAL_STORAGE_KEY)
+      || localStorage.getItem('kata_habit_app_state_backup')
+      || localStorage.getItem('kata_habit_app_state_v2');
+
+    if (rawSaved) {
+      const parsed = JSON.parse(rawSaved);
       if (parsed && typeof parsed === 'object') {
-        const savedLogs = parsed.dayLogs && typeof parsed.dayLogs === 'object'
+        const rawLogs = parsed.dayLogs && typeof parsed.dayLogs === 'object'
           ? { ...defaultState.dayLogs, ...parsed.dayLogs }
           : defaultState.dayLogs;
+
+        // Ensure every single dayLog has a safe completedHabitIds array
+        const savedLogs: Record<string, DayLog> = {};
+        for (const [key, log] of Object.entries(rawLogs)) {
+          if (log && typeof log === 'object') {
+            savedLogs[key] = {
+              date: key,
+              ...log,
+              completedHabitIds: Array.isArray((log as any).completedHabitIds) ? (log as any).completedHabitIds : [],
+              completedBlockIds: Array.isArray((log as any).completedBlockIds) ? (log as any).completedBlockIds : []
+            };
+          }
+        }
 
         const savedStats = {
           ...defaultState.userStats,
           ...(parsed.userStats || {})
         };
 
-        const todayCompletions = savedLogs[today]?.completedHabitIds?.length || 0;
         const savedQuests = generateDailyQuests(savedLogs[today], (savedStats.voltronSprintsCompleted || 0) > 0);
 
         return {
@@ -220,7 +235,7 @@ const getInitialState = () => {
           badges: Array.isArray(parsed.badges) ? parsed.badges : defaultState.badges,
           userStats: savedStats,
           settings: { ...defaultState.settings, ...(parsed.settings || {}) },
-          selectedDate: typeof parsed.selectedDate === 'string' && parsed.selectedDate ? parsed.selectedDate : today,
+          selectedDate: today, // Always start on Today when reopening the app!
           comboMultiplier: typeof parsed.comboMultiplier === 'number' ? parsed.comboMultiplier : 1.0,
           lastSeenQuoteDate: typeof parsed.lastSeenQuoteDate === 'string' ? parsed.lastSeenQuoteDate : '',
           dailyQuests: savedQuests,
@@ -242,7 +257,7 @@ const getInitialState = () => {
 export const useKataStore = create<KataState>((set, get) => {
   const initial = getInitialState();
 
-  // Helper to persist state to local storage
+  // Helper to persist state to local storage & hard drive file
   const persist = (state: Partial<KataState>) => {
     try {
       const current = get();
@@ -257,7 +272,18 @@ export const useKataStore = create<KataState>((set, get) => {
         comboMultiplier: current.comboMultiplier,
         lastSeenQuoteDate: current.lastSeenQuoteDate
       };
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(toSave));
+      const jsonStr = JSON.stringify(toSave);
+      localStorage.setItem(LOCAL_STORAGE_KEY, jsonStr);
+      localStorage.setItem('kata_habit_app_state_backup', jsonStr);
+
+      // Persist to local disk file kata_data.json
+      if (typeof window !== 'undefined') {
+        fetch('/api/kata-storage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: jsonStr
+        }).catch(() => {});
+      }
     } catch (e) {
       console.warn('LocalStorage save error:', e);
     }
@@ -815,3 +841,27 @@ export const useKataStore = create<KataState>((set, get) => {
     }
   };
 });
+
+// Auto-sync with disk file kata_data.json on startup
+if (typeof window !== 'undefined') {
+  fetch('/api/kata-storage')
+    .then(res => res.json())
+    .then(diskData => {
+      if (diskData && typeof diskData === 'object' && diskData.dayLogs) {
+        const state = useKataStore.getState();
+        const mergedLogs = { ...state.dayLogs, ...diskData.dayLogs };
+        const mergedStats = { ...state.userStats, ...(diskData.userStats || {}) };
+        useKataStore.setState({
+          dayLogs: mergedLogs,
+          userStats: mergedStats,
+          habits: Array.isArray(diskData.habits) && diskData.habits.length > 0 ? diskData.habits : state.habits,
+          timetable: Array.isArray(diskData.timetable) ? diskData.timetable : state.timetable,
+          badges: Array.isArray(diskData.badges) ? diskData.badges : state.badges
+        });
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(diskData));
+        } catch (e) {}
+      }
+    })
+    .catch(() => {});
+}

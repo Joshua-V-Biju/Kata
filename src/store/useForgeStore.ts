@@ -237,9 +237,10 @@ const getInitialForgeState = () => {
   };
 
   try {
-    const saved = localStorage.getItem(FORGE_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
+    const rawSaved = localStorage.getItem(FORGE_STORAGE_KEY)
+      || localStorage.getItem('forge_fitness_state_backup');
+    if (rawSaved) {
+      const parsed = JSON.parse(rawSaved);
       if (parsed && typeof parsed === 'object') {
         return {
           ...defaultState,
@@ -290,9 +291,18 @@ export const useForgeStore = create<ForgeState>((set, get) => {
         settings: state.settings,
         stats: state.stats
       };
-      localStorage.setItem(FORGE_STORAGE_KEY, JSON.stringify(toSave));
+      const jsonStr = JSON.stringify(toSave);
+      localStorage.setItem(FORGE_STORAGE_KEY, jsonStr);
+      localStorage.setItem('forge_fitness_state_backup', jsonStr);
       if (Array.isArray(state.cindySessions)) {
         localStorage.setItem('forge_cindy_sessions_v1', JSON.stringify(state.cindySessions));
+      }
+      if (typeof window !== 'undefined') {
+        fetch('/api/forge-storage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: jsonStr
+        }).catch(() => {});
       }
     } catch (e) {
       console.warn('LocalStorage Forge save error', e);
@@ -950,3 +960,27 @@ export const useForgeStore = create<ForgeState>((set, get) => {
     }
   };
 });
+
+// Auto-sync with disk file forge_data.json on startup
+if (typeof window !== 'undefined') {
+  fetch('/api/forge-storage')
+    .then(res => res.json())
+    .then(diskData => {
+      if (diskData && typeof diskData === 'object' && Array.isArray(diskData.workouts)) {
+        const state = useForgeStore.getState();
+        useForgeStore.setState({
+          equipment: Array.isArray(diskData.equipment) && diskData.equipment.length > 0 ? diskData.equipment : state.equipment,
+          onboardingCompleted: diskData.onboardingCompleted ?? state.onboardingCompleted,
+          workouts: Array.isArray(diskData.workouts) && diskData.workouts.length > 0 ? diskData.workouts : state.workouts,
+          cindySessions: Array.isArray(diskData.cindySessions) && diskData.cindySessions.length > 0 ? diskData.cindySessions : state.cindySessions,
+          customExercises: Array.isArray(diskData.customExercises) ? diskData.customExercises : state.customExercises,
+          settings: { ...state.settings, ...(diskData.settings || {}) },
+          stats: { ...state.stats, ...(diskData.stats || {}) }
+        });
+        try {
+          localStorage.setItem(FORGE_STORAGE_KEY, JSON.stringify(diskData));
+        } catch (e) {}
+      }
+    })
+    .catch(() => {});
+}

@@ -158,7 +158,7 @@ export const INITIAL_BADGES: Badge[] = [
 ];
 
 export const generateDailyQuests = (todayLog?: DayLog, voltronCompleted: boolean = false): DailyQuest[] => {
-  const count = todayLog?.completedHabitIds.length || 0;
+  const count = Array.isArray(todayLog?.completedHabitIds) ? todayLog.completedHabitIds.length : 0;
   const journalDone = !!todayLog?.journalNote || !!todayLog?.mood;
 
   return [

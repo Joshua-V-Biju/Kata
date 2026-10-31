@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useKataStore } from '../../store/useKataStore';
-import { getDayOfWeekIndex, getTodayStr, getDaysInMonth } from '../../utils/dates';
+import { getDayOfWeekIndex, getTodayStr, getDaysInMonth, formatDateDisplay } from '../../utils/dates';
 import { IconRenderer } from '../common/IconRenderer';
 import { Check, Flame, Zap, Plus, Filter } from 'lucide-react';
 import { HabitCategory } from '../../types';
@@ -46,14 +46,33 @@ export const TodayHabitsList: React.FC<TodayHabitsListProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Past Date Alert Banner if selectedDate is not today */}
+      {selectedDate !== todayStr && (
+        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-amber-200">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+            <span>Currently viewing & logging habits for <strong>{formatDateDisplay(selectedDate)}</strong> (Past Date).</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => useKataStore.getState().setSelectedDate(todayStr)}
+            className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/50 text-amber-300 font-bold text-[11px] uppercase tracking-wider transition cursor-pointer"
+          >
+            ← Switch to Today ({formatDateDisplay(todayStr)})
+          </button>
+        </div>
+      )}
+
       {/* Section Header & Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-display font-extrabold text-white flex items-center gap-2">
-            Today's Habits • 今日の習慣
+            {selectedDate === todayStr ? "Today's Habits • 今日の習慣" : `Habits for ${formatDateDisplay(selectedDate)}`}
           </h2>
           <p className="text-xs text-slate-400">
-            Tap any card to check off your habit for today
+            {selectedDate === todayStr
+              ? "Tap any card to check off your habit for today"
+              : `Tap any card to update completion for ${formatDateDisplay(selectedDate)}`}
           </p>
         </div>
 
