@@ -59,7 +59,7 @@ interface KataState {
 
   // Journal & Expenses
   setDayMoodAndNote: (date: string, mood?: DayLog['mood'], note?: string) => void;
-  setDaySpending: (date: string, spent?: number, savings?: number) => void;
+  setDaySpending: (date: string, spent?: number | null, savings?: number | null) => void;
 
   // Timetable
   addTimetableBlock: (block: Omit<VoltronBlock, 'id'>) => void;
@@ -665,8 +665,8 @@ export const useKataStore = create<KataState>((set, get) => {
         ...state.dayLogs,
         [date]: {
           ...current,
-          amountSpent: spent !== undefined ? spent : current.amountSpent,
-          savingsDeposited: savings !== undefined ? savings : current.savingsDeposited
+          amountSpent: spent !== undefined ? (spent === null ? undefined : spent) : current.amountSpent,
+          savingsDeposited: savings !== undefined ? (savings === null ? undefined : savings) : current.savingsDeposited
         }
       };
 

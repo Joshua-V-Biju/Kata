@@ -28,9 +28,14 @@ export const MonthlyGrid: React.FC = () => {
   const [editingGoalHabit, setEditingGoalHabit] = useState<Habit | null>(null);
   const [goalInputValue, setGoalInputValue] = useState<string>('');
 
-  // Spendings Quick Editor State
-  const [selectedSpendDay, setSelectedSpendDay] = useState<number>(12);
-  const [spendAmountInput, setSpendAmountInput] = useState<string>('30');
+  // Interactive Money Tracking Typing Popover State
+  interface EditingSpendState {
+    dayNum: number;
+    dateKey: string;
+    currentSpent?: number;
+  }
+  const [editingSpend, setEditingSpend] = useState<EditingSpendState | null>(null);
+  const [spendInputValue, setSpendInputValue] = useState<string>('');
 
   const prevMonth = () => {
     setCurrentDate(new Date(year, monthIndex - 1, 1));
@@ -126,24 +131,39 @@ export const MonthlyGrid: React.FC = () => {
     }
   };
 
-  // Handle saving spending from the clear entry bar
-  const handleSaveSelectedSpend = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const dayStr = String(selectedSpendDay).padStart(2, '0');
-    const mStr = String(monthIndex + 1).padStart(2, '0');
-    const dateKey = `${year}-${mStr}-${dayStr}`;
-    const amount = spendAmountInput.trim() === '' ? undefined : parseFloat(spendAmountInput);
-    setDaySpending(dateKey, amount);
-    addToast('Spending Recorded', `Day ${selectedSpendDay}: $${amount || 0} updated`, 'info');
+  // Open interactive spending typing popup
+  const handleOpenSpendEditor = (dayNum: number, dateKey: string, currentSpent?: number) => {
+    setEditingSpend({ dayNum, dateKey, currentSpent });
+    setSpendInputValue(currentSpent !== undefined ? String(currentSpent) : '');
   };
 
-  const handlePickSpendDay = (dayNum: number) => {
-    setSelectedSpendDay(dayNum);
-    const dayStr = String(dayNum).padStart(2, '0');
+  // Save spending from popup form
+  const handleSaveSpend = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!editingSpend) return;
+
+    const trimmed = spendInputValue.trim();
+    if (trimmed === '') {
+      setDaySpending(editingSpend.dateKey, null);
+      addToast('Spending Cleared', `Day ${editingSpend.dayNum} spending cleared`, 'info');
+    } else {
+      const parsed = parseFloat(trimmed);
+      if (!isNaN(parsed) && parsed >= 0) {
+        setDaySpending(editingSpend.dateKey, parsed);
+        addToast('Spending Recorded', `Day ${editingSpend.dayNum}: $${parsed.toFixed(2)} recorded`, 'info');
+      }
+    }
+    setEditingSpend(null);
+  };
+
+  // Jump to another day inside the spending editor
+  const handleJumpSpendDay = (targetDayNum: number) => {
+    if (targetDayNum < 1 || targetDayNum > totalDays) return;
+    const dayStr = String(targetDayNum).padStart(2, '0');
     const mStr = String(monthIndex + 1).padStart(2, '0');
     const dateKey = `${year}-${mStr}-${dayStr}`;
-    const existing = dayLogs[dateKey]?.amountSpent;
-    setSpendAmountInput(existing !== undefined ? String(existing) : '');
+    const log = dayLogs[dateKey];
+    handleOpenSpendEditor(targetDayNum, dateKey, log?.amountSpent);
   };
 
   return (
@@ -191,6 +211,10 @@ export const MonthlyGrid: React.FC = () => {
               <div>
                 <span className="text-slate-400">Total Days: </span>
                 <span className="text-white font-bold">{totalDays}</span>
+              </div>
+              <div>
+                <span className="text-slate-400">Month Outflow: </span>
+                <span className="text-amber-400 font-bold">${totalAmountSpent.toFixed(2)}</span>
               </div>
             </div>
 
@@ -440,46 +464,51 @@ export const MonthlyGrid: React.FC = () => {
               {/* Exact Amount Spent Row Aligned Directly into Table Matrix */}
               <tr className="border-t-2 border-white/10 bg-slate-950 text-xs">
                 <td className="sticky left-0 z-20 bg-[#090d14] p-2.5 w-52 min-w-[210px] max-w-[210px] border-r-2 border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.5)] font-display font-bold text-slate-200">
-                  <div className="flex items-center gap-2 text-amber-400">
-                    <DollarSign className="w-3.5 h-3.5" />
-                    <span>Amount Spent ($)</span>
+                  <div className="flex items-center justify-between text-amber-400">
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span>Amount Spent ($)</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-400 font-normal">
+                      Click to type
+                    </span>
                   </div>
                 </td>
 
-                <td className="p-2 text-center font-mono text-[10px] text-slate-500 border-r border-white/10">
-                  Daily
+                <td className="p-2 text-center font-mono text-[10px] text-amber-300 border-r border-white/10" title="Click any day cell to type money spent">
+                  Daily ✎
                 </td>
 
                 {/* Day-by-Day Spent Values aligned under each day */}
                 {dailyCounts.map(d => {
                   const hasSpent = d.spent !== undefined && d.spent > 0;
-                  const isSelected = selectedSpendDay === d.dayNum;
+                  const isBeingEdited = editingSpend?.dayNum === d.dayNum;
 
                   return (
                     <td
                       key={d.date}
-                      onClick={() => handlePickSpendDay(d.dayNum)}
-                      className={`p-1 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-all ${
-                        isSelected ? 'bg-amber-500/20 ring-1 ring-amber-400' : ''
+                      onClick={() => handleOpenSpendEditor(d.dayNum, d.date, d.spent)}
+                      className={`p-1 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-all hover:bg-amber-500/20 group ${
+                        isBeingEdited ? 'bg-amber-500/30 ring-2 ring-amber-400' : ''
                       }`}
-                      title={`Day ${d.dayNum}: $${d.spent !== undefined ? d.spent : 0}. Click to edit.`}
+                      title={`Day ${d.dayNum}: $${d.spent !== undefined ? d.spent : 0}. Click to type.`}
                     >
-                      <div className={`text-[10px] font-mono font-bold rounded py-0.5 ${
+                      <div className={`text-[10px] font-mono font-bold rounded py-0.5 transition-all group-hover:scale-105 ${
                         hasSpent
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                           : d.spent === 0
-                          ? 'text-slate-400 bg-black/20'
-                          : 'text-slate-600'
+                          ? 'text-slate-400 bg-black/20 border border-white/5'
+                          : 'text-slate-600 hover:text-amber-300'
                       }`}>
-                        {d.spent !== undefined ? d.spent : '-'}
+                        {d.spent !== undefined ? `$${d.spent}` : '-'}
                       </div>
                     </td>
                   );
                 })}
 
                 {/* Total Column */}
-                <td className="p-2 text-center border-l border-white/10 bg-slate-900 font-mono font-bold text-amber-400">
-                  ${totalAmountSpent}
+                <td className="p-2 text-center border-l border-white/10 bg-slate-900 font-mono font-bold text-amber-400" title="Total amount spent in this month">
+                  ${totalAmountSpent.toFixed(2)}
                 </td>
               </tr>
             </tbody>
@@ -535,130 +564,7 @@ export const MonthlyGrid: React.FC = () => {
           </table>
         </div>
 
-        {/* ==================================================================== */}
-        {/* CLEAR SPENDINGS FORGE & QUICK ENTRY BAR                              */}
-        {/* ==================================================================== */}
-        <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-950/20 via-slate-900/80 to-slate-900/60 border border-amber-500/30 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-400">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="text-sm font-display font-bold text-white flex items-center gap-2">
-                  Daily Spendings Forge • 支出管理
-                </h4>
-                <p className="text-xs text-slate-400">
-                  Click any day in the table above or select below to record daily spending clearly
-                </p>
-              </div>
-            </div>
 
-            {/* Quick Metrics */}
-            <div className="flex items-center gap-3 text-xs font-mono">
-              <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-white/10 text-slate-300">
-                Total Outflow: <strong className="text-amber-400 font-bold">${totalAmountSpent.toFixed(2)}</strong>
-              </div>
-              <div className="px-3 py-1.5 rounded-xl bg-slate-950 border border-white/10 text-slate-300">
-                Daily Budget: <strong className="text-emerald-400 font-bold">$25.00</strong>
-              </div>
-            </div>
-          </div>
-
-          {/* Clean Input Controls */}
-          <form onSubmit={handleSaveSelectedSpend} className="flex flex-wrap items-center gap-3 pt-1">
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-mono text-slate-400 font-semibold">Select Day:</label>
-              <select
-                value={selectedSpendDay}
-                onChange={(e) => handlePickSpendDay(Number(e.target.value))}
-                className="px-3 py-2 rounded-xl bg-slate-950 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
-              >
-                {days.map((d, i) => (
-                  <option key={d} value={i + 1}>
-                    Day {i + 1} ({monthName.slice(0, 3)} {i + 1})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-              <label className="text-xs font-mono text-slate-400 font-semibold">Amount Spent:</label>
-              <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-xs">$</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={spendAmountInput}
-                  onChange={(e) => setSpendAmountInput(e.target.value)}
-                  placeholder="0.00"
-                  className="w-full pl-7 pr-3 py-2 rounded-xl bg-slate-950 border border-white/10 text-white font-mono text-xs font-bold focus:outline-none focus:border-amber-400"
-                />
-              </div>
-            </div>
-
-            {/* Quick amount presets */}
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => setSpendAmountInput('0')}
-                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono"
-              >
-                $0
-              </button>
-              <button
-                type="button"
-                onClick={() => setSpendAmountInput('10')}
-                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono"
-              >
-                $10
-              </button>
-              <button
-                type="button"
-                onClick={() => setSpendAmountInput('25')}
-                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono"
-              >
-                $25
-              </button>
-              <button
-                type="button"
-                onClick={() => setSpendAmountInput('50')}
-                className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-mono"
-              >
-                $50
-              </button>
-            </div>
-
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 hover:from-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition"
-            >
-              <Check className="w-3.5 h-3.5" />
-              <span>Save Spending</span>
-            </button>
-          </form>
-
-          {/* Quick Timeline of Logged Days matching October exact image */}
-          {daysWithSpending.length > 0 && (
-            <div className="pt-2 border-t border-white/5 flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-mono text-slate-400 mr-1">Logged Days:</span>
-              {daysWithSpending.map(item => (
-                <button
-                  key={item.date}
-                  onClick={() => handlePickSpendDay(item.dayNum)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 border transition ${
-                    selectedSpendDay === item.dayNum
-                      ? 'bg-amber-500/30 border-amber-400 text-amber-200 shadow'
-                      : 'bg-black/30 border-white/5 text-slate-300 hover:border-white/20'
-                  }`}
-                >
-                  <span className="text-slate-400">{monthName.slice(0, 3)} {item.dayNum}:</span>
-                  <span className="font-bold text-amber-400">${item.spent}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
 
         {/* ==================================================================== */}
         {/* THREE RINGS SECTION (Matching Excel Bottom Section)                  */}
@@ -839,6 +745,130 @@ export const MonthlyGrid: React.FC = () => {
                   className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 text-slate-950 text-xs font-bold uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition"
                 >
                   Save Target
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* ==================================================================== */}
+      {/* INTERACTIVE MONEY SPENDING TYPING POPUP MODAL                        */}
+      {/* ==================================================================== */}
+      {editingSpend && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+          onClick={() => setEditingSpend(null)}
+        >
+          <div 
+            className="relative w-full max-w-sm p-6 rounded-3xl bg-[#121622] border-2 border-amber-400/60 shadow-2xl text-center space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setEditingSpend(null)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
+              title="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Amber Currency Icon */}
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-center text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+              <DollarSign className="w-6 h-6" />
+            </div>
+
+            {/* Day Header with Previous / Next Day Arrows */}
+            <div>
+              <div className="flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  disabled={editingSpend.dayNum <= 1}
+                  onClick={() => handleJumpSpendDay(editingSpend.dayNum - 1)}
+                  className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition"
+                  title="Previous Day"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+
+                <span className="text-[11px] font-mono uppercase tracking-widest text-amber-400 font-bold">
+                  DAY {editingSpend.dayNum} EXPENSE
+                </span>
+
+                <button
+                  type="button"
+                  disabled={editingSpend.dayNum >= totalDays}
+                  onClick={() => handleJumpSpendDay(editingSpend.dayNum + 1)}
+                  className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition"
+                  title="Next Day"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              <h3 className="text-lg font-display font-bold text-white mt-0.5">
+                {monthName} {editingSpend.dayNum}, {year}
+              </h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Type the amount spent for this day. Press Enter to save.
+              </p>
+            </div>
+
+            {/* Focused Typing Area */}
+            <form onSubmit={handleSaveSpend} className="space-y-4 pt-2">
+              <div className="relative max-w-[180px] mx-auto">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-400 font-mono text-2xl font-black select-none">
+                  $
+                </span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  autoFocus
+                  value={spendInputValue}
+                  onChange={(e) => setSpendInputValue(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full text-center text-3xl font-mono font-black py-2.5 pl-8 pr-3 rounded-2xl bg-black border-2 border-amber-400 text-white focus:outline-none shadow-[0_0_20px_rgba(245,158,11,0.25)] tracking-wider"
+                  onFocus={(e) => e.target.select()}
+                />
+              </div>
+
+              {/* Quick preset chips */}
+              <div className="flex items-center justify-center flex-wrap gap-1.5 pt-1">
+                {['0', '10', '25', '50'].map(val => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setSpendInputValue(val)}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-amber-500/20 hover:text-amber-300 text-slate-300 text-xs font-mono font-semibold transition border border-white/5"
+                  >
+                    ${val}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setSpendInputValue('')}
+                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 text-slate-400 text-xs font-mono font-semibold transition border border-white/5"
+                  title="Clear expense"
+                >
+                  Clear (-)
+                </button>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingSpend(null)}
+                  className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-400 hover:from-amber-400 text-slate-950 text-xs font-bold uppercase tracking-wider shadow-lg shadow-amber-500/20 transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Check className="w-4 h-4 stroke-[2.5]" />
+                  <span>Save Expense</span>
                 </button>
               </div>
             </form>
