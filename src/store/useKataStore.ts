@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppSettings, Badge, DailyQuest, DayLog, Habit, ToastMessage, UserStats, VoltronBlock } from '../types';
+import { AppSettings, Badge, DailyQuest, DailyTask, DayLog, Habit, ToastMessage, UserStats, VoltronBlock } from '../types';
 import { getTodayStr, isWeekend, getDayOfWeekIndex } from '../utils/dates';
 import { fireCheckmarkConfetti, fireLevelUpConfetti } from '../utils/confetti';
 import { soundEngine } from '../utils/sound';
@@ -60,6 +60,13 @@ interface KataState {
   // Journal & Expenses
   setDayMoodAndNote: (date: string, mood?: DayLog['mood'], note?: string) => void;
   setDaySpending: (date: string, spent?: number | null, savings?: number | null) => void;
+
+  // Daily Tasks
+  addDailyTask: (date: string, text: string) => void;
+  toggleDailyTask: (date: string, taskId: string) => void;
+  deleteDailyTask: (date: string, taskId: string) => void;
+  editDailyTask: (date: string, taskId: string, text: string) => void;
+  clearCompletedDailyTasks: (date: string) => void;
 
   // Timetable
   addTimetableBlock: (block: Omit<VoltronBlock, 'id'>) => void;
@@ -214,7 +221,8 @@ const getInitialState = () => {
               date: key,
               ...log,
               completedHabitIds: Array.isArray((log as any).completedHabitIds) ? (log as any).completedHabitIds : [],
-              completedBlockIds: Array.isArray((log as any).completedBlockIds) ? (log as any).completedBlockIds : []
+              completedBlockIds: Array.isArray((log as any).completedBlockIds) ? (log as any).completedBlockIds : [],
+              tasks: Array.isArray((log as any).tasks) ? (log as any).tasks : []
             };
           }
         }
@@ -672,6 +680,112 @@ export const useKataStore = create<KataState>((set, get) => {
 
       set({ dayLogs: newDayLogs });
       state.addToast('Finances Updated', 'Daily spending and savings updated.', 'info');
+      persist({});
+    },
+
+    addDailyTask: (date, text) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const state = get();
+      const current = state.dayLogs[date] || { date, completedHabitIds: [] };
+      const currentTasks = Array.isArray(current.tasks) ? current.tasks : [];
+      const newTask: DailyTask = {
+        id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        text: trimmed,
+        completed: false,
+        createdAt: new Date().toISOString()
+      };
+      const newDayLogs = {
+        ...state.dayLogs,
+        [date]: {
+          ...current,
+          tasks: [...currentTasks, newTask]
+        }
+      };
+      set({ dayLogs: newDayLogs });
+      state.addToast('Task Added', `"${trimmed}" added`, 'info');
+      persist({});
+    },
+
+    toggleDailyTask: (date, taskId) => {
+      const state = get();
+      const current = state.dayLogs[date];
+      if (!current || !Array.isArray(current.tasks)) return;
+
+      let isNowCompleted = false;
+      const newTasks = current.tasks.map(t => {
+        if (t.id === taskId) {
+          isNowCompleted = !t.completed;
+          return { ...t, completed: !t.completed };
+        }
+        return t;
+      });
+
+      const newDayLogs = {
+        ...state.dayLogs,
+        [date]: {
+          ...current,
+          tasks: newTasks
+        }
+      };
+
+      set({ dayLogs: newDayLogs });
+      if (isNowCompleted) {
+        soundEngine.playCheckmark();
+      }
+      persist({});
+    },
+
+    deleteDailyTask: (date, taskId) => {
+      const state = get();
+      const current = state.dayLogs[date];
+      if (!current || !Array.isArray(current.tasks)) return;
+
+      const newTasks = current.tasks.filter(t => t.id !== taskId);
+      const newDayLogs = {
+        ...state.dayLogs,
+        [date]: {
+          ...current,
+          tasks: newTasks
+        }
+      };
+      set({ dayLogs: newDayLogs });
+      persist({});
+    },
+
+    editDailyTask: (date, taskId, newText) => {
+      const trimmed = newText.trim();
+      if (!trimmed) return;
+      const state = get();
+      const current = state.dayLogs[date];
+      if (!current || !Array.isArray(current.tasks)) return;
+
+      const newTasks = current.tasks.map(t => t.id === taskId ? { ...t, text: trimmed } : t);
+      const newDayLogs = {
+        ...state.dayLogs,
+        [date]: {
+          ...current,
+          tasks: newTasks
+        }
+      };
+      set({ dayLogs: newDayLogs });
+      persist({});
+    },
+
+    clearCompletedDailyTasks: (date) => {
+      const state = get();
+      const current = state.dayLogs[date];
+      if (!current || !Array.isArray(current.tasks)) return;
+
+      const newTasks = current.tasks.filter(t => !t.completed);
+      const newDayLogs = {
+        ...state.dayLogs,
+        [date]: {
+          ...current,
+          tasks: newTasks
+        }
+      };
+      set({ dayLogs: newDayLogs });
       persist({});
     },
 

@@ -27,7 +27,6 @@ export const HeroCard: React.FC = () => {
   const totalCount = scheduledHabits.length || 1;
   const completedCount = scheduledHabits.filter(h => currentLog.completedHabitIds.includes(h.id)).length;
   const completionRate = Math.min(1, completedCount / totalCount);
-  const percentage = Math.round(completionRate * 100);
 
   const status = getStatusTitle(completionRate, userStats.currentStreak);
   const nextLevelXp = getXpForLevel(userStats.level);
@@ -129,54 +128,6 @@ export const HeroCard: React.FC = () => {
               />
             </div>
           </div>
-        </div>
-
-        {/* Right: Big Fluid Daily Percentage Ring */}
-        <div className="shrink-0 flex flex-col items-center justify-center p-4">
-          <div className="relative w-32 h-32 flex items-center justify-center">
-            {/* SVG Progress Circle */}
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="42"
-                fill="transparent"
-                stroke="currentColor"
-                strokeWidth="7"
-                className="text-slate-800/80"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="42"
-                fill="transparent"
-                stroke="url(#heroRingGrad)"
-                strokeWidth="7"
-                strokeDasharray={264}
-                strokeDashoffset={264 - (264 * percentage) / 100}
-                strokeLinecap="round"
-                className="transition-all duration-1000 ease-out"
-              />
-              <defs>
-                <linearGradient id="heroRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#00f2fe" />
-                  <stop offset="50%" stopColor="#00e5a3" />
-                  <stop offset="100%" stopColor="#ff6b8b" />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            {/* Centered Percentage & Stats */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-3xl font-display font-black text-white tracking-tight">
-                {percentage}%
-              </span>
-              <span className="text-[11px] font-mono text-slate-400">
-                {completedCount}/{totalCount} Done
-              </span>
-            </div>
-          </div>
-          <span className="text-[11px] font-medium text-slate-400 mt-1">Today's Progress</span>
         </div>
 
       </div>

@@ -14,10 +14,18 @@ export interface Habit {
   createdAt: string;
 }
 
+export interface DailyTask {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+}
+
 export interface DayLog {
   date: string; // YYYY-MM-DD
   completedHabitIds: string[];
   completedBlockIds?: string[]; // IDs of timetable / Voltron sprint blocks completed on this date
+  tasks?: DailyTask[]; // Daily custom to-do tasks
   amountSpent?: number;
   savingsDeposited?: number;
   mood?: 'zen' | 'energized' | 'calm' | 'focused' | 'fatigued' | 'inspired';
