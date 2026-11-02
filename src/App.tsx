@@ -17,6 +17,7 @@ import { MomentumRings } from './components/dashboard/MomentumRings';
 import { CompletionsChart } from './components/dashboard/CompletionsChart';
 import { DailyQuestsCard } from './components/dashboard/DailyQuestsCard';
 import { TodayTasksCard } from './components/dashboard/TodayTasksCard';
+import { RemindersCard } from './components/dashboard/RemindersCard';
 import { TodayHabitsList } from './components/dashboard/TodayHabitsList';
 import { MonthlyGrid } from './components/tracker/MonthlyGrid';
 import { WeeklyTimetable } from './components/planner/WeeklyTimetable';
@@ -209,8 +210,11 @@ export const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Today's Tasks Area */}
-                <TodayTasksCard />
+                {/* Daily Tasks & Active Reminders Area */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                  <TodayTasksCard />
+                  <RemindersCard />
+                </div>
 
                 {/* Today's Habits Large Tappable Cards */}
                 <TodayHabitsList

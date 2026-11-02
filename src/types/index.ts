@@ -21,6 +21,18 @@ export interface DailyTask {
   createdAt: string;
 }
 
+export interface KataReminder {
+  id: string;
+  title: string;
+  dueDate?: string;
+  dueTime?: string;
+  priority: 'urgent' | 'high' | 'normal' | 'low';
+  category?: 'general' | 'study' | 'work' | 'health' | 'finance';
+  completed: boolean;
+  pinned?: boolean;
+  createdAt: string;
+}
+
 export interface DayLog {
   date: string; // YYYY-MM-DD
   completedHabitIds: string[];

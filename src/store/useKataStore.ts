@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppSettings, Badge, DailyQuest, DailyTask, DayLog, Habit, ToastMessage, UserStats, VoltronBlock } from '../types';
+import { AppSettings, Badge, DailyQuest, DailyTask, DayLog, Habit, KataReminder, ToastMessage, UserStats, VoltronBlock } from '../types';
 import { getTodayStr, isWeekend, getDayOfWeekIndex } from '../utils/dates';
 import { fireCheckmarkConfetti, fireLevelUpConfetti } from '../utils/confetti';
 import { soundEngine } from '../utils/sound';
@@ -67,6 +67,15 @@ interface KataState {
   deleteDailyTask: (date: string, taskId: string) => void;
   editDailyTask: (date: string, taskId: string, text: string) => void;
   clearCompletedDailyTasks: (date: string) => void;
+
+  // Reminders
+  reminders: KataReminder[];
+  addReminder: (reminder: Omit<KataReminder, 'id' | 'createdAt' | 'completed'>) => void;
+  toggleReminder: (id: string) => void;
+  deleteReminder: (id: string) => void;
+  editReminder: (id: string, updates: Partial<KataReminder>) => void;
+  togglePinReminder: (id: string) => void;
+  clearCompletedReminders: () => void;
 
   // Timetable
   addTimetableBlock: (block: Omit<VoltronBlock, 'id'>) => void;
@@ -196,6 +205,19 @@ const getInitialState = () => {
       rankTitle: 'Rookie',
       rankKanji: '鍛錬生'
     },
+    reminders: [
+      {
+        id: 'rem-seed-1',
+        title: 'Review weekly timetable & focus sprints',
+        dueDate: 'Today',
+        dueTime: '20:00',
+        priority: 'high',
+        category: 'study',
+        completed: false,
+        pinned: true,
+        createdAt: '2026-11-01T10:00:00.000Z'
+      }
+    ] as KataReminder[],
     lastSeenQuoteDate: '',
     showDailyQuoteModal: false,
     currentQuote: getDailyQuote(today)
@@ -241,6 +263,7 @@ const getInitialState = () => {
           dayLogs: savedLogs,
           timetable: Array.isArray(parsed.timetable) ? parsed.timetable : defaultState.timetable,
           badges: Array.isArray(parsed.badges) ? parsed.badges : defaultState.badges,
+          reminders: Array.isArray(parsed.reminders) ? parsed.reminders : defaultState.reminders,
           userStats: savedStats,
           settings: { ...defaultState.settings, ...(parsed.settings || {}) },
           selectedDate: today, // Always start on Today when reopening the app!
@@ -278,7 +301,8 @@ export const useKataStore = create<KataState>((set, get) => {
         settings: current.settings,
         selectedDate: current.selectedDate,
         comboMultiplier: current.comboMultiplier,
-        lastSeenQuoteDate: current.lastSeenQuoteDate
+        lastSeenQuoteDate: current.lastSeenQuoteDate,
+        reminders: current.reminders
       };
       const jsonStr = JSON.stringify(toSave);
       localStorage.setItem(LOCAL_STORAGE_KEY, jsonStr);
@@ -789,6 +813,65 @@ export const useKataStore = create<KataState>((set, get) => {
       persist({});
     },
 
+    // Reminders
+    addReminder: (reminderData) => {
+      const state = get();
+      const newReminder: KataReminder = {
+        ...reminderData,
+        id: `rem-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        completed: false,
+        createdAt: new Date().toISOString()
+      };
+      set({ reminders: [newReminder, ...state.reminders] });
+      state.addToast('Reminder Created', newReminder.title, 'info');
+      persist({});
+    },
+
+    toggleReminder: (id) => {
+      const state = get();
+      let isNowCompleted = false;
+      const reminders = state.reminders.map(r => {
+        if (r.id === id) {
+          isNowCompleted = !r.completed;
+          return { ...r, completed: !r.completed };
+        }
+        return r;
+      });
+      set({ reminders });
+      if (isNowCompleted) {
+        soundEngine.playCheckmark();
+      }
+      persist({});
+    },
+
+    deleteReminder: (id) => {
+      const state = get();
+      const reminders = state.reminders.filter(r => r.id !== id);
+      set({ reminders });
+      persist({});
+    },
+
+    editReminder: (id, updates) => {
+      const state = get();
+      const reminders = state.reminders.map(r => r.id === id ? { ...r, ...updates } : r);
+      set({ reminders });
+      persist({});
+    },
+
+    togglePinReminder: (id) => {
+      const state = get();
+      const reminders = state.reminders.map(r => r.id === id ? { ...r, pinned: !r.pinned } : r);
+      set({ reminders });
+      persist({});
+    },
+
+    clearCompletedReminders: () => {
+      const state = get();
+      const reminders = state.reminders.filter(r => !r.completed);
+      set({ reminders });
+      persist({});
+    },
+
     addTimetableBlock: (blockData) => {
       const state = get();
       const newBlock: VoltronBlock = {
@@ -970,7 +1053,8 @@ if (typeof window !== 'undefined') {
           userStats: mergedStats,
           habits: Array.isArray(diskData.habits) && diskData.habits.length > 0 ? diskData.habits : state.habits,
           timetable: Array.isArray(diskData.timetable) ? diskData.timetable : state.timetable,
-          badges: Array.isArray(diskData.badges) ? diskData.badges : state.badges
+          badges: Array.isArray(diskData.badges) ? diskData.badges : state.badges,
+          reminders: Array.isArray(diskData.reminders) ? diskData.reminders : state.reminders
         });
         try {
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(diskData));
