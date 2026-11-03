@@ -284,9 +284,9 @@ export const RemindersCard: React.FC = () => {
                   reminder.completed
                     ? 'bg-emerald-50 dark:bg-emerald-950/15 border-emerald-300 dark:border-emerald-500/20 opacity-75'
                     : reminder.pinned
-                    ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.06)]'
+                    ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-300/80 dark:border-amber-500/30 shadow-sm'
                     : reminder.priority === 'urgent'
-                    ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-500/30'
+                    ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300/80 dark:border-rose-500/30'
                     : 'bg-slate-50 dark:bg-black/30 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/15'
                 }`}
               >
@@ -365,7 +365,7 @@ export const RemindersCard: React.FC = () => {
                           </span>
                         )}
                         {reminder.priority === 'high' && !reminder.completed && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-800 dark:text-amber-300 font-mono text-[9px] font-bold uppercase tracking-wider shrink-0">
+                          <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-950 dark:text-amber-300 font-mono text-[9px] font-black uppercase tracking-wider shrink-0">
                             HIGH
                           </span>
                         )}
@@ -373,7 +373,7 @@ export const RemindersCard: React.FC = () => {
 
                       {/* Due info */}
                       {(reminder.dueDate || reminder.dueTime) && (
-                        <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400">
+                        <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-600 dark:text-slate-400">
                           <Clock className="w-3 h-3 text-slate-500" />
                           <span>{reminder.dueDate || 'Today'}</span>
                           {reminder.dueTime && <span>• {reminder.dueTime}</span>}

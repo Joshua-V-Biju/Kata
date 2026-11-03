@@ -65,9 +65,9 @@ export const MonthlyGrid: React.FC = () => {
   const overallRate = Math.min(100, Math.round((totalCompletionsInMonth / totalMonthlyGoalSum) * 100));
 
   const getRatingStatus = (rate: number) => {
-    if (rate >= 80) return { label: 'LEGENDARY DISCIPLINE', emoji: '🔥 🔥 🔥', color: 'text-emerald-400' };
-    if (rate >= 50) return { label: 'SOLID EFFORT', emoji: '⚡ ⚡ ⚡', color: 'text-cyan-400' };
-    return { label: 'NO EFFORT', emoji: '👎 👎 👎', color: 'text-rose-400' };
+    if (rate >= 80) return { label: 'LEGENDARY DISCIPLINE • 神域', emoji: '🔥 🔥 🔥', color: 'text-emerald-600 dark:text-emerald-400' };
+    if (rate >= 50) return { label: 'SOLID EFFORT • 精進', emoji: '⚡ ⚡ ⚡', color: 'text-cyan-700 dark:text-cyan-400' };
+    return { label: 'NO EFFORT • 未達', emoji: '👎 👎 👎', color: 'text-rose-600 dark:text-rose-400' };
   };
 
   const rating = getRatingStatus(overallRate);
@@ -179,19 +179,19 @@ export const MonthlyGrid: React.FC = () => {
           {/* Left: Month Information & Navigation */}
           <div className="shrink-0 space-y-2 min-w-[210px]">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase text-slate-400 font-bold">Month:</span>
-              <span className="text-xl font-display font-black text-white">{monthName}</span>
+              <span className="text-xs font-mono uppercase text-slate-500 dark:text-slate-400 font-bold">Month:</span>
+              <span className="text-xl font-display font-black text-slate-900 dark:text-white">{monthName}</span>
               <div className="flex items-center gap-1 ml-auto">
                 <button
                   onClick={prevMonth}
-                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition"
+                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
                   title="Previous Month"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={nextMonth}
-                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition"
+                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
                   title="Next Month"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -199,30 +199,30 @@ export const MonthlyGrid: React.FC = () => {
               </div>
             </div>
 
-            <div className="text-[11px] font-mono space-y-1 text-slate-300">
+            <div className="text-[11px] font-mono space-y-1 text-slate-600 dark:text-slate-300">
               <div>
-                <span className="text-slate-400">Start Date: </span>
-                <span className="text-white font-medium">{startDateStr}</span>
+                <span className="text-slate-500 dark:text-slate-400">Start Date • 開始: </span>
+                <span className="text-slate-900 dark:text-white font-medium">{startDateStr}</span>
               </div>
               <div>
-                <span className="text-slate-400">End Date: </span>
-                <span className="text-white font-medium">{endDateStr}</span>
+                <span className="text-slate-500 dark:text-slate-400">End Date • 終了: </span>
+                <span className="text-slate-900 dark:text-white font-medium">{endDateStr}</span>
               </div>
               <div>
-                <span className="text-slate-400">Total Days: </span>
-                <span className="text-white font-bold">{totalDays}</span>
+                <span className="text-slate-500 dark:text-slate-400">Total Days • 日数: </span>
+                <span className="text-slate-900 dark:text-white font-bold">{totalDays}</span>
               </div>
               <div>
-                <span className="text-slate-400">Month Outflow: </span>
-                <span className="text-amber-400 font-bold">${totalAmountSpent.toFixed(2)}</span>
+                <span className="text-slate-500 dark:text-slate-400">Month Outflow • 支出: </span>
+                <span className="text-amber-800 dark:text-amber-400 font-bold">${totalAmountSpent.toFixed(2)}</span>
               </div>
             </div>
 
             <button
               onClick={goToToday}
-              className="mt-2 text-[11px] px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition"
+              className="mt-2 text-[11px] px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-500/30 transition font-semibold"
             >
-              Jump to Current Date
+              Jump to Current Date • 本日へ
             </button>
           </div>
 
@@ -253,7 +253,8 @@ export const MonthlyGrid: React.FC = () => {
                 y1={chartHeight - paddingBottom}
                 x2={chartWidth - paddingRight}
                 y2={chartHeight - paddingBottom}
-                stroke="rgba(255, 255, 255, 0.12)"
+                stroke="currentColor"
+                className="text-slate-200 dark:text-white/[0.12]"
                 strokeDasharray="3 3"
               />
               <line
@@ -261,7 +262,8 @@ export const MonthlyGrid: React.FC = () => {
                 y1={(chartHeight - paddingBottom + paddingTop) / 2}
                 x2={chartWidth - paddingRight}
                 y2={(chartHeight - paddingBottom + paddingTop) / 2}
-                stroke="rgba(255, 255, 255, 0.05)"
+                stroke="currentColor"
+                className="text-slate-200 dark:text-white/[0.05]"
                 strokeDasharray="3 3"
               />
 
@@ -286,7 +288,8 @@ export const MonthlyGrid: React.FC = () => {
                     y1={pt.y}
                     x2={pt.x}
                     y2={chartHeight - paddingBottom}
-                    stroke="rgba(255, 255, 255, 0.06)"
+                    stroke="currentColor"
+                    className="text-slate-200 dark:text-white/[0.06]"
                     strokeDasharray="2 2"
                   />
                   <text
@@ -294,7 +297,7 @@ export const MonthlyGrid: React.FC = () => {
                     y={pt.count > 0 ? pt.y - 7 : chartHeight - paddingBottom - 4}
                     textAnchor="middle"
                     fontSize="9.5"
-                    fill={pt.count > 0 ? '#00f2fe' : '#64748b'}
+                    fill={pt.count > 0 ? '#0284c7' : '#94a3b8'}
                     fontWeight={pt.count > 0 ? '700' : '500'}
                     fontFamily="'JetBrains Mono', monospace"
                   >
@@ -306,8 +309,8 @@ export const MonthlyGrid: React.FC = () => {
           </div>
 
           {/* Right: Big Percentage & Rating Stamp from Excel */}
-          <div className="shrink-0 flex flex-col items-center justify-center min-w-[140px] text-center p-3 rounded-2xl bg-slate-900/40 border border-white/5">
-            <span className="text-4xl md:text-5xl font-display font-black text-white tracking-tight">
+          <div className="shrink-0 flex flex-col items-center justify-center min-w-[140px] text-center p-3 rounded-2xl bg-slate-100 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5">
+            <span className="text-4xl md:text-5xl font-display font-black text-slate-900 dark:text-white tracking-tight">
               {overallRate}%
             </span>
             <div className="text-lg my-1 select-none">
@@ -323,18 +326,18 @@ export const MonthlyGrid: React.FC = () => {
         {/* ==================================================================== */}
         {/* MIDDLE SECTION: Habits x Days Matrix with Custom Dotted Cells & 'x'   */}
         {/* ==================================================================== */}
-        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#0d121c]/95 shadow-inner">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0d121c]/95 shadow-inner">
           <table className="w-full border-collapse text-left select-none table-fixed min-w-[1100px]">
             <thead>
-              <tr className="border-b border-white/10 bg-slate-900/95 text-[11px] font-mono">
+              <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-900/95 text-[11px] font-mono">
                 {/* Habit name header - Fixed width */}
-                <th className="sticky left-0 z-30 bg-[#0e1320] p-3 w-52 min-w-[210px] max-w-[210px] uppercase tracking-wider text-slate-300 border-r-2 border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.5)]">
-                  HABIT
+                <th className="sticky left-0 z-30 bg-slate-100 dark:bg-[#0e1320] p-3 w-52 min-w-[210px] max-w-[210px] uppercase tracking-wider text-slate-800 dark:text-slate-300 border-r-2 border-slate-200 dark:border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.06)] dark:shadow-[2px_0_8px_rgba(0,0,0,0.5)] font-bold">
+                  HABIT • 習慣
                 </th>
 
                 {/* Goal header - Click to edit target */}
-                <th className="p-3 text-center w-20 min-w-[75px] max-w-[75px] uppercase tracking-wider text-cyan-300 border-r border-white/10" title="Click any goal number to edit target without arrow spinners">
-                  GOAL ✎
+                <th className="p-3 text-center w-20 min-w-[75px] max-w-[75px] uppercase tracking-wider text-cyan-800 dark:text-cyan-300 border-r border-slate-200 dark:border-white/10 font-bold" title="Click any goal number to edit target without arrow spinners">
+                  GOAL • 目標 ✎
                 </th>
 
                 {/* Days 1 to 31 Header */}
@@ -350,8 +353,8 @@ export const MonthlyGrid: React.FC = () => {
                       onClick={() => setSelectedDate(dateStr)}
                       className={`p-1.5 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-colors ${
                         isCurrent
-                          ? 'bg-cyan-500/20 text-cyan-300 font-bold'
-                          : 'text-slate-400 hover:text-white'
+                          ? 'bg-cyan-500/15 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 font-bold'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <span className="block text-[11px] font-mono font-bold leading-none">
@@ -365,13 +368,13 @@ export const MonthlyGrid: React.FC = () => {
                 })}
 
                 {/* Progress Column Header */}
-                <th className="p-3 text-center w-36 min-w-[140px] uppercase tracking-wider text-slate-300 border-l border-white/10">
-                  PROGRESS
+                <th className="p-3 text-center w-36 min-w-[140px] uppercase tracking-wider text-slate-800 dark:text-slate-300 border-l border-slate-200 dark:border-white/10 font-bold">
+                  PROGRESS • 達成率
                 </th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-white/5 text-xs font-mono">
+            <tbody className="divide-y divide-slate-200/60 dark:divide-white/5 text-xs font-mono">
               {activeHabits.map(habit => {
                 const habitDoneCount = days.reduce((acc, d) => {
                   return dayLogs[d]?.completedHabitIds.includes(habit.id) ? acc + 1 : acc;
@@ -380,30 +383,30 @@ export const MonthlyGrid: React.FC = () => {
                 const progressPct = Math.min(100, Math.round((habitDoneCount / goal) * 100));
 
                 return (
-                  <tr key={habit.id} className="hover:bg-white/[0.02] transition-colors group">
+                  <tr key={habit.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
                     {/* Fixed Habit Column - Strictly pinned to left */}
-                    <td className="sticky left-0 z-20 bg-[#0e1320] p-2.5 w-52 min-w-[210px] max-w-[210px] border-r-2 border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.5)]">
+                    <td className="sticky left-0 z-20 bg-white dark:bg-[#0e1320] p-2.5 w-52 min-w-[210px] max-w-[210px] border-r-2 border-slate-200 dark:border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.04)] dark:shadow-[2px_0_8px_rgba(0,0,0,0.5)]">
                       <div className="flex items-center gap-2.5 overflow-hidden">
                         <div
                           className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
                           style={{ backgroundColor: habit.color }}
                         />
-                        <span className="font-display font-semibold text-slate-200 group-hover:text-white transition-colors truncate text-xs" title={habit.name}>
+                        <span className="font-display font-semibold text-slate-900 dark:text-slate-200 group-hover:text-cyan-700 dark:group-hover:text-white transition-colors truncate text-xs" title={habit.name}>
                           {habit.name}
                         </span>
                       </div>
                     </td>
 
                     {/* Goal Column - Clean click-to-edit badge WITHOUT any up/down arrows! */}
-                    <td className="p-1.5 text-center w-20 min-w-[75px] max-w-[75px] border-r border-white/10 bg-slate-900/30">
+                    <td className="p-1.5 text-center w-20 min-w-[75px] max-w-[75px] border-r border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/30">
                       <button
                         type="button"
                         onClick={() => handleOpenGoalEditor(habit)}
-                        className="w-11 py-1 px-1 rounded-lg bg-black/40 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-400 font-mono text-xs font-bold text-white transition cursor-pointer flex items-center justify-center gap-1 mx-auto group/btn shadow-sm"
+                        className="w-11 py-1 px-1 rounded-lg bg-slate-100 hover:bg-cyan-50 dark:bg-black/40 dark:hover:bg-cyan-500/20 border border-slate-200 hover:border-cyan-500 dark:border-white/10 dark:hover:border-cyan-400 font-mono text-xs font-bold text-slate-900 dark:text-white transition cursor-pointer flex items-center justify-center gap-1 mx-auto group/btn shadow-sm"
                         title={`Click to edit monthly goal for ${habit.name}`}
                       >
                         <span>{goal}</span>
-                        <Edit3 className="w-2.5 h-2.5 text-slate-500 group-hover/btn:text-cyan-400" />
+                        <Edit3 className="w-2.5 h-2.5 text-slate-500 group-hover/btn:text-cyan-500" />
                       </button>
                     </td>
 
@@ -418,14 +421,14 @@ export const MonthlyGrid: React.FC = () => {
                           key={dateStr}
                           onClick={() => toggleHabit(habit.id, dateStr)}
                           className={`p-1 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-all ${
-                            isCurrent ? 'bg-cyan-500/5' : ''
+                            isCurrent ? 'bg-cyan-500/10 dark:bg-cyan-500/5' : ''
                           }`}
                         >
                           <div
                             className={`w-5 h-5 mx-auto rounded-[5px] flex items-center justify-center transition-all duration-150 ${
                               isDone
                                 ? 'shadow-sm text-slate-950 font-black text-[11px] leading-none select-none scale-100'
-                                : 'border border-dashed border-slate-600/70 hover:border-white/50 bg-transparent'
+                                : 'border border-dashed border-slate-300 hover:border-slate-400 dark:border-slate-600/70 dark:hover:border-white/50 bg-transparent'
                             }`}
                             style={{
                               backgroundColor: isDone ? habit.color : undefined,
@@ -441,12 +444,12 @@ export const MonthlyGrid: React.FC = () => {
                     })}
 
                     {/* Progress Percentage & Bar Column */}
-                    <td className="p-2.5 w-36 min-w-[140px] border-l border-white/10 bg-[#121722]/60">
+                    <td className="p-2.5 w-36 min-w-[140px] border-l border-slate-200 dark:border-white/10 bg-slate-50/70 dark:bg-[#121722]/60">
                       <div className="flex items-center gap-2">
-                        <span className="w-9 text-right font-bold text-slate-300 text-[11px]">
+                        <span className="w-9 text-right font-bold text-slate-800 dark:text-slate-300 text-[11px]">
                           {progressPct}%
                         </span>
-                        <div className="flex-1 h-2 bg-slate-900 rounded-sm overflow-hidden p-0.5 border border-white/5">
+                        <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-900 rounded-sm overflow-hidden p-0.5 border border-slate-300/80 dark:border-white/5">
                           <div
                             className="h-full rounded-sm transition-all duration-500"
                             style={{
@@ -462,21 +465,21 @@ export const MonthlyGrid: React.FC = () => {
               })}
 
               {/* Exact Amount Spent Row Aligned Directly into Table Matrix */}
-              <tr className="border-t-2 border-white/10 bg-slate-950 text-xs">
-                <td className="sticky left-0 z-20 bg-[#090d14] p-2.5 w-52 min-w-[210px] max-w-[210px] border-r-2 border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.5)] font-display font-bold text-slate-200">
-                  <div className="flex items-center justify-between text-amber-400">
+              <tr className="border-t-2 border-slate-200 dark:border-white/10 bg-amber-50/40 dark:bg-slate-950 text-xs">
+                <td className="sticky left-0 z-20 bg-amber-50 dark:bg-[#090d14] p-2.5 w-52 min-w-[210px] max-w-[210px] border-r-2 border-slate-200 dark:border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.04)] dark:shadow-[2px_0_8px_rgba(0,0,0,0.5)] font-display font-bold text-slate-900 dark:text-slate-200">
+                  <div className="flex items-center justify-between text-amber-800 dark:text-amber-400">
                     <div className="flex items-center gap-2">
                       <DollarSign className="w-3.5 h-3.5" />
-                      <span>Amount Spent ($)</span>
+                      <span>Amount Spent ($) • 支出</span>
                     </div>
-                    <span className="text-[10px] font-mono text-slate-400 font-normal">
-                      Click to type
+                    <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 font-normal">
+                      Click to type • 入力
                     </span>
                   </div>
                 </td>
 
-                <td className="p-2 text-center font-mono text-[10px] text-amber-300 border-r border-white/10" title="Click any day cell to type money spent">
-                  Daily ✎
+                <td className="p-2 text-center font-mono text-[10px] text-amber-800 dark:text-amber-300 border-r border-slate-200 dark:border-white/10 font-bold" title="Click any day cell to type money spent">
+                  Daily • 日別 ✎
                 </td>
 
                 {/* Day-by-Day Spent Values aligned under each day */}
@@ -488,17 +491,17 @@ export const MonthlyGrid: React.FC = () => {
                     <td
                       key={d.date}
                       onClick={() => handleOpenSpendEditor(d.dayNum, d.date, d.spent)}
-                      className={`p-1 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-all hover:bg-amber-500/20 group ${
-                        isBeingEdited ? 'bg-amber-500/30 ring-2 ring-amber-400' : ''
+                      className={`p-1 text-center w-8 min-w-[32px] max-w-[34px] cursor-pointer transition-all hover:bg-amber-100 dark:hover:bg-amber-500/20 group ${
+                        isBeingEdited ? 'bg-amber-200 dark:bg-amber-500/30 ring-2 ring-amber-500' : ''
                       }`}
                       title={`Day ${d.dayNum}: $${d.spent !== undefined ? d.spent : 0}. Click to type.`}
                     >
                       <div className={`text-[10px] font-mono font-bold rounded py-0.5 transition-all group-hover:scale-105 ${
                         hasSpent
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-500/30'
                           : d.spent === 0
-                          ? 'text-slate-400 bg-black/20 border border-white/5'
-                          : 'text-slate-600 hover:text-amber-300'
+                          ? 'text-slate-500 bg-slate-100 dark:bg-black/20 border border-slate-200 dark:border-white/5'
+                          : 'text-slate-500 hover:text-amber-700 dark:hover:text-amber-300'
                       }`}>
                         {d.spent !== undefined ? `$${d.spent}` : '-'}
                       </div>
@@ -507,7 +510,7 @@ export const MonthlyGrid: React.FC = () => {
                 })}
 
                 {/* Total Column */}
-                <td className="p-2 text-center border-l border-white/10 bg-slate-900 font-mono font-bold text-amber-400" title="Total amount spent in this month">
+                <td className="p-2 text-center border-l border-slate-200 dark:border-white/10 bg-amber-100/70 dark:bg-slate-900 font-mono font-bold text-amber-900 dark:text-amber-400" title="Total amount spent in this month">
                   ${totalAmountSpent.toFixed(2)}
                 </td>
               </tr>
@@ -515,10 +518,10 @@ export const MonthlyGrid: React.FC = () => {
 
             {/* Bottom Descriptive Row & Mini Bar Chart from Excel */}
             <tfoot>
-              <tr className="border-t border-white/10 bg-slate-900/80">
+              <tr className="border-t border-slate-200 dark:border-white/10 bg-slate-100/80 dark:bg-slate-900/80">
                 {/* Descriptive Note Box */}
-                <td colSpan={2} className="sticky left-0 z-20 bg-[#0e1320] p-3 border-r-2 border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.5)]">
-                  <p className="text-[10px] text-slate-400 leading-tight italic font-mono">
+                <td colSpan={2} className="sticky left-0 z-20 bg-slate-50 dark:bg-[#0e1320] p-3 border-r-2 border-slate-200 dark:border-white/10 shadow-[2px_0_8px_rgba(0,0,0,0.04)] dark:shadow-[2px_0_8px_rgba(0,0,0,0.5)]">
+                  <p className="text-[10px] text-slate-600 dark:text-slate-400 leading-tight italic font-mono">
                     In the lines above, in a short but sufficiently descriptive way, write the habits you want to follow. Edit monthly goals anytime in the GOAL column.
                   </p>
                 </td>
@@ -536,7 +539,7 @@ export const MonthlyGrid: React.FC = () => {
                               className="w-3 rounded-t-sm bg-[#00e5a3] shadow-[0_0_8px_rgba(0,229,163,0.7)] transition-all duration-300"
                               style={{ height: `${Math.max(12, barHeightPct * 0.55)}px` }}
                             />
-                            <span className="text-[10px] font-mono font-bold text-slate-200 mt-1">
+                            <span className="text-[10px] font-mono font-bold text-slate-700 dark:text-slate-200 mt-1">
                               {d.count}
                             </span>
                           </>
@@ -549,13 +552,13 @@ export const MonthlyGrid: React.FC = () => {
                 })}
 
                 {/* Total Completed counter from Excel */}
-                <td className="p-3 text-center border-l border-white/10 bg-slate-900/90 w-36 min-w-[140px]">
+                <td className="p-3 text-center border-l border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-slate-900/90 w-36 min-w-[140px]">
                   <div className="flex flex-col items-center justify-center">
-                    <span className="text-xl font-mono font-black text-white">
+                    <span className="text-xl font-mono font-black text-slate-900 dark:text-white">
                       {totalCompletionsInMonth}/{totalMonthlyGoalSum}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest mt-0.5">
-                      Completed
+                    <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5 font-bold">
+                      Completed • 達成数
                     </span>
                   </div>
                 </td>
@@ -569,13 +572,13 @@ export const MonthlyGrid: React.FC = () => {
         {/* ==================================================================== */}
         {/* THREE RINGS SECTION (Matching Excel Bottom Section)                  */}
         {/* ==================================================================== */}
-        <div className="p-6 rounded-2xl bg-slate-900/50 border border-white/5 flex flex-col md:flex-row items-center justify-around gap-6">
+        <div className="p-6 rounded-2xl bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-white/5 flex flex-col md:flex-row items-center justify-around gap-6">
           
           {/* Ring 1: Monthly Progress */}
           <div className="flex flex-col items-center text-center">
             <div className="relative w-24 h-24 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9" />
+                <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" className="text-slate-200 dark:text-white/[0.06]" strokeWidth="9" />
                 <circle
                   cx="50"
                   cy="50"
@@ -590,13 +593,13 @@ export const MonthlyGrid: React.FC = () => {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-mono font-black text-white">
+                <span className="text-sm font-mono font-black text-slate-900 dark:text-white">
                   {monthlyProgressPct.toFixed(1)}%
                 </span>
               </div>
             </div>
-            <span className="text-[11px] font-mono font-bold text-[#ff6b8b] uppercase tracking-wider mt-2">
-              MONTHLY PROGRESS
+            <span className="text-[11px] font-mono font-bold text-rose-600 dark:text-[#ff6b8b] uppercase tracking-wider mt-2">
+              MONTHLY PROGRESS • 月間達成
             </span>
           </div>
 
@@ -604,7 +607,7 @@ export const MonthlyGrid: React.FC = () => {
           <div className="flex flex-col items-center text-center">
             <div className="relative w-24 h-24 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9" />
+                <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" className="text-slate-200 dark:text-white/[0.06]" strokeWidth="9" />
                 <circle
                   cx="50"
                   cy="50"
@@ -619,13 +622,13 @@ export const MonthlyGrid: React.FC = () => {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-mono font-black text-white">
+                <span className="text-sm font-mono font-black text-slate-900 dark:text-white">
                   {normalizedPct}%
                 </span>
               </div>
             </div>
-            <span className="text-[11px] font-mono font-bold text-[#00f2fe] uppercase tracking-wider mt-2">
-              {totalDays} DAYS PROGRESS NORMALIZED
+            <span className="text-[11px] font-mono font-bold text-cyan-700 dark:text-[#00f2fe] uppercase tracking-wider mt-2">
+              {totalDays} DAYS NORMALIZED • 期間正規化
             </span>
           </div>
 
@@ -633,7 +636,7 @@ export const MonthlyGrid: React.FC = () => {
           <div className="flex flex-col items-center text-center">
             <div className="relative w-24 h-24 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="9" />
+                <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" className="text-slate-200 dark:text-white/[0.06]" strokeWidth="9" />
                 <circle
                   cx="50"
                   cy="50"
@@ -648,23 +651,23 @@ export const MonthlyGrid: React.FC = () => {
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-mono font-black text-white">
+                <span className="text-sm font-mono font-black text-slate-900 dark:text-white">
                   &gt;100%
                 </span>
               </div>
             </div>
-            <span className="text-[11px] font-mono font-bold text-[#eab308] uppercase tracking-wider mt-2">
-              LAST 3 DAYS PROGRESS MOMENTUM
+            <span className="text-[11px] font-mono font-bold text-amber-700 dark:text-[#eab308] uppercase tracking-wider mt-2">
+              LAST 3 DAYS MOMENTUM • 直近勢い
             </span>
           </div>
 
           {/* Title Banner */}
           <div className="text-center md:text-right space-y-1">
-            <h3 className="text-xl md:text-2xl font-display font-black text-white tracking-wider">
+            <h3 className="text-xl md:text-2xl font-display font-black text-slate-900 dark:text-white tracking-wider">
               MONTHLY HABIT
             </h3>
-            <h3 className="text-xl md:text-2xl font-display font-black text-cyan-400 tracking-wider">
-              TRACKER • 習慣
+            <h3 className="text-xl md:text-2xl font-display font-black text-cyan-700 dark:text-cyan-400 tracking-wider">
+              TRACKER • 月間習慣管理
             </h3>
           </div>
 
@@ -677,26 +680,26 @@ export const MonthlyGrid: React.FC = () => {
       {/* ==================================================================== */}
       {editingGoalHabit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-sm p-6 rounded-3xl bg-[#121722] border-2 border-cyan-400/50 shadow-2xl text-center space-y-4">
+          <div className="relative w-full max-w-sm p-6 rounded-3xl bg-white dark:bg-[#121722] border-2 border-cyan-500/50 dark:border-cyan-400/50 shadow-2xl text-center space-y-4 text-slate-900 dark:text-slate-100">
             <button
               onClick={() => setEditingGoalHabit(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-cyan-100 dark:bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-cyan-800 dark:text-cyan-300">
               <Target className="w-6 h-6" />
             </div>
 
             <div>
-              <span className="text-[11px] font-mono uppercase tracking-widest text-cyan-400 font-bold block">
-                EDIT MONTHLY TARGET
+              <span className="text-[11px] font-mono uppercase tracking-widest text-cyan-800 dark:text-cyan-400 font-bold block">
+                EDIT MONTHLY TARGET • 目標設定
               </span>
-              <h3 className="text-lg font-display font-bold text-white mt-0.5">
+              <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mt-0.5">
                 {editingGoalHabit.name}
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                 How many days per month do you aim to complete this habit?
               </p>
             </div>
@@ -711,7 +714,7 @@ export const MonthlyGrid: React.FC = () => {
                   value={goalInputValue}
                   onChange={(e) => setGoalInputValue(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="20"
-                  className="w-full text-center text-3xl font-mono font-black py-2.5 px-3 rounded-2xl bg-black border-2 border-cyan-400 text-white focus:outline-none shadow-[0_0_15px_rgba(0,242,254,0.3)] tracking-wider"
+                  className="w-full text-center text-3xl font-mono font-black py-2.5 px-3 rounded-2xl bg-slate-100 dark:bg-black border-2 border-cyan-500 dark:border-cyan-400 text-slate-950 dark:text-white focus:outline-none shadow-[0_0_15px_rgba(0,242,254,0.3)] tracking-wider"
                 />
                 <span className="block text-[10px] font-mono text-slate-500 mt-1">
                   Days / Month (1–31)
@@ -725,7 +728,7 @@ export const MonthlyGrid: React.FC = () => {
                     key={val}
                     type="button"
                     onClick={() => setGoalInputValue(val)}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-cyan-500/20 hover:text-cyan-300 text-slate-300 text-xs font-mono font-semibold transition border border-white/5"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-cyan-100 dark:bg-white/5 dark:hover:bg-cyan-500/20 text-slate-800 hover:text-cyan-900 dark:text-slate-300 dark:hover:text-cyan-300 text-xs font-mono font-semibold transition border border-slate-200 dark:border-white/5 cursor-pointer"
                   >
                     {val}d
                   </button>
@@ -736,13 +739,13 @@ export const MonthlyGrid: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setEditingGoalHabit(null)}
-                  className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 text-slate-950 text-xs font-bold uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition"
+                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 text-slate-950 text-xs font-bold uppercase tracking-wider shadow-lg shadow-cyan-500/20 transition cursor-pointer"
                 >
                   Save Target
                 </button>
@@ -760,21 +763,21 @@ export const MonthlyGrid: React.FC = () => {
           onClick={() => setEditingSpend(null)}
         >
           <div 
-            className="relative w-full max-w-sm p-6 rounded-3xl bg-[#121622] border-2 border-amber-400/60 shadow-2xl text-center space-y-4"
+            className="relative w-full max-w-sm p-6 rounded-3xl bg-white dark:bg-[#121622] border-2 border-amber-400/60 shadow-2xl text-center space-y-4 text-slate-900 dark:text-slate-100"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               type="button"
               onClick={() => setEditingSpend(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition cursor-pointer"
               title="Close"
             >
               <X className="w-4 h-4" />
             </button>
 
             {/* Amber Currency Icon */}
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-500/15 border border-amber-400/40 flex items-center justify-center text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-amber-100 dark:bg-amber-500/15 border border-amber-400/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
               <DollarSign className="w-6 h-6" />
             </div>
 
@@ -785,31 +788,31 @@ export const MonthlyGrid: React.FC = () => {
                   type="button"
                   disabled={editingSpend.dayNum <= 1}
                   onClick={() => handleJumpSpendDay(editingSpend.dayNum - 1)}
-                  className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition"
+                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-20 transition cursor-pointer"
                   title="Previous Day"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
 
-                <span className="text-[11px] font-mono uppercase tracking-widest text-amber-400 font-bold">
-                  DAY {editingSpend.dayNum} EXPENSE
+                <span className="text-[11px] font-mono uppercase tracking-widest text-amber-700 dark:text-amber-400 font-bold">
+                  DAY {editingSpend.dayNum} EXPENSE • 支出
                 </span>
 
                 <button
                   type="button"
                   disabled={editingSpend.dayNum >= totalDays}
                   onClick={() => handleJumpSpendDay(editingSpend.dayNum + 1)}
-                  className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white disabled:opacity-20 transition"
+                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/10 text-slate-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-20 transition cursor-pointer"
                   title="Next Day"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
 
-              <h3 className="text-lg font-display font-bold text-white mt-0.5">
+              <h3 className="text-lg font-display font-bold text-slate-900 dark:text-white mt-0.5">
                 {monthName} {editingSpend.dayNum}, {year}
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                 Type the amount spent for this day. Press Enter to save.
               </p>
             </div>
@@ -817,7 +820,7 @@ export const MonthlyGrid: React.FC = () => {
             {/* Focused Typing Area */}
             <form onSubmit={handleSaveSpend} className="space-y-4 pt-2">
               <div className="relative max-w-[180px] mx-auto">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-400 font-mono text-2xl font-black select-none">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500 dark:text-amber-400 font-mono text-2xl font-black select-none">
                   $
                 </span>
                 <input
@@ -828,7 +831,7 @@ export const MonthlyGrid: React.FC = () => {
                   value={spendInputValue}
                   onChange={(e) => setSpendInputValue(e.target.value)}
                   placeholder="0.00"
-                  className="w-full text-center text-3xl font-mono font-black py-2.5 pl-8 pr-3 rounded-2xl bg-black border-2 border-amber-400 text-white focus:outline-none shadow-[0_0_20px_rgba(245,158,11,0.25)] tracking-wider"
+                  className="w-full text-center text-3xl font-mono font-black py-2.5 pl-8 pr-3 rounded-2xl bg-slate-100 dark:bg-black border-2 border-amber-400 text-slate-950 dark:text-white focus:outline-none shadow-[0_0_20px_rgba(245,158,11,0.25)] tracking-wider"
                   onFocus={(e) => e.target.select()}
                 />
               </div>
@@ -840,7 +843,7 @@ export const MonthlyGrid: React.FC = () => {
                     key={val}
                     type="button"
                     onClick={() => setSpendInputValue(val)}
-                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-amber-500/20 hover:text-amber-300 text-slate-300 text-xs font-mono font-semibold transition border border-white/5"
+                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-amber-100 hover:text-amber-900 dark:bg-white/5 dark:hover:bg-amber-500/20 text-slate-700 dark:text-slate-300 dark:hover:text-amber-300 text-xs font-mono font-semibold transition border border-slate-200 dark:border-white/5 cursor-pointer"
                   >
                     ${val}
                   </button>
@@ -848,7 +851,7 @@ export const MonthlyGrid: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSpendInputValue('')}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 text-slate-400 text-xs font-mono font-semibold transition border border-white/5"
+                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-rose-100 hover:text-rose-900 dark:bg-white/5 dark:hover:bg-rose-500/20 text-slate-600 hover:text-rose-700 dark:text-slate-400 dark:hover:text-rose-300 text-xs font-mono font-semibold transition border border-slate-200 dark:border-white/5 cursor-pointer"
                   title="Clear expense"
                 >
                   Clear (-)
@@ -859,7 +862,7 @@ export const MonthlyGrid: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setEditingSpend(null)}
-                  className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold transition cursor-pointer"
                 >
                   Cancel
                 </button>

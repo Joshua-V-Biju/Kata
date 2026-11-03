@@ -56,16 +56,16 @@ export const InsightsView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Top Habits Card */}
-        <div className="rounded-3xl glass-card p-6 border border-white/5 space-y-4">
+        <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
               <Award className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-display font-bold text-white">
+              <h3 className="text-base font-display font-bold text-slate-900 dark:text-white">
                 Apex Habits • 最強の習慣
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 Highest adherence & consistency rates
               </p>
             </div>
@@ -75,7 +75,7 @@ export const InsightsView: React.FC = () => {
             {bestHabits.map((item, idx) => (
               <div
                 key={item.habit.id}
-                className="p-3.5 rounded-2xl bg-slate-900/40 border border-white/5 flex items-center justify-between gap-3"
+                className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
@@ -89,17 +89,17 @@ export const InsightsView: React.FC = () => {
                     <IconRenderer name={item.habit.icon} size={18} />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs font-display font-bold text-white block truncate">
+                    <span className="text-xs font-display font-bold text-slate-900 dark:text-white block truncate">
                       {item.habit.name}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">
+                    <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400">
                       {item.totalCompletions} logs • Rank #{idx + 1}
                     </span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-base font-mono font-extrabold text-emerald-400">
+                  <span className="text-base font-mono font-extrabold text-emerald-700 dark:text-emerald-400">
                     {item.rate}%
                   </span>
                   <span className="text-[10px] text-slate-500 block">Consistency</span>
@@ -110,16 +110,16 @@ export const InsightsView: React.FC = () => {
         </div>
 
         {/* Growth Opportunities / Habits Needing Focus */}
-        <div className="rounded-3xl glass-card p-6 border border-white/5 space-y-4">
+        <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
               <AlertCircle className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-display font-bold text-white">
+              <h3 className="text-base font-display font-bold text-slate-900 dark:text-white">
                 Focus Areas • 改善の余地
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 Habits primed for reinforcement
               </p>
             </div>
@@ -129,7 +129,7 @@ export const InsightsView: React.FC = () => {
             {worstHabits.map((item, idx) => (
               <div
                 key={item.habit.id}
-                className="p-3.5 rounded-2xl bg-slate-900/40 border border-white/5 flex items-center justify-between gap-3"
+                className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 flex items-center justify-between gap-3"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
@@ -143,17 +143,17 @@ export const InsightsView: React.FC = () => {
                     <IconRenderer name={item.habit.icon} size={18} />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-xs font-display font-bold text-white block truncate">
+                    <span className="text-xs font-display font-bold text-slate-900 dark:text-white block truncate">
                       {item.habit.name}
                     </span>
-                    <span className="text-[10px] font-mono text-slate-400">
+                    <span className="text-[10px] font-mono text-slate-600 dark:text-slate-400">
                       {item.totalCompletions} logs recorded
                     </span>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-base font-mono font-extrabold text-amber-400">
+                  <span className="text-base font-mono font-extrabold text-amber-700 dark:text-amber-400">
                     {item.rate}%
                   </span>
                   <span className="text-[10px] text-slate-500 block">Adherence</span>
@@ -166,26 +166,26 @@ export const InsightsView: React.FC = () => {
       </div>
 
       {/* Weekday Rhythm Breakdown */}
-      <div className="rounded-3xl glass-card p-6 border border-white/5 space-y-4">
+      <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+            <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400">
               <Calendar className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-display font-bold text-white">
+              <h3 className="text-base font-display font-bold text-slate-900 dark:text-white">
                 Discipline Cadence by Weekday • 曜日のリズム
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-600 dark:text-slate-400">
                 Average completions per day of the week
               </p>
             </div>
           </div>
 
           {bestWeekday && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/30 text-cyan-900 dark:text-cyan-300 text-xs font-bold">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Best Day: <strong>{bestWeekday.name}</strong> ({bestWeekday.avg} habits avg)</span>
+              <span>Best Day • 最高: <strong>{bestWeekday.name}</strong> ({bestWeekday.avg} habits avg)</span>
             </div>
           )}
         </div>
@@ -199,22 +199,22 @@ export const InsightsView: React.FC = () => {
 
             return (
               <div key={d.dayIndex} className="flex flex-col items-center gap-2">
-                <span className="text-xs font-mono font-bold text-white">
+                <span className="text-xs font-mono font-bold text-slate-900 dark:text-white">
                   {d.avg}
                 </span>
 
-                <div className="h-28 w-full max-w-[40px] bg-slate-900 rounded-xl p-1 flex items-end">
+                <div className="h-28 w-full max-w-[40px] bg-slate-200 dark:bg-slate-900 rounded-xl p-1 flex items-end border border-slate-300/60 dark:border-white/5">
                   <div
                     className={`w-full rounded-lg transition-all duration-500 ${
                       isBest
                         ? 'bg-gradient-to-t from-cyan-500 to-teal-400 shadow-[0_0_12px_rgba(0,242,254,0.6)]'
-                        : 'bg-slate-700 hover:bg-slate-600'
+                        : 'bg-slate-400 hover:bg-slate-500 dark:bg-slate-700 dark:hover:bg-slate-600'
                     }`}
                     style={{ height: `${Math.max(8, heightPercent)}%` }}
                   />
                 </div>
 
-                <span className={`text-[11px] font-mono ${isBest ? 'text-cyan-300 font-bold' : 'text-slate-400'}`}>
+                <span className={`text-[11px] font-mono ${isBest ? 'text-cyan-800 dark:text-cyan-300 font-bold' : 'text-slate-600 dark:text-slate-400'}`}>
                   {d.name}
                 </span>
               </div>

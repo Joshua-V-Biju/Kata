@@ -174,7 +174,7 @@ export const VoltronCockpit: React.FC<VoltronCockpitProps> = ({ onClose, isModal
         <div className="relative z-10 px-6 py-3 border-b border-white/10 bg-slate-950/80 flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono">
           <div className="flex items-center gap-2 text-cyan-400">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-            <span className="font-bold tracking-widest uppercase">VOLTRON MK-V // TACTICAL COMMAND COCKPIT</span>
+            <span className="font-bold tracking-widest uppercase">VOLTRON MK-V // TACTICAL COMMAND COCKPIT • 集中指令室</span>
             <span className="text-slate-500">•</span>
             <span className="text-slate-400">SYNC RATE: 99.8%</span>
           </div>
@@ -225,7 +225,7 @@ export const VoltronCockpit: React.FC<VoltronCockpitProps> = ({ onClose, isModal
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-mono text-slate-400">
               <span className="uppercase tracking-widest text-cyan-400 font-bold flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" /> SELECT CREATIVE LION CHAMBER
+                <Sparkles className="w-3.5 h-3.5" /> SELECT CREATIVE LION CHAMBER • 五獣選択
               </span>
               <span>16:00 – 18:00 DAILY PROTOCOL</span>
             </div>
@@ -275,7 +275,7 @@ export const VoltronCockpit: React.FC<VoltronCockpitProps> = ({ onClose, isModal
             {/* Top Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold tracking-widest uppercase">
               <Zap className="w-4 h-4 text-cyan-400 animate-pulse" />
-              <span>CORE FOCUS CHAMBER: {currentLion.title}</span>
+              <span>CORE FOCUS CHAMBER: {currentLion.title} • 集中室</span>
             </div>
 
             {/* Giant Digital HUD Numbers */}
@@ -399,7 +399,7 @@ export const VoltronCockpit: React.FC<VoltronCockpitProps> = ({ onClose, isModal
             <div className="p-5 rounded-2xl bg-slate-900/60 border border-white/10 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono uppercase tracking-widest text-slate-400 font-bold">
-                  AUTOTICK LINKED HABIT
+                  AUTOTICK LINKED HABIT • 連動習慣
                 </span>
                 <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold">
                   SYNC VERIFIED
@@ -439,7 +439,7 @@ export const VoltronCockpit: React.FC<VoltronCockpitProps> = ({ onClose, isModal
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono uppercase tracking-widest text-slate-400 font-bold flex items-center gap-1.5">
                   <Target className="w-3.5 h-3.5 text-cyan-400" />
-                  SPRINT TARGET CHECKLIST
+                  SPRINT TARGET CHECKLIST • 目標一覧
                 </span>
                 <span className="text-xs font-mono text-cyan-300">
                   {tasks.filter(t => t.done).length}/{tasks.length} Cleared

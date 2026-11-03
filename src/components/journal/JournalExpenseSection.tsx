@@ -68,16 +68,16 @@ export const JournalExpenseSection: React.FC = () => {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       
       {/* 1. Daily Journal & Mood Section */}
-      <div className="rounded-3xl glass-card p-6 border border-white/5 space-y-4 relative overflow-hidden">
+      <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4 relative overflow-hidden">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
+          <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400">
             <PenTool className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-base font-display font-bold text-white flex items-center gap-2">
+            <h3 className="text-base font-display font-bold text-slate-900 dark:text-white flex items-center gap-2">
               Daily Reflection • 日々の所感
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               {formatDateDisplay(selectedDate)} — Capture your mental state & one-line note
             </p>
           </div>
@@ -86,8 +86,8 @@ export const JournalExpenseSection: React.FC = () => {
         <form onSubmit={handleSaveJournal} className="space-y-4">
           {/* Mood Selector Buttons */}
           <div>
-            <label className="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2">
-              Mental State & Frequency
+            <label className="block text-[11px] font-mono text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-2 font-bold">
+              Mental State & Frequency • 精神状態
             </label>
             <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {moods.map(m => {
@@ -100,17 +100,17 @@ export const JournalExpenseSection: React.FC = () => {
                       setSelectedMood(m.key);
                       setDayMoodAndNote(selectedDate, m.key, noteInput);
                     }}
-                    className={`p-2.5 rounded-2xl flex flex-col items-center gap-1 border transition-all duration-200 select-none ${
+                    className={`p-2.5 rounded-2xl flex flex-col items-center gap-1 border transition-all duration-200 select-none cursor-pointer ${
                       isSelected
-                        ? 'bg-slate-900 border-cyan-400 shadow-[0_0_15px_rgba(0,242,254,0.3)] scale-105'
-                        : 'bg-slate-900/40 border-white/5 hover:border-white/15'
+                        ? 'bg-cyan-50 dark:bg-slate-900 border-cyan-400 dark:border-cyan-400 shadow-[0_0_15px_rgba(0,242,254,0.3)] scale-105'
+                        : 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/15'
                     }`}
                   >
                     <span className="text-xl">{m.emoji}</span>
-                    <span className="text-[10px] font-display font-bold text-white">
+                    <span className="text-[10px] font-display font-bold text-slate-900 dark:text-white">
                       {m.label}
                     </span>
-                    <span className="text-[9px] font-display text-slate-400">
+                    <span className="text-[9px] font-display text-slate-500 dark:text-slate-400">
                       {m.kanji}
                     </span>
                   </button>
@@ -121,8 +121,8 @@ export const JournalExpenseSection: React.FC = () => {
 
           {/* One-Line Reflection Note */}
           <div>
-            <label className="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">
-              One-Line Chronicle
+            <label className="block text-[11px] font-mono text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1.5 font-bold">
+              One-Line Chronicle • 一行日誌
             </label>
             <div className="relative">
               <input
@@ -130,14 +130,14 @@ export const JournalExpenseSection: React.FC = () => {
                 value={noteInput}
                 onChange={e => setNoteInput(e.target.value)}
                 placeholder="e.g. Cleared 2 hours on Animation keyframes. Clean mental focus."
-                className="w-full px-4 py-3 rounded-2xl bg-slate-900/90 border border-white/10 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400 pr-12 transition"
+                className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400 pr-12 transition"
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30 transition"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-800 dark:text-cyan-300 transition cursor-pointer"
                 title="Save Note"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
           </div>
@@ -145,50 +145,52 @@ export const JournalExpenseSection: React.FC = () => {
 
         {/* Recent timeline entry indicator */}
         {currentLog.journalNote && (
-          <div className="p-3 rounded-xl bg-slate-900/40 border border-white/5 text-xs text-slate-300 italic flex items-center gap-2">
-            <span className="text-cyan-400">“</span>
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 text-xs text-slate-700 dark:text-slate-300 italic flex items-center gap-2">
+            <span className="text-cyan-600 dark:text-cyan-400 font-bold">“</span>
             <span>{currentLog.journalNote}</span>
-            <span className="text-cyan-400">”</span>
+            <span className="text-cyan-600 dark:text-cyan-400 font-bold">”</span>
           </div>
         )}
       </div>
 
       {/* 2. Expense & Savings Tracker */}
-      <div className="rounded-3xl glass-card p-6 border border-white/5 space-y-4 relative overflow-hidden">
+      <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4 relative overflow-hidden">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
             <DollarSign className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-base font-display font-bold text-white flex items-center gap-2">
+            <h3 className="text-base font-display font-bold text-slate-900 dark:text-white flex items-center gap-2">
               Expense & Savings Forge • 収支と蓄財
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               Track daily outflow against budget & build monthly wealth
             </p>
           </div>
         </div>
 
         {/* Savings Goal Card */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/30 via-slate-900/80 to-teal-950/30 border border-emerald-500/30 space-y-2">
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50/60 dark:from-emerald-950/30 dark:via-slate-900/80 dark:to-teal-950/30 border border-emerald-300 dark:border-emerald-500/30 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <PiggyBank className="w-5 h-5 text-emerald-400" />
-              <span className="text-xs font-display font-bold text-white">Monthly Savings Target</span>
+              <PiggyBank className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-xs font-display font-bold text-slate-900 dark:text-white">
+                Monthly Savings Target • 貯金目標
+              </span>
             </div>
-            <span className="font-mono text-emerald-300 text-xs font-bold">
+            <span className="font-mono text-emerald-800 dark:text-emerald-300 text-xs font-bold">
               ${monthlySaved} / ${savingsGoal}
             </span>
           </div>
 
           {/* Progress bar */}
-          <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-300 shadow-[0_0_10px_rgba(0,229,163,0.5)] transition-all duration-500"
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_rgba(0,229,163,0.5)] transition-all duration-500"
               style={{ width: `${savingsPct}%` }}
             />
           </div>
-          <div className="flex justify-between items-center text-[10px] text-slate-400 font-mono">
+          <div className="flex justify-between items-center text-[10px] text-slate-600 dark:text-slate-400 font-mono">
             <span>{savingsPct}% achieved this month</span>
             <span>${Math.max(0, savingsGoal - monthlySaved)} remaining</span>
           </div>
@@ -197,8 +199,8 @@ export const JournalExpenseSection: React.FC = () => {
         {/* Daily Entry Form */}
         <form onSubmit={handleSaveFinances} className="grid grid-cols-2 gap-3 pt-1">
           <div>
-            <label className="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1">
-              Spent Today ($)
+            <label className="block text-[11px] font-mono text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1 font-bold">
+              Spent Today ($) • 本日の支出
             </label>
             <input
               type="number"
@@ -206,13 +208,13 @@ export const JournalExpenseSection: React.FC = () => {
               value={spentInput}
               onChange={e => setSpentInput(e.target.value)}
               placeholder="e.g. 15.50"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-amber-400 transition"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-amber-400 transition"
             />
           </div>
 
           <div>
-            <label className="block text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-1">
-              Savings Deposited ($)
+            <label className="block text-[11px] font-mono text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-1 font-bold">
+              Savings Deposited ($) • 本日の貯金
             </label>
             <input
               type="number"
@@ -220,20 +222,20 @@ export const JournalExpenseSection: React.FC = () => {
               value={savingsInput}
               onChange={e => setSavingsInput(e.target.value)}
               placeholder="e.g. 10.00"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-emerald-400 transition"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs font-mono focus:outline-none focus:border-emerald-400 transition"
             />
           </div>
 
           <div className="col-span-2 flex items-center justify-between pt-1">
-            <span className="text-xs font-mono text-slate-400">
-              Month Total Outflow: <strong className="text-white">${monthlySpent.toFixed(2)}</strong>
+            <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
+              Month Total Outflow • 支出総額: <strong className="text-slate-900 dark:text-white">${monthlySpent.toFixed(2)}</strong>
             </span>
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 dark:border dark:border-emerald-500/40 dark:text-emerald-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95"
             >
               <Check className="w-3.5 h-3.5" />
-              <span>Update Ledger</span>
+              <span>Update Ledger • 更新</span>
             </button>
           </div>
         </form>

@@ -71,11 +71,11 @@ export const WeeklyTimetable: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl md:text-2xl font-display font-black text-white tracking-tight">
-                {plannerViewMode === 'cockpit' ? 'Voltron Tactical Cockpit • 指令室' : 'Weekly Timetable • 週間計画'}
+              <h2 className="text-xl md:text-2xl font-display font-black text-slate-900 dark:text-white tracking-tight">
+                {plannerViewMode === 'cockpit' ? 'Voltron Tactical Cockpit • 集中指令室' : 'Weekly Timetable • 週間計画'}
               </h2>
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               {plannerViewMode === 'cockpit'
                 ? 'Full 2-Hour Creative Chamber // 5 Lions Protocol // Binaural Focus Drone'
                 : 'Live time-block tracking • 16:00–18:00 Voltron Sprint links directly to habits'}
@@ -85,28 +85,28 @@ export const WeeklyTimetable: React.FC = () => {
 
         {/* View mode toggle pills */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-900 border border-white/10">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10">
             <button
               onClick={() => setPlannerViewMode('timetable')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 plannerViewMode === 'timetable'
-                  ? 'bg-purple-500/20 text-purple-300 border border-purple-400/40 shadow'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-900 dark:text-purple-300 border border-purple-300 dark:border-purple-400/40 shadow-sm font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              <span>Timetable</span>
+              <span>Timetable • 時間割</span>
             </button>
             <button
               onClick={() => setPlannerViewMode('cockpit')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
                 plannerViewMode === 'cockpit'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-900 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-400/40 shadow-sm font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Radio className="w-3.5 h-3.5" />
-              <span>Voltron Cockpit</span>
+              <span>Voltron Cockpit • 指令室</span>
               {sprintTimer.active && (
                 <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
               )}
@@ -116,10 +116,10 @@ export const WeeklyTimetable: React.FC = () => {
           {plannerViewMode === 'timetable' && (
             <button
               onClick={() => setIsAddingBlock(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-semibold transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-800 dark:text-cyan-300 text-xs font-bold transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Add Block</span>
+              <span>Add Block • 追加</span>
             </button>
           )}
         </div>
@@ -131,7 +131,7 @@ export const WeeklyTimetable: React.FC = () => {
       ) : (
         <>
           {/* Weekday Selector Tabs */}
-          <div className="grid grid-cols-7 gap-1.5 p-1.5 rounded-2xl bg-slate-900/60 border border-white/5 overflow-x-auto">
+          <div className="grid grid-cols-7 gap-1.5 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/5 overflow-x-auto">
             {days.map(d => {
               const isSelected = selectedDayOfWeek === d.idx;
               const isToday = currentDayOfWeek === d.idx;
@@ -141,27 +141,27 @@ export const WeeklyTimetable: React.FC = () => {
                 <button
                   key={d.idx}
                   onClick={() => setSelectedDayOfWeek(d.idx)}
-                  className={`py-3 px-2 rounded-xl text-center transition-all duration-200 relative select-none ${
+                  className={`py-3 px-2 rounded-xl text-center transition-all duration-200 relative select-none cursor-pointer ${
                     isSelected
-                      ? 'bg-gradient-to-b from-purple-500/20 to-cyan-500/10 border border-purple-500/40 text-white shadow-lg'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]'
+                      ? 'bg-gradient-to-b from-purple-100 to-cyan-50 border border-purple-400/60 text-slate-900 shadow-md dark:from-purple-500/20 dark:to-cyan-500/10 dark:border-purple-500/40 dark:text-white'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-white/[0.03]'
                   }`}
                 >
-                  <span className="block text-[10px] font-mono text-slate-400 uppercase">
+                  <span className="block text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase font-bold">
                     {d.name.slice(0, 3)}
                   </span>
                   <span className={`block text-xs font-display font-bold mt-0.5 ${
-                    isSelected ? 'text-white' : ''
+                    isSelected ? 'text-purple-950 dark:text-white' : 'text-slate-800 dark:text-slate-300'
                   }`}>
                     {d.kanji}
                   </span>
 
                   <div className="flex items-center justify-center gap-1 mt-1">
                     {isToday && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00f2fe]" title="Today" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 shadow-[0_0_6px_#00f2fe]" title="Today" />
                     )}
                     {sprintInDay && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400" title="Voltron Sprint" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500 dark:bg-purple-400" title="Voltron Sprint" />
                     )}
                   </div>
                 </button>
@@ -193,8 +193,8 @@ export const WeeklyTimetable: React.FC = () => {
                     key={block.id}
                     className={`relative rounded-2xl p-5 border transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 overflow-hidden ${
                       block.isVoltronSprint
-                        ? 'bg-gradient-to-r from-purple-950/40 via-slate-900/80 to-slate-900/40 border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.12)]'
-                        : 'glass-card border-white/5 hover:border-white/10'
+                        ? 'bg-gradient-to-r from-purple-50/90 via-slate-50 to-purple-50/40 dark:from-purple-950/40 dark:via-slate-900/80 dark:to-slate-900/40 border-purple-300 dark:border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.12)]'
+                        : 'glass-card border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10'
                     } ${isLive ? 'ring-2 ring-cyan-400 shadow-[0_0_30px_rgba(0,242,254,0.3)] animate-pulse-slow' : ''}`}
                   >
                     {isLive && (
@@ -202,44 +202,44 @@ export const WeeklyTimetable: React.FC = () => {
                     )}
 
                     <div className="flex items-start md:items-center gap-4 min-w-0">
-                      <div className="shrink-0 p-2.5 rounded-xl bg-slate-900 border border-white/10 font-mono text-center">
-                        <span className="text-xs font-bold text-white block">
+                      <div className="shrink-0 p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 font-mono text-center">
+                        <span className="text-xs font-bold text-slate-900 dark:text-white block">
                           {block.startTime}
                         </span>
-                        <span className="text-[10px] text-slate-400 block">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block">
                           {block.endTime}
                         </span>
                       </div>
 
                       <div className="min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-base font-display font-bold text-white truncate">
+                          <h3 className="text-base font-display font-bold text-slate-900 dark:text-white truncate">
                             {block.title}
                           </h3>
 
                           {isLive && (
-                            <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-[10px] font-bold tracking-wider uppercase animate-pulse">
-                              ● LIVE NOW
+                            <span className="px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-500/20 border border-cyan-400/50 text-cyan-900 dark:text-cyan-300 text-[10px] font-bold tracking-wider uppercase animate-pulse">
+                              ● LIVE NOW • 進行中
                             </span>
                           )}
 
                           {block.isVoltronSprint && (
-                            <span className="px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-300 text-[10px] font-bold flex items-center gap-1">
-                              <Zap className="w-3 h-3 text-purple-400" />
-                              <span>Voltron Sprint (2h)</span>
+                            <span className="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-500/20 border border-purple-300 dark:border-purple-400/40 text-purple-900 dark:text-purple-300 text-[10px] font-bold flex items-center gap-1">
+                              <Zap className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                              <span>Voltron Sprint (2h) • 集中鍛錬</span>
                             </span>
                           )}
                         </div>
 
                         {block.description && (
-                          <p className="text-xs text-slate-400 line-clamp-1">
+                          <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1">
                             {block.description}
                           </p>
                         )}
 
                         {linkedHabit && (
-                          <div className="inline-flex items-center gap-1.5 text-[11px] text-slate-300">
-                            <span className="text-slate-500">Auto-ticks:</span>
+                          <div className="inline-flex items-center gap-1.5 text-[11px] text-slate-700 dark:text-slate-300">
+                            <span className="text-slate-500">Auto-ticks • 連動:</span>
                             <span className="font-semibold flex items-center gap-1" style={{ color: linkedHabit.color }}>
                               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: linkedHabit.color }} />
                               {linkedHabit.name}
@@ -255,23 +255,23 @@ export const WeeklyTimetable: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => handleLaunchSprint(block)}
-                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-purple-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                            className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-purple-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
                           >
                             <Play className="w-3.5 h-3.5 fill-white" />
-                            <span>Launch Cockpit</span>
+                            <span>Launch Cockpit • 起動</span>
                           </button>
                           <button
                             type="button"
                             onClick={() => completeVoltronSprint(block.id)}
                             className={`px-3 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                               isBlockDoneToday
-                                ? 'bg-emerald-500/20 border border-emerald-400/50 text-emerald-300'
-                                : 'bg-white/5 hover:bg-emerald-500/20 border border-white/10 hover:border-emerald-500/30 text-slate-300 hover:text-emerald-300'
+                                ? 'bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-400/50 text-emerald-900 dark:text-emerald-300'
+                                : 'bg-slate-100 hover:bg-emerald-50 dark:bg-white/5 dark:hover:bg-emerald-500/20 border border-slate-200 hover:border-emerald-300 dark:border-white/10 dark:hover:border-emerald-500/30 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300'
                             }`}
                             title={isBlockDoneToday ? 'Sprint claimed (+150 XP). Click to unmark.' : 'Mark sprint complete (+150 XP)'}
                           >
-                            <CheckCircle2 className={`w-3.5 h-3.5 ${isBlockDoneToday ? 'fill-emerald-400/25 text-emerald-300' : ''}`} />
-                            <span>{isBlockDoneToday ? 'Done' : 'Mark Done'}</span>
+                            <CheckCircle2 className={`w-3.5 h-3.5 ${isBlockDoneToday ? 'fill-emerald-400/25 text-emerald-600 dark:text-emerald-300' : ''}`} />
+                            <span>{isBlockDoneToday ? 'Done • 達成' : 'Mark Done'}</span>
                           </button>
                         </>
                       ) : block.linkedHabitId ? (
@@ -280,20 +280,20 @@ export const WeeklyTimetable: React.FC = () => {
                           onClick={() => completeVoltronSprint(block.id)}
                           className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
                             isBlockDoneToday
-                              ? 'bg-emerald-500/20 border border-emerald-400/50 text-emerald-300'
-                              : 'bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300'
+                              ? 'bg-emerald-100 dark:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-400/50 text-emerald-900 dark:text-emerald-300'
+                              : 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 border border-emerald-300 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
                           }`}
                           title={isBlockDoneToday ? 'Completed today (+150 XP claimed). Click to unmark.' : 'Mark complete (+150 XP)'}
                         >
-                          <CheckCircle2 className={`w-3.5 h-3.5 ${isBlockDoneToday ? 'fill-emerald-400/25 text-emerald-300' : ''}`} />
-                          <span>{isBlockDoneToday ? 'Done (+150 XP Claimed)' : 'Mark Done (+150 XP)'}</span>
+                          <CheckCircle2 className={`w-3.5 h-3.5 ${isBlockDoneToday ? 'fill-emerald-400/25 text-emerald-600 dark:text-emerald-300' : ''}`} />
+                          <span>{isBlockDoneToday ? 'Done • 達成 (+150 XP)' : 'Mark Done (+150 XP)'}</span>
                         </button>
                       ) : null}
 
                       <button
                         type="button"
                         onClick={() => setEditingBlock(block)}
-                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
+                        className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                         title="Edit Block"
                       >
                         <Edit2 className="w-4 h-4" />

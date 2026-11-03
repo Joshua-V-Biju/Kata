@@ -69,14 +69,14 @@ export const YearHeatmap: React.FC = () => {
         // Lesser activity: The reddest! Vivid fiery crimson red with radiant glow
         return 'bg-[#ff2b4e] shadow-[0_0_8px_rgba(255,43,78,0.85)] border border-rose-400/40';
       default:
-        return 'bg-slate-900/40 border border-white/5';
+        return 'bg-slate-200 dark:bg-slate-900/40 border border-slate-300/60 dark:border-white/5';
     }
   };
 
   const activeDaysCount = Object.values(dayLogs).filter(l => l.completedHabitIds.length > 0).length;
 
   return (
-    <div className="rounded-3xl glass-card p-6 border border-white/5 space-y-4 relative overflow-hidden">
+    <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4 relative overflow-hidden">
       {/* Anime Background Watermark */}
       <div className="absolute -right-4 -bottom-6 text-8xl font-display font-black text-white/[0.015] select-none pointer-events-none">
         鍛錬年輪
@@ -84,32 +84,32 @@ export const YearHeatmap: React.FC = () => {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+          <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-cyan-400">
             <Calendar className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-base font-display font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-display font-bold text-slate-900 dark:text-white flex items-center gap-2">
               Annual Discipline Heatmap • 鍛錬の年輪
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               365-day consistency density & habit mastery momentum
             </p>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+        <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-1 mr-1">
-            <div className="w-2.5 h-2.5 rounded-sm bg-slate-900 border border-white/10" title="0 completions (None)" />
+            <div className="w-2.5 h-2.5 rounded-sm bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-white/10" title="0 completions (None)" />
             <span className="text-[10px] text-slate-500 font-mono">0</span>
           </div>
-          <span className="text-slate-700">|</span>
-          <span className="font-semibold text-rose-400">Less</span>
+          <span className="text-slate-400 dark:text-slate-700">|</span>
+          <span className="font-semibold text-rose-500 dark:text-rose-400">Less</span>
           <div className="w-2.5 h-2.5 rounded-sm bg-[#ff2b4e] shadow-[0_0_6px_rgba(255,43,78,0.85)]" title="1–2 completions (The Reddest)" />
           <div className="w-2.5 h-2.5 rounded-sm bg-[#fb923c] shadow-[0_0_5px_rgba(251,146,60,0.65)]" title="3–4 completions" />
           <div className="w-2.5 h-2.5 rounded-sm bg-[#10b981] shadow-[0_0_5px_rgba(16,185,129,0.7)]" title="5–7 completions" />
           <div className="w-2.5 h-2.5 rounded-sm bg-[#00ff88] shadow-[0_0_10px_rgba(0,255,136,1)] ring-1 ring-white/50" title="8+ completions (The Greenest & Brightest)" />
-          <span className="font-semibold text-emerald-400">More</span>
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">More</span>
         </div>
       </div>
 
@@ -148,19 +148,19 @@ export const YearHeatmap: React.FC = () => {
 
         {/* Hover Tooltip */}
         {hoveredDay && (
-          <div className="absolute top-0 right-4 px-3.5 py-1.5 rounded-xl bg-slate-900/95 border border-white/10 text-xs shadow-2xl pointer-events-none flex items-center gap-2 animate-pop z-20 backdrop-blur-md">
-            <span className="text-slate-300 font-medium">{formatDateDisplay(hoveredDay.date)}:</span>
+          <div className="absolute top-0 right-4 px-3.5 py-1.5 rounded-xl bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-white/10 text-xs shadow-2xl pointer-events-none flex items-center gap-2 animate-pop z-20 backdrop-blur-md">
+            <span className="text-slate-800 dark:text-slate-300 font-medium">{formatDateDisplay(hoveredDay.date)}:</span>
             <span
               className={`font-mono font-bold px-1.5 py-0.5 rounded text-[11px] ${
                 hoveredDay.count >= 8
-                  ? 'bg-emerald-500/20 text-[#00ff88] border border-emerald-400/40 shadow-[0_0_8px_rgba(0,255,136,0.3)]'
+                  ? 'bg-emerald-500/20 text-emerald-800 dark:text-[#00ff88] border border-emerald-400/40 shadow-[0_0_8px_rgba(0,255,136,0.3)]'
                   : hoveredDay.count >= 5
-                  ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                  ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
                   : hoveredDay.count >= 3
-                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                  ? 'bg-amber-500/15 text-amber-900 dark:text-amber-300 border border-amber-500/30'
                   : hoveredDay.count >= 1
-                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                  : 'bg-white/5 text-slate-400 border border-white/5'
+                  ? 'bg-rose-500/20 text-rose-900 dark:text-rose-300 border border-rose-500/30'
+                  : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/5'
               }`}
             >
               {hoveredDay.count} {hoveredDay.count === 1 ? 'completion' : 'completions'}

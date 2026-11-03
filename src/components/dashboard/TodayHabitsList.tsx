@@ -211,7 +211,7 @@ export const TodayHabitsList: React.FC<TodayHabitsListProps> = ({
 
                 {/* Due status pill */}
                 <div className="flex justify-between items-center text-[10px] pt-0.5">
-                  <span className={isScheduledToday ? 'text-cyan-700 dark:text-cyan-400 font-bold' : 'text-slate-500'}>
+                  <span className={isScheduledToday ? 'text-cyan-800 dark:text-cyan-400 font-bold' : 'text-slate-600 dark:text-slate-500'}>
                     {isScheduledToday ? '● Due Today' : '○ Optional'}
                   </span>
                   <span className="text-slate-500 font-mono">
