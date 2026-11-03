@@ -309,12 +309,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
               </div>
             ) : null}
 
+            {/* Local-First Standalone Card (When Supabase is not configured) */}
+            {!supabaseConfig.url && !showAdvancedConfig ? (
+              <div className="p-3.5 rounded-xl bg-slate-950/60 border border-white/5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full bg-cyan-400 shrink-0" />
+                  <div>
+                    <span className="text-xs font-semibold text-white block">Local-First Storage Active</span>
+                    <span className="text-[10px] text-slate-400 block mt-0.5">
+                      Your habits, streak, and workouts save 100% locally to this computer (kata_data.json). No account, login, or cloud setup needed.
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedConfig(true)}
+                  className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 text-xs font-medium shrink-0 ml-3 transition cursor-pointer"
+                >
+                  Connect Cloud
+                </button>
+              </div>
+            ) : null}
+
             {/* Collapsed / Advanced Custom Credentials (Masked) */}
-            {(showAdvancedConfig || !supabaseConfig.url) && (
+            {showAdvancedConfig && (
               <form onSubmit={handleSaveSupabaseConfig} className="p-3 rounded-xl bg-slate-950/70 border border-white/10 space-y-2">
-                <div className="flex items-center gap-1.5 text-slate-300 text-[11px] font-semibold">
-                  <Lock className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Custom Supabase Project Endpoint</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-slate-300 text-[11px] font-semibold">
+                    <Lock className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Custom Supabase Project Endpoint</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvancedConfig(false)}
+                    className="text-[10px] text-slate-400 hover:text-slate-200 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
