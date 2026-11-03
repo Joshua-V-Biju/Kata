@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { exportDataAsJson, readJsonFile } from '../../utils/storage';
-import { getSupabaseConfig, setSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase } from '../../utils/supabase';
+import { getSupabaseConfig, setSupabaseConfig, clearSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase } from '../../utils/supabase';
 import { performBackgroundPush, performInitialCloudSync } from '../../utils/cloudSync';
 import { useForgeStore } from '../../store/useForgeStore';
 import { X, Moon, Sun, Bell, Volume2, Sparkles, Download, Upload, RefreshCw, Cloud, Shield, ShieldCheck, Check, LogOut, Key, CloudUpload, CloudDownload, Lock } from 'lucide-react';
@@ -371,7 +371,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[10px] text-slate-500">Inputs are masked to prevent shoulder surfing</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearSupabaseConfig();
+                      setSupabaseUrl('');
+                      setSupabaseKey('');
+                      setShowAdvancedConfig(false);
+                      addToast('Reset to Local', 'Cloud configuration cleared. Local-first active.', 'info');
+                    }}
+                    className="text-[10px] text-rose-400 hover:text-rose-300 underline cursor-pointer"
+                  >
+                    Clear Credentials & Reset
+                  </button>
                   <button
                     type="submit"
                     className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-xs font-semibold cursor-pointer"

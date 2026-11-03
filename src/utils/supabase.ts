@@ -6,29 +6,68 @@ import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 
 let supabaseInstance: SupabaseClient | null = null;
 
+export const formatSupabaseUrl = (raw: string): string => {
+  let u = (raw || '').trim();
+  if (!u) return '';
+  if (!u.startsWith('http://') && !u.startsWith('https://')) {
+    u = `https://${u}`;
+  }
+  return u.replace(/\/+$/, '');
+};
+
+export const isPlaceholderConfig = (url: string, key: string): boolean => {
+  return (
+    !url ||
+    !key ||
+    url.includes('your-project-id') ||
+    url.includes('xyz.supabase.co') ||
+    key.includes('your-anon') ||
+    key.length < 20
+  );
+};
+
+export const clearSupabaseConfig = () => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('kata_supabase_url');
+  localStorage.removeItem('kata_supabase_key');
+  supabaseInstance = null;
+};
+
 export const getSupabaseConfig = () => {
-  if (typeof window === 'undefined') return { url: '', key: '', isEnvConfigured: false };
-  const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
-  const envKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
-  const localUrl = localStorage.getItem('kata_supabase_url') || '';
-  const localKey = localStorage.getItem('kata_supabase_key') || '';
-  const url = localUrl || envUrl;
-  const key = localKey || envKey;
-  const isEnvConfigured = Boolean(envUrl && envKey);
-  return { url, key, isEnvConfigured };
+  if (typeof window === 'undefined') return { url: '', key: '', isEnvConfigured: false, isPlaceholder: false };
+  const envUrl = ((import.meta as any).env?.VITE_SUPABASE_URL || '').trim();
+  const envKey = ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '').trim();
+  const localUrl = (localStorage.getItem('kata_supabase_url') || '').trim();
+  const localKey = (localStorage.getItem('kata_supabase_key') || '').trim();
+
+  // If localUrl is a known placeholder, auto-clean it
+  if (localUrl.includes('your-project-id') || localUrl.includes('xyz.supabase.co')) {
+    localStorage.removeItem('kata_supabase_url');
+    localStorage.removeItem('kata_supabase_key');
+  }
+
+  const rawUrl = localUrl || envUrl;
+  const rawKey = localKey || envKey;
+  const isPlaceholder = isPlaceholderConfig(rawUrl, rawKey);
+  const isEnvConfigured = Boolean(envUrl && envKey && !isPlaceholderConfig(envUrl, envKey));
+  const url = isPlaceholder ? '' : formatSupabaseUrl(rawUrl);
+  const key = isPlaceholder ? '' : rawKey;
+
+  return { url, key, isEnvConfigured, isPlaceholder };
 };
 
 export const setSupabaseConfig = (url: string, key: string) => {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('kata_supabase_url', url);
-  localStorage.setItem('kata_supabase_key', key);
+  const formattedUrl = formatSupabaseUrl(url);
+  localStorage.setItem('kata_supabase_url', formattedUrl);
+  localStorage.setItem('kata_supabase_key', key.trim());
   supabaseInstance = null; // reset client to reinitialize
 };
 
 export const getSupabase = (): SupabaseClient | null => {
   if (supabaseInstance) return supabaseInstance;
-  const { url, key } = getSupabaseConfig();
-  if (!url || !key) return null;
+  const { url, key, isPlaceholder } = getSupabaseConfig();
+  if (!url || !key || isPlaceholder) return null;
   try {
     supabaseInstance = createClient(url, key);
     return supabaseInstance;
@@ -38,38 +77,60 @@ export const getSupabase = (): SupabaseClient | null => {
   }
 };
 
-export const signInWithEmail = async (email: string, password: string):Promise<{ user: User | null; error: string | null }> => {
+const formatErrorMessage = (err: any): string => {
+  const msg = err?.message || String(err || '');
+  if (msg.includes('Failed to fetch') || msg.includes('fetch')) {
+    return 'Cannot reach Supabase. Check your Project URL (https://xyz.supabase.co), check internet connection, or verify your Supabase project is active.';
+  }
+  return msg;
+};
+
+export const signInWithEmail = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
   const sb = getSupabase();
   if (!sb) return { user: null, error: 'Supabase credentials not configured in Settings.' };
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) return { user: null, error: error.message };
-  return { user: data.user, error: null };
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) return { user: null, error: formatErrorMessage(error) };
+    return { user: data.user, error: null };
+  } catch (err) {
+    return { user: null, error: formatErrorMessage(err) };
+  }
 };
 
 export const signUpWithEmail = async (email: string, password: string): Promise<{ user: User | null; error: string | null }> => {
   const sb = getSupabase();
   if (!sb) return { user: null, error: 'Supabase credentials not configured in Settings.' };
-  const { data, error } = await sb.auth.signUp({ email, password });
-  if (error) return { user: null, error: error.message };
-  return { user: data.user, error: null };
+  try {
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) return { user: null, error: formatErrorMessage(error) };
+    return { user: data.user, error: null };
+  } catch (err) {
+    return { user: null, error: formatErrorMessage(err) };
+  }
 };
 
 export const signInWithGoogle = async (): Promise<{ error: string | null }> => {
   const sb = getSupabase();
   if (!sb) return { error: 'Supabase credentials not configured in Settings.' };
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: window.location.origin
-    }
-  });
-  return { error: error ? error.message : null };
+  try {
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
+    });
+    return { error: error ? formatErrorMessage(error) : null };
+  } catch (err) {
+    return { error: formatErrorMessage(err) };
+  }
 };
 
 export const signOut = async () => {
   const sb = getSupabase();
   if (sb) {
-    await sb.auth.signOut();
+    try {
+      await sb.auth.signOut();
+    } catch (e) {}
   }
 };
 
@@ -103,7 +164,7 @@ export const pushToCloud = async (kataData: any, forgeData?: any): Promise<{ suc
     return { success: true };
   } catch (err: any) {
     console.warn('Cloud sync push failed:', err);
-    return { success: false, error: err?.message || String(err) };
+    return { success: false, error: formatErrorMessage(err) };
   }
 };
 
@@ -126,6 +187,6 @@ export const pullFromCloud = async (): Promise<{ data: CloudSyncPayload | null; 
     return { data };
   } catch (err: any) {
     console.warn('Cloud sync pull failed:', err);
-    return { data: null, error: err?.message || String(err) };
+    return { data: null, error: formatErrorMessage(err) };
   }
 };
