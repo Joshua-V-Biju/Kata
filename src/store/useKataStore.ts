@@ -150,7 +150,7 @@ const calculateStreak = (logs: Record<string, DayLog>, today: string, preservedS
   }
 
   const effectiveCurrent = Math.max(current, preservedStreak);
-  const effectiveLongest = Math.max(effectiveCurrent, longest, preservedStreak, 7);
+  const effectiveLongest = Math.max(effectiveCurrent, longest, preservedStreak);
 
   return { current: effectiveCurrent, longest: effectiveLongest };
 };
@@ -164,7 +164,7 @@ const calculateTotalCompletions = (logs: Record<string, DayLog>): number => {
 const getInitialState = () => {
   const today = getTodayStr();
   const initialLogs = generateSeedDayLogs();
-  const rank = getRankInfo(3);
+  const rank = getRankInfo(1);
 
   const defaultState = {
     habits: SEED_HABITS,
@@ -172,14 +172,14 @@ const getInitialState = () => {
     timetable: SEED_TIMETABLE,
     badges: INITIAL_BADGES,
     userStats: {
-      xp: 285,
-      level: 3,
-      currentStreak: 6,
-      longestStreak: 14,
+      xp: 0,
+      level: 1,
+      currentStreak: 0,
+      longestStreak: 0,
       totalCompletions: calculateTotalCompletions(initialLogs),
       rankTitle: rank.title,
       rankKanji: rank.kanji,
-      voltronSprintsCompleted: 5
+      voltronSprintsCompleted: 0
     },
     selectedDate: today,
     settings: {
@@ -202,14 +202,14 @@ const getInitialState = () => {
     },
     levelUpModal: {
       show: false,
-      newLevel: 3,
-      rankTitle: 'Rookie',
-      rankKanji: '鍛錬生'
+      newLevel: 1,
+      rankTitle: rank.title,
+      rankKanji: rank.kanji
     },
     reminders: [
       {
-        id: 'rem-seed-1',
-        title: 'Review weekly timetable & focus sprints',
+        id: 'rem-starter-1',
+        title: 'Customize your timetable & set daily habits',
         dueDate: 'Today',
         dueTime: '20:00',
         priority: 'high',
@@ -1000,21 +1000,21 @@ export const useKataStore = create<KataState>((set, get) => {
     resetToSeedData: () => {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       const initialLogs = generateSeedDayLogs();
-      const rank = getRankInfo(3);
+      const rank = getRankInfo(1);
       set({
         habits: SEED_HABITS,
         dayLogs: initialLogs,
         timetable: SEED_TIMETABLE,
         badges: INITIAL_BADGES,
         userStats: {
-          xp: 285,
-          level: 3,
-          currentStreak: 6,
-          longestStreak: 14,
+          xp: 0,
+          level: 1,
+          currentStreak: 0,
+          longestStreak: 0,
           totalCompletions: calculateTotalCompletions(initialLogs),
           rankTitle: rank.title,
           rankKanji: rank.kanji,
-          voltronSprintsCompleted: 5
+          voltronSprintsCompleted: 0
         },
         selectedDate: getTodayStr(),
         comboMultiplier: 1.0,

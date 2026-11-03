@@ -21,94 +21,8 @@ import { triggerAutoSync } from '../utils/cloudSync';
 
 const FORGE_STORAGE_KEY = 'forge_fitness_state_v1';
 
-// Sample seeded past workouts to ensure history & charts look alive immediately
-const SEED_WORKOUTS: WorkoutSession[] = [
-  {
-    id: 'seed-w-1',
-    name: 'Home Upper Armor Blast',
-    startedAt: '2026-10-25T16:00:00.000Z',
-    completedAt: '2026-10-25T16:48:00.000Z',
-    durationSeconds: 2880,
-    totalVolumeKg: 1420,
-    ironEarned: 165,
-    prCount: 2,
-    notes: 'Pushed tempo to 3s eccentric on all push-ups. Incredible pump.',
-    exercises: [
-      {
-        id: 'le-1',
-        exerciseId: 'pushup-standard',
-        name: 'Standard Push-up',
-        sets: [
-          { id: 's-1', setNumber: 1, type: 'warmup', reps: 15, weightKg: 0, tempo: 'Standard', rpe: 7, completed: true },
-          { id: 's-2', setNumber: 2, type: 'normal', reps: 16, weightKg: 0, tempo: '3-1-1-0', rpe: 8.5, completed: true },
-          { id: 's-3', setNumber: 3, type: 'normal', reps: 14, weightKg: 0, tempo: '3-1-1-0', rpe: 9, completed: true },
-          { id: 's-4', setNumber: 4, type: 'failure', reps: 12, weightKg: 0, tempo: 'Pause 2s', rpe: 10, completed: true }
-        ]
-      },
-      {
-        id: 'le-2',
-        exerciseId: 'pullup-strict',
-        name: 'Strict Pull-up (Overhand)',
-        sets: [
-          { id: 's-5', setNumber: 1, type: 'normal', reps: 8, weightKg: 0, tempo: 'Standard', rpe: 8, completed: true },
-          { id: 's-6', setNumber: 2, type: 'normal', reps: 7, weightKg: 0, tempo: 'Standard', rpe: 9, completed: true },
-          { id: 's-7', setNumber: 3, type: 'normal', reps: 6, weightKg: 0, tempo: 'Pause 1s', rpe: 9.5, completed: true }
-        ]
-      },
-      {
-        id: 'le-3',
-        exerciseId: 'dip-standard',
-        name: 'Parallel Bar Dips',
-        sets: [
-          { id: 's-8', setNumber: 1, type: 'normal', reps: 10, weightKg: 0, tempo: 'Standard', rpe: 8, completed: true },
-          { id: 's-9', setNumber: 2, type: 'normal', reps: 10, weightKg: 0, tempo: '3-1-1-0', rpe: 9, completed: true },
-          { id: 's-10', setNumber: 3, type: 'failure', reps: 8, weightKg: 0, tempo: 'Standard', rpe: 10, completed: true }
-        ]
-      }
-    ]
-  },
-  {
-    id: 'seed-w-2',
-    name: 'Lower Wheelhouse & Core',
-    startedAt: '2026-10-27T16:00:00.000Z',
-    completedAt: '2026-10-27T16:42:00.000Z',
-    durationSeconds: 2520,
-    totalVolumeKg: 1950,
-    ironEarned: 140,
-    prCount: 1,
-    notes: 'Bulgarian split squats are brutal. Hamstrings fired up.',
-    exercises: [
-      {
-        id: 'le-4',
-        exerciseId: 'bulgarian-split-squat',
-        name: 'Bulgarian Split Squat',
-        sets: [
-          { id: 's-11', setNumber: 1, type: 'normal', reps: 12, weightKg: 10, tempo: 'Standard', rpe: 8, completed: true },
-          { id: 's-12', setNumber: 2, type: 'normal', reps: 12, weightKg: 10, tempo: 'Standard', rpe: 8.5, completed: true },
-          { id: 's-13', setNumber: 3, type: 'normal', reps: 10, weightKg: 10, tempo: 'Pause 2s', rpe: 9.5, completed: true }
-        ]
-      },
-      {
-        id: 'le-5',
-        exerciseId: 'single-leg-rdl',
-        name: 'Single-Leg Romanian Deadlift (Hinge)',
-        sets: [
-          { id: 's-14', setNumber: 1, type: 'normal', reps: 12, weightKg: 0, tempo: '3-1-1-0', rpe: 7.5, completed: true },
-          { id: 's-15', setNumber: 2, type: 'normal', reps: 12, weightKg: 0, tempo: '3-1-1-0', rpe: 8, completed: true }
-        ]
-      },
-      {
-        id: 'le-6',
-        exerciseId: 'hollow-body-hold',
-        name: 'Hollow Body Hold',
-        sets: [
-          { id: 's-16', setNumber: 1, type: 'normal', reps: 45, weightKg: 0, tempo: 'Static', rpe: 9, completed: true },
-          { id: 's-17', setNumber: 2, type: 'failure', reps: 40, weightKg: 0, tempo: 'Static', rpe: 10, completed: true }
-        ]
-      }
-    ]
-  }
-];
+// Seed workouts: empty for fresh users, preserved locally if user has saved data
+const SEED_WORKOUTS: WorkoutSession[] = [];
 
 export interface ForgeState {
   equipment: EquipmentId[];
@@ -156,36 +70,7 @@ export interface ForgeState {
   resetForgeData: () => void;
 }
 
-const SEED_CINDY_SESSIONS: CindySession[] = [
-  {
-    id: 'cindy-seed-1',
-    date: '2026-10-20T17:00:00.000Z',
-    rounds: 14,
-    partialReps: 8,
-    totalReps: 428,
-    pullupsCount: 75,
-    pushupsCount: 143,
-    squatsCount: 210,
-    durationSeconds: 1200,
-    pacePerRoundSeconds: 83,
-    notes: 'Paced conservatively. Broke push-ups into 5+5 starting round 8.',
-    isPr: false
-  },
-  {
-    id: 'cindy-seed-2',
-    date: '2026-10-26T17:00:00.000Z',
-    rounds: 16,
-    partialReps: 5,
-    totalReps: 485,
-    pullupsCount: 85,
-    pushupsCount: 160,
-    squatsCount: 240,
-    durationSeconds: 1200,
-    pacePerRoundSeconds: 74,
-    notes: 'Much better grip endurance. Strict dead-hang on all pull-ups.',
-    isPr: true
-  }
-];
+const SEED_CINDY_SESSIONS: CindySession[] = [];
 
 const getInitialForgeState = () => {
   let initialCindy = SEED_CINDY_SESSIONS;
@@ -225,15 +110,15 @@ const getInitialForgeState = () => {
       hideBodyMetrics: false
     },
     stats: {
-      iron: 305,
-      heat: 60,
+      iron: 0,
+      heat: 0,
       heatDecayDays: 0,
       rank: 'Spark' as ForgeRank,
-      totalWorkouts: 2,
-      totalVolumeKg: 3370,
-      totalSets: 17,
-      currentStreak: 2,
-      longestStreak: 5
+      totalWorkouts: 0,
+      totalVolumeKg: 0,
+      totalSets: 0,
+      currentStreak: 0,
+      longestStreak: 0
     }
   };
 

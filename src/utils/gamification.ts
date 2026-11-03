@@ -67,10 +67,9 @@ export const INITIAL_BADGES: Badge[] = [
     titleKanji: '初陣',
     description: 'Log your very first habit completion in Kata.',
     icon: 'Sparkles',
-    progress: 1,
+    progress: 0,
     maxProgress: 1,
-    rarity: 'common',
-    unlockedAt: '2026-10-10'
+    rarity: 'common'
   },
   {
     id: 'streak_7',
@@ -78,10 +77,9 @@ export const INITIAL_BADGES: Badge[] = [
     titleKanji: '七日練',
     description: 'Maintain an active habit streak of 7 consecutive days.',
     icon: 'Flame',
-    progress: 7,
+    progress: 0,
     maxProgress: 7,
-    rarity: 'rare',
-    unlockedAt: '2026-10-24'
+    rarity: 'rare'
   },
   {
     id: 'streak_30',
@@ -89,7 +87,7 @@ export const INITIAL_BADGES: Badge[] = [
     titleKanji: '月影',
     description: 'Reach a legendary 30-day continuous streak.',
     icon: 'Award',
-    progress: 18,
+    progress: 0,
     maxProgress: 30,
     rarity: 'legendary'
   },
@@ -99,7 +97,7 @@ export const INITIAL_BADGES: Badge[] = [
     titleKanji: '百錬',
     description: 'Accumulate 100 total habit checkmarks.',
     icon: 'ShieldAlert',
-    progress: 88,
+    progress: 0,
     maxProgress: 100,
     rarity: 'epic'
   },
@@ -109,10 +107,9 @@ export const INITIAL_BADGES: Badge[] = [
     titleKanji: '全勝',
     description: 'Check off 100% of all scheduled habits in a single day.',
     icon: 'Crown',
-    progress: 1,
+    progress: 0,
     maxProgress: 1,
-    rarity: 'rare',
-    unlockedAt: '2026-10-28'
+    rarity: 'rare'
   },
   {
     id: 'perfect_week',
@@ -120,7 +117,7 @@ export const INITIAL_BADGES: Badge[] = [
     titleKanji: '覇王',
     description: 'Achieve 7 consecutive perfect days in a row.',
     icon: 'Trophy',
-    progress: 3,
+    progress: 0,
     maxProgress: 7,
     rarity: 'legendary'
   },
@@ -130,10 +127,9 @@ export const INITIAL_BADGES: Badge[] = [
     titleKanji: '極意',
     description: 'Complete 5 two-hour Voltron Sprint deep focus blocks.',
     icon: 'Zap',
-    progress: 5,
+    progress: 0,
     maxProgress: 5,
-    rarity: 'epic',
-    unlockedAt: '2026-10-27'
+    rarity: 'epic'
   },
   {
     id: 'early_bird',
@@ -141,7 +137,7 @@ export const INITIAL_BADGES: Badge[] = [
     titleKanji: '夜討',
     description: 'Complete "Sleep before 11:30" 10 times.',
     icon: 'Moon',
-    progress: 8,
+    progress: 0,
     maxProgress: 10,
     rarity: 'rare'
   },
@@ -151,7 +147,7 @@ export const INITIAL_BADGES: Badge[] = [
     titleKanji: '金剛',
     description: 'Stay under daily budget & put money to savings for 10 days.',
     icon: 'PiggyBank',
-    progress: 9,
+    progress: 0,
     maxProgress: 10,
     rarity: 'rare'
   }

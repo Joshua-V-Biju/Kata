@@ -6,3 +6,5 @@ dist/
 .env
 .env.*
 !.env.example
+kata_data.json
+forge_data.json
