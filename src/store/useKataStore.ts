@@ -6,6 +6,7 @@ import { soundEngine } from '../utils/sound';
 import { generateDailyQuests, getRankInfo, getXpForLevel, INITIAL_BADGES } from '../utils/gamification';
 import { generateSeedDayLogs, SEED_HABITS, SEED_TIMETABLE } from '../utils/seeds';
 import { getDailyQuote, getRandomQuote, MotivationQuote } from '../utils/quotes';
+import { triggerAutoSync } from '../utils/cloudSync';
 
 const LOCAL_STORAGE_KEY = 'kata_habit_app_state_v3';
 
@@ -95,7 +96,7 @@ interface KataState {
   removeToast: (id: string) => void;
   closeLevelUpModal: () => void;
   resetToSeedData: () => void;
-  importBackupData: (importedData: any) => void;
+  importBackupData: (importedData: any, silent?: boolean) => void;
 }
 
 // Compute active streak (consecutive days with at least 1 completed habit)
@@ -316,6 +317,9 @@ export const useKataStore = create<KataState>((set, get) => {
           body: jsonStr
         }).catch(() => {});
       }
+
+      // Automatically queue background push to Supabase
+      triggerAutoSync();
     } catch (e) {
       console.warn('LocalStorage save error:', e);
     }
@@ -1020,9 +1024,9 @@ export const useKataStore = create<KataState>((set, get) => {
       persist({});
     },
 
-    importBackupData: (imported) => {
+    importBackupData: (imported, silent = false) => {
       if (!imported || !imported.habits || !imported.dayLogs) {
-        get().addToast('Import Failed', 'Invalid Kata backup file format.', 'badge');
+        if (!silent) get().addToast('Import Failed', 'Invalid Kata backup file format.', 'badge');
         return;
       }
       set({
@@ -1031,9 +1035,12 @@ export const useKataStore = create<KataState>((set, get) => {
         timetable: imported.timetable || SEED_TIMETABLE,
         badges: imported.badges || INITIAL_BADGES,
         userStats: imported.userStats || get().userStats,
-        settings: imported.settings || get().settings
+        settings: imported.settings || get().settings,
+        reminders: Array.isArray(imported.reminders) ? imported.reminders : get().reminders
       });
-      get().addToast('Backup Restored', 'Successfully loaded all habits and history.', 'success');
+      if (!silent) {
+        get().addToast('Backup Restored', 'Successfully loaded all habits and history.', 'success');
+      }
       persist({});
     }
   };

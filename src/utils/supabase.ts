@@ -7,10 +7,15 @@ import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 let supabaseInstance: SupabaseClient | null = null;
 
 export const getSupabaseConfig = () => {
-  if (typeof window === 'undefined') return { url: '', key: '' };
-  const url = localStorage.getItem('kata_supabase_url') || import.meta.env.VITE_SUPABASE_URL || '';
-  const key = localStorage.getItem('kata_supabase_key') || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-  return { url, key };
+  if (typeof window === 'undefined') return { url: '', key: '', isEnvConfigured: false };
+  const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
+  const envKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+  const localUrl = localStorage.getItem('kata_supabase_url') || '';
+  const localKey = localStorage.getItem('kata_supabase_key') || '';
+  const url = localUrl || envUrl;
+  const key = localKey || envKey;
+  const isEnvConfigured = Boolean(envUrl && envKey);
+  return { url, key, isEnvConfigured };
 };
 
 export const setSupabaseConfig = (url: string, key: string) => {

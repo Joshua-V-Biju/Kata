@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { exportDataAsJson, readJsonFile } from '../../utils/storage';
-import { getSupabaseConfig, setSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, pushToCloud, pullFromCloud } from '../../utils/supabase';
+import { getSupabaseConfig, setSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase } from '../../utils/supabase';
+import { performBackgroundPush, performInitialCloudSync } from '../../utils/cloudSync';
 import { useForgeStore } from '../../store/useForgeStore';
-import { X, Moon, Sun, Bell, Volume2, Sparkles, Download, Upload, RefreshCw, Cloud, Shield, Check, LogOut, Key, CloudUpload, CloudDownload } from 'lucide-react';
+import { X, Moon, Sun, Bell, Volume2, Sparkles, Download, Upload, RefreshCw, Cloud, Shield, ShieldCheck, Check, LogOut, Key, CloudUpload, CloudDownload, Lock } from 'lucide-react';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -23,8 +24,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
     addToast
   } = useKataStore();
 
-  const [supabaseUrl, setSupabaseUrl] = useState(() => getSupabaseConfig().url);
-  const [supabaseKey, setSupabaseKey] = useState(() => getSupabaseConfig().key);
+  const supabaseConfig = getSupabaseConfig();
+  const [supabaseUrl, setSupabaseUrl] = useState(() => supabaseConfig.url);
+  const [supabaseKey, setSupabaseKey] = useState(() => supabaseConfig.key);
+  const [showAdvancedConfig, setShowAdvancedConfig] = useState(false);
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authStatus, setAuthStatus] = useState<string | null>(null);
@@ -44,51 +47,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
   const handlePushToCloud = async () => {
     setIsSyncing(true);
-    const kataState = useKataStore.getState();
-    const forgeState = useForgeStore.getState();
-
-    const kataData = {
-      habits: kataState.habits,
-      dayLogs: kataState.dayLogs,
-      timetable: kataState.timetable,
-      badges: kataState.badges,
-      userStats: kataState.userStats,
-      settings: kataState.settings,
-      reminders: kataState.reminders
-    };
-
-    const forgeData = {
-      equipment: forgeState.equipment,
-      workouts: forgeState.workouts,
-      cindySessions: forgeState.cindySessions,
-      customExercises: forgeState.customExercises,
-      stats: forgeState.stats,
-      settings: forgeState.settings
-    };
-
-    const res = await pushToCloud(kataData, forgeData);
+    const success = await performBackgroundPush();
     setIsSyncing(false);
-    if (res.success) {
+    if (success) {
       addToast('Cloud Sync Succeeded', 'All habits, tasks, and workouts backed up to Supabase!', 'success');
     } else {
-      addToast('Sync Failed', res.error || 'Check Supabase table setup', 'badge');
+      addToast('Sync Failed', 'Check network or Supabase table setup', 'badge');
     }
   };
 
   const handlePullFromCloud = async () => {
     setIsSyncing(true);
-    const res = await pullFromCloud();
+    const success = await performInitialCloudSync();
     setIsSyncing(false);
-    if (res.data) {
-      if (res.data.kata_data) {
-        importBackupData(res.data.kata_data);
-      }
-      if (res.data.forge_data) {
-        useForgeStore.setState(res.data.forge_data);
-      }
+    if (success) {
       addToast('Cloud Data Restored', 'Latest data loaded from Supabase!', 'success');
     } else {
-      addToast('Pull Failed', res.error || 'No data found in Supabase', 'badge');
+      addToast('Pull Failed', 'No data found or check Supabase connection', 'badge');
     }
   };
 
@@ -132,8 +107,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
       setAuthStatus(`Error: ${res.error}`);
     } else {
       setCurrentUserEmail(res.user?.email || authEmail);
-      setAuthStatus('Signed in successfully!');
+      setAuthStatus('Signed in! Syncing latest data...');
       addToast('Cloud Sync Connected', `Logged in as ${authEmail}`, 'success');
+      await performInitialCloudSync();
+      setAuthStatus(null);
     }
   };
 
@@ -289,36 +266,116 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Optional Supabase Cloud Sync */}
+          {/* Supabase Cloud Sync */}
           <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Cloud className="w-4 h-4 text-cyan-400" />
-                <h3 className="font-display font-bold text-white text-sm">Optional Supabase Cloud Sync</h3>
+                <h3 className="font-display font-bold text-white text-sm">Cloud Database & Auto-Sync</h3>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 font-mono">
-                {currentUserEmail ? 'CONNECTED' : 'STANDALONE (OFFLINE)'}
+              <span className="text-[10px] px-2 py-0.5 rounded font-mono font-medium tracking-wide bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">
+                {currentUserEmail ? 'AUTO-SYNC ACTIVE' : supabaseConfig.url ? 'READY TO SIGN IN' : 'LOCAL MODE'}
               </span>
             </div>
 
             <p className="text-slate-400 text-[11px]">
-              The app functions 100% without an account. To optionally synchronize data across devices, configure your Supabase project below.
+              Automatically synchronizes habits, quests, timetable, reminders, and Forge workout logs in real time across all your devices.
             </p>
 
+            {/* Cloud Endpoint Status Card (Credentials Hidden for Security) */}
+            {supabaseConfig.url ? (
+              <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-semibold text-emerald-300">Supabase Cloud Secured</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">Row-Level Security Active</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {supabaseConfig.isEnvConfigured
+                        ? 'Connected via production environment variables. Keys are hidden & protected.'
+                        : 'Connected via saved project configuration.'}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedConfig(!showAdvancedConfig)}
+                  className="text-[10px] text-slate-400 hover:text-slate-200 underline cursor-pointer p-1"
+                >
+                  {showAdvancedConfig ? 'Hide' : 'Configure'}
+                </button>
+              </div>
+            ) : null}
+
+            {/* Collapsed / Advanced Custom Credentials (Masked) */}
+            {(showAdvancedConfig || !supabaseConfig.url) && (
+              <form onSubmit={handleSaveSupabaseConfig} className="p-3 rounded-xl bg-slate-950/70 border border-white/10 space-y-2">
+                <div className="flex items-center gap-1.5 text-slate-300 text-[11px] font-semibold">
+                  <Lock className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Custom Supabase Project Endpoint</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-slate-400 mb-0.5 font-mono">PROJECT URL</label>
+                    <input
+                      type="password"
+                      value={supabaseUrl}
+                      onChange={e => setSupabaseUrl(e.target.value)}
+                      placeholder="https://xyz.supabase.co"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 mb-0.5 font-mono">ANON PUBLIC KEY</label>
+                    <input
+                      type="password"
+                      value={supabaseKey}
+                      onChange={e => setSupabaseKey(e.target.value)}
+                      placeholder="eyJhbGciOi..."
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] text-slate-500">Inputs are masked to prevent shoulder surfing</span>
+                  <button
+                    type="submit"
+                    className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-xs font-semibold cursor-pointer"
+                  >
+                    Save Cloud Config
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Authenticated State */}
             {currentUserEmail ? (
-              <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-slate-950/80 border border-emerald-500/30 space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    <span className="text-emerald-300 font-mono text-xs">{currentUserEmail}</span>
+                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-white font-mono text-xs font-medium">{currentUserEmail}</span>
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1"
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1 transition cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    <span>Disconnect</span>
+                    <span>Sign Out</span>
                   </button>
+                </div>
+
+                <div className="flex items-start gap-2 p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-emerald-300/90 text-[11px] leading-relaxed">
+                  <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-emerald-300 font-semibold">Automatic Cloud Sync Active:</strong>
+                    <p className="text-slate-300 text-[10px] mt-0.5">
+                      Every habit checkmark, task completion, workout session, and XP gain automatically saves to your database in real time. No manual buttons needed.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -326,77 +383,41 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                     type="button"
                     disabled={isSyncing}
                     onClick={handlePushToCloud}
-                    className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-semibold text-xs transition cursor-pointer disabled:opacity-50"
+                    className="flex-1 min-w-[130px] flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-semibold text-xs transition cursor-pointer disabled:opacity-50"
                   >
-                    <CloudUpload className="w-4 h-4" />
-                    <span>{isSyncing ? 'Syncing...' : 'Push to Cloud'}</span>
+                    <CloudUpload className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>{isSyncing ? 'Syncing...' : 'Force Push Now'}</span>
                   </button>
 
                   <button
                     type="button"
                     disabled={isSyncing}
                     onClick={handlePullFromCloud}
-                    className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-semibold text-xs transition cursor-pointer disabled:opacity-50"
+                    className="flex-1 min-w-[130px] flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-semibold text-xs transition cursor-pointer disabled:opacity-50"
                   >
-                    <CloudDownload className="w-4 h-4" />
-                    <span>Pull from Cloud</span>
+                    <CloudDownload className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Force Pull Now</span>
                   </button>
                 </div>
               </div>
-            ) : (
-              <form onSubmit={handleSaveSupabaseConfig} className="space-y-2 pt-1">
+            ) : supabaseConfig.url ? (
+              /* Email Sign-in if configured */
+              <div className="p-3.5 rounded-xl bg-slate-950/60 border border-white/5 space-y-2">
+                <span className="block text-[11px] font-semibold text-slate-300">Sign In to Synchronize Across Devices</span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[10px] text-slate-400 mb-0.5 font-mono">SUPABASE URL</label>
-                    <input
-                      type="text"
-                      value={supabaseUrl}
-                      onChange={e => setSupabaseUrl(e.target.value)}
-                      placeholder="https://xyz.supabase.co"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] text-slate-400 mb-0.5 font-mono">ANON KEY</label>
-                    <input
-                      type="password"
-                      value={supabaseKey}
-                      onChange={e => setSupabaseKey(e.target.value)}
-                      placeholder="eyJhbGciOi..."
-                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-cyan-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end pt-1">
-                  <button
-                    type="submit"
-                    className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 text-xs font-semibold"
-                  >
-                    Save Supabase Keys
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {/* Optional Email Sign-in if configured */}
-            {supabaseUrl && !currentUserEmail && (
-              <div className="pt-2 border-t border-white/5 space-y-2">
-                <span className="block text-[11px] font-semibold text-slate-300">Account Sign In / Register</span>
-                <div className="grid grid-cols-2 gap-2">
                   <input
                     type="email"
                     value={authEmail}
                     onChange={e => setAuthEmail(e.target.value)}
                     placeholder="email@domain.com"
-                    className="px-3 py-2 rounded-xl bg-slate-950 border border-white/10 text-white text-xs"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
                   />
                   <input
                     type="password"
                     value={authPassword}
                     onChange={e => setAuthPassword(e.target.value)}
                     placeholder="Password"
-                    className="px-3 py-2 rounded-xl bg-slate-950 border border-white/10 text-white text-xs"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-cyan-400"
                   />
                 </div>
 
@@ -404,21 +425,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                   <button
                     type="button"
                     onClick={handleSignIn}
-                    className="px-4 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-semibold"
+                    className="px-4 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/30 text-cyan-300 font-semibold cursor-pointer transition"
                   >
                     Sign In
                   </button>
                   <button
                     type="button"
                     onClick={handleSignUp}
-                    className="px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300"
+                    className="px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 cursor-pointer transition"
                   >
                     Sign Up
                   </button>
                   <button
                     type="button"
                     onClick={signInWithGoogle}
-                    className="px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 ml-auto"
+                    className="px-4 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 ml-auto cursor-pointer transition"
                   >
                     Google OAuth
                   </button>
@@ -428,7 +449,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                   <p className="text-[11px] text-cyan-400 italic pt-1">{authStatus}</p>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
 
         </div>

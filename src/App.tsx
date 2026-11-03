@@ -10,6 +10,7 @@ import { ToastContainer } from './components/layout/ToastContainer';
 import { LevelUpModal } from './components/layout/LevelUpModal';
 import { DailyQuoteModal } from './components/dashboard/DailyQuoteModal';
 import { DailyQuoteBanner } from './components/dashboard/DailyQuoteBanner';
+import { performInitialCloudSync } from './utils/cloudSync';
 
 // Kata Views
 import { HeroCard } from './components/dashboard/HeroCard';
@@ -79,6 +80,11 @@ export const App: React.FC = () => {
       soundEngine.playCheckmark();
     }
   };
+
+  // Automatically check and pull latest cloud data on startup
+  useEffect(() => {
+    performInitialCloudSync();
+  }, []);
 
   // Auto-trigger daily motivation quote when opening the app on a new day in Kata mode
   useEffect(() => {

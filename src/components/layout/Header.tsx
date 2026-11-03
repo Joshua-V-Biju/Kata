@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { useForgeStore } from '../../store/useForgeStore';
 import { getTodayStr, formatDateDisplay, getDayOfWeekIndex } from '../../utils/dates';
-import { Flame, Zap, Sun, Moon, Settings, Bell, Calendar, ChevronLeft, ChevronRight, Sparkles, Sliders, Dumbbell } from 'lucide-react';
+import { subscribeSyncStatus, SyncStatus } from '../../utils/cloudSync';
+import { Flame, Zap, Sun, Moon, Settings, Bell, Calendar, ChevronLeft, ChevronRight, Sparkles, Sliders, Dumbbell, Cloud, CloudOff } from 'lucide-react';
 
 interface HeaderProps {
   currentMode: 'kata' | 'forge';
@@ -33,6 +34,13 @@ export const Header: React.FC<HeaderProps> = ({
   } = useKataStore();
 
   const { activeWorkout } = useForgeStore();
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+
+  useEffect(() => {
+    return subscribeSyncStatus((status) => {
+      setSyncStatus(status);
+    });
+  }, []);
 
   const todayStr = getTodayStr();
   const isToday = selectedDate === todayStr;
@@ -229,10 +237,47 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
+          {/* Cloud Auto-Sync Indicator */}
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs transition cursor-pointer"
+            title={
+              syncStatus === 'synced'
+                ? 'Cloud Synced • Auto-sync active'
+                : syncStatus === 'syncing'
+                ? 'Syncing changes to cloud...'
+                : syncStatus === 'error'
+                ? 'Sync issue • Click to inspect'
+                : 'Local Mode • Connect cloud in settings'
+            }
+          >
+            {syncStatus === 'syncing' ? (
+              <>
+                <Cloud className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                <span className="hidden sm:inline text-[10px] text-cyan-300 font-mono font-medium">Syncing</span>
+              </>
+            ) : syncStatus === 'synced' ? (
+              <>
+                <Cloud className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="hidden sm:inline text-[10px] text-emerald-300 font-mono font-medium">Synced</span>
+              </>
+            ) : syncStatus === 'error' ? (
+              <>
+                <CloudOff className="w-3.5 h-3.5 text-rose-400" />
+                <span className="hidden sm:inline text-[10px] text-rose-300 font-mono font-medium">Offline</span>
+              </>
+            ) : (
+              <>
+                <Cloud className="w-3.5 h-3.5 text-slate-500" />
+                <span className="hidden sm:inline text-[10px] text-slate-400 font-mono font-medium">Local</span>
+              </>
+            )}
+          </button>
+
           {/* Settings Trigger */}
           <button
             onClick={onOpenSettings}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition cursor-pointer"
             title="Settings & Cloud Sync"
           >
             <Settings className="w-4 h-4" />

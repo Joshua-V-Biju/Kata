@@ -17,6 +17,7 @@ import { AVAILABLE_EQUIPMENT, INITIAL_EXERCISES, STARTER_ROUTINES } from '../uti
 import { useKataStore } from './useKataStore';
 import { getTodayStr } from '../utils/dates';
 import { soundEngine } from '../utils/sound';
+import { triggerAutoSync } from '../utils/cloudSync';
 
 const FORGE_STORAGE_KEY = 'forge_fitness_state_v1';
 
@@ -304,6 +305,9 @@ export const useForgeStore = create<ForgeState>((set, get) => {
           body: jsonStr
         }).catch(() => {});
       }
+
+      // Automatically queue background push to Supabase
+      triggerAutoSync();
     } catch (e) {
       console.warn('LocalStorage Forge save error', e);
     }
