@@ -142,6 +142,16 @@ export const VoltronCockpit: React.FC<VoltronCockpitProps> = ({ onClose, isModal
     if (onClose) onClose();
   };
 
+  // Lock body scroll while modal is active
+  useEffect(() => {
+    if (!isModal) return;
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, [isModal]);
+
   const containerClass = isModal
     ? 'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-xl animate-fade-in overflow-y-auto'
     : 'relative w-full rounded-3xl';
@@ -149,8 +159,8 @@ export const VoltronCockpit: React.FC<VoltronCockpitProps> = ({ onClose, isModal
   return (
     <div className={containerClass}>
       <div
-        className={`relative w-full max-w-5xl rounded-3xl bg-gradient-to-b from-[#111724] via-[#0b0f19] to-[#070a10] border-2 border-cyan-500/40 shadow-[0_0_80px_rgba(0,242,254,0.25)] text-slate-100 overflow-hidden ${
-          isFullScreen ? 'fixed inset-2 z-50 max-w-none rounded-2xl' : ''
+        className={`relative w-full max-w-5xl my-auto max-h-[92vh] overflow-y-auto rounded-3xl bg-gradient-to-b from-[#111724] via-[#0b0f19] to-[#070a10] border-2 border-cyan-500/40 shadow-[0_0_80px_rgba(0,242,254,0.25)] text-slate-100 ${
+          isFullScreen ? 'fixed inset-2 z-50 max-w-none rounded-2xl max-h-none' : ''
         }`}
       >
         {/* ==================================================================== */}

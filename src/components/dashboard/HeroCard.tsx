@@ -33,13 +33,15 @@ export const HeroCard: React.FC = () => {
   const xpPercent = Math.min(100, Math.round((userStats.xp / nextLevelXp) * 100));
 
   return (
-    <div className="relative overflow-hidden rounded-3xl glass-card p-6 md:p-8 border border-white/10 shadow-2xl">
-      {/* Background Anime Kanwa / Cyber Watermark */}
-      <div className="absolute -right-8 -bottom-10 text-[140px] font-display font-black text-white/[0.02] select-none pointer-events-none leading-none">
-        鍛錬
+    <div className="relative rounded-3xl glass-card p-5 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
+      {/* Background Anime Kanwa / Cyber Watermark safely clipped inside */}
+      <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+        <div className="absolute -right-8 -bottom-10 text-[140px] font-display font-black text-white/[0.02] select-none leading-none">
+          鍛錬
+        </div>
       </div>
 
-      <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+      <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">
         
         {/* Left: Mascot & Interactive Performance Aura */}
         <div className="shrink-0 flex flex-col items-center">

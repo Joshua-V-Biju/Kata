@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForgeStore } from '../../../store/useForgeStore';
 import { AVAILABLE_EQUIPMENT } from '../../../utils/forgeData';
 import { EquipmentId } from '../../../types/forge';
@@ -85,9 +85,18 @@ export const EquipmentOnboardingModal: React.FC<Props> = ({ onClose, isOpen }) =
     if (onClose) onClose();
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, [isOpen]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-2xl my-8 rounded-3xl bg-[#0e1017] border-2 border-orange-500/40 shadow-[0_0_60px_rgba(255,102,0,0.25)] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-2xl my-auto max-h-[92vh] overflow-y-auto rounded-3xl bg-[#0e1017] border-2 border-orange-500/40 shadow-[0_0_60px_rgba(255,102,0,0.25)]">
         
         {/* Molten Glow Bar */}
         <div className="h-1.5 w-full bg-gradient-to-r from-orange-600 via-amber-500 to-red-600" />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { Habit, HabitCategory } from '../../types';
 import { IconRenderer } from '../common/IconRenderer';
@@ -22,6 +22,15 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
   const [monthlyGoal, setMonthlyGoal] = useState<number>(initialHabit?.monthlyGoal || 20);
   const [scheduleDays, setScheduleDays] = useState<number[]>(initialHabit?.scheduleDays || [0, 1, 2, 3, 4, 5, 6]);
   const [voltronSprintSlot, setVoltronSprintSlot] = useState<string>(initialHabit?.voltronSprintSlot || '');
+
+  // Lock body scroll while modal is active
+  useEffect(() => {
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, []);
 
   const categories: HabitCategory[] = ['Mind', 'Body', 'Craft', 'Lifestyle', 'Finance'];
 
@@ -95,11 +104,11 @@ export const HabitFormModal: React.FC<HabitFormModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-lg p-6 rounded-3xl bg-[#121722] border border-white/10 shadow-2xl text-slate-100 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-lg p-5 sm:p-6 rounded-3xl bg-[#121722] border border-white/10 shadow-2xl text-slate-100 my-auto max-h-[92vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>

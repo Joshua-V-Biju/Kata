@@ -50,12 +50,12 @@ export const AnimeMascot: React.FC<AnimeMascotProps> = ({ completionRate, streak
   }
 
   return (
-    <div className="relative flex flex-col items-center">
+    <div className="relative flex flex-col items-center pt-2">
       {/* Interactive dialogue bubble */}
       {showQuote && (
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-48 p-2 rounded-xl bg-slate-900/95 border border-cyan-400/40 shadow-xl text-center z-30 animate-pop">
-          <p className="text-[11px] font-medium text-cyan-200 italic leading-snug">{getDialogue()}</p>
-          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-900 border-r border-b border-cyan-400/40 rotate-45" />
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-56 sm:w-64 max-w-[85vw] p-2.5 sm:p-3 rounded-2xl bg-[#0f1420]/95 border border-cyan-400/50 shadow-2xl text-center z-50 animate-pop backdrop-blur-md">
+          <p className="text-[11px] sm:text-xs font-medium text-cyan-200 italic leading-snug">{getDialogue()}</p>
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#0f1420] border-r border-b border-cyan-400/50 rotate-45" />
         </div>
       )}
 

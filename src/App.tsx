@@ -86,6 +86,17 @@ export const App: React.FC = () => {
     performInitialCloudSync();
   }, []);
 
+  // Sync document root class with selected theme
+  useEffect(() => {
+    if (settings.theme === 'light') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
+    } else {
+      document.documentElement.classList.remove('light');
+      document.documentElement.classList.add('dark');
+    }
+  }, [settings.theme]);
+
   // Auto-trigger daily motivation quote when opening the app on a new day in Kata mode
   useEffect(() => {
     if (currentMode === 'kata') {
@@ -148,8 +159,10 @@ export const App: React.FC = () => {
   return (
     <div
       className={`min-h-screen relative flex flex-col transition-colors duration-300 ${
-        settings.theme === 'light' ? 'light' : 'dark'
-      } ${currentMode === 'forge' ? 'forge-theme bg-[#111318] text-slate-200' : 'bg-[#0f1219] text-slate-200'}`}
+        settings.theme === 'light'
+          ? 'light bg-[#f4f6fb] text-slate-800'
+          : 'dark bg-[#0f1219] text-slate-200'
+      } ${currentMode === 'forge' ? 'forge-theme !bg-[#111318] !text-slate-200' : ''}`}
     >
       
       {/* Dynamic Ambient Background Effect */}

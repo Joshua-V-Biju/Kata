@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { Trophy, Sparkles, Zap, ArrowRight, X } from 'lucide-react';
 
 export const LevelUpModal: React.FC = () => {
   const { levelUpModal, closeLevelUpModal, userStats } = useKataStore();
+
+  useEffect(() => {
+    if (!levelUpModal.show) return;
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, [levelUpModal.show]);
 
   if (!levelUpModal.show) return null;
 

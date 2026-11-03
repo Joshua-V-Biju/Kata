@@ -93,25 +93,25 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-base sm:text-lg font-display font-black tracking-tight text-white">
+              <span className="text-base sm:text-lg font-display font-black tracking-tight text-white header-title">
                 {currentMode === 'kata' ? 'KATA' : 'FORGE'}
               </span>
               <span className="text-xs font-display font-medium text-slate-400">
                 {currentMode === 'kata' ? '• 習慣' : '• 鍛錬'}
               </span>
             </div>
-            <span className="text-[10px] font-mono tracking-widest uppercase text-cyan-400 block -mt-1">
+            <span className="text-[10px] font-mono tracking-widest uppercase text-cyan-400 hidden sm:block -mt-1">
               {currentMode === 'kata' ? 'Command Center' : 'Home Armor Lab'}
             </span>
           </div>
         </div>
 
         {/* Center: Always-Visible Two-Mode Switcher [ Kata | Forge ] */}
-        <div className="flex items-center p-1 rounded-2xl bg-black/60 border border-white/10 shadow-inner">
+        <div className="flex items-center p-0.5 sm:p-1 rounded-2xl bg-black/50 border border-white/10 shadow-inner mode-switcher-bar">
           <button
             type="button"
             onClick={() => onModeChange('kata')}
-            className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-display font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl font-display font-bold text-[11px] sm:text-xs flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
               currentMode === 'kata'
                 ? 'bg-gradient-to-r from-cyan-500 to-teal-400 text-slate-950 shadow-md shadow-cyan-500/20'
                 : 'text-slate-400 hover:text-white'
@@ -125,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => onModeChange('forge')}
-            className={`px-2.5 sm:px-3 py-1.5 rounded-xl font-display font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl font-display font-bold text-[11px] sm:text-xs flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
               currentMode === 'forge'
                 ? 'bg-gradient-to-r from-orange-600 via-amber-500 to-red-600 text-slate-950 shadow-lg shadow-orange-500/30'
                 : 'text-orange-400 hover:text-orange-300'

@@ -1,16 +1,26 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 
 export const EmberEffect: React.FC = () => {
-  const embers = useMemo(() => {
-    return Array.from({ length: 24 }).map((_, i) => ({
-      id: i,
-      left: `${(i * 4.2 + (i % 3) * 2.5) % 100}%`,
-      animationDuration: `${4 + (i % 5) * 1.5}s`,
-      animationDelay: `${(i % 7) * 0.7}s`,
-      size: `${3 + (i % 4) * 2}px`,
-      opacity: 0.3 + (i % 4) * 0.15
-    }));
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  const embers = useMemo(() => {
+    const count = isMobile ? 8 : 16;
+    return Array.from({ length: count }).map((_, i) => ({
+      id: i,
+      left: `${(i * (100 / count) + (i % 3) * 2.5) % 96}%`,
+      animationDuration: `${5 + (i % 4) * 1.5}s`,
+      animationDelay: `${(i % 5) * 0.8}s`,
+      size: `${3 + (i % 3) * 2}px`,
+      opacity: 0.25 + (i % 3) * 0.15
+    }));
+  }, [isMobile]);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-1 overflow-hidden">

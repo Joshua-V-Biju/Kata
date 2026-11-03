@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { soundEngine } from '../../utils/sound';
 import { fireCheckmarkConfetti } from '../../utils/confetti';
@@ -12,6 +12,16 @@ export const DailyQuoteModal: React.FC = () => {
     rollNewQuote,
     addToast
   } = useKataStore();
+
+  // Lock body scroll while modal is active
+  useEffect(() => {
+    if (!showDailyQuoteModal) return;
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, [showDailyQuoteModal]);
 
   if (!showDailyQuoteModal || !currentQuote) return null;
 

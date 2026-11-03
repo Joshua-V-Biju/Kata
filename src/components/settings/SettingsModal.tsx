@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { exportDataAsJson, readJsonFile } from '../../utils/storage';
 import { getSupabaseConfig, setSupabaseConfig, clearSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, getCurrentAuthUser } from '../../utils/supabase';
@@ -154,12 +154,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
     }
   };
 
+  // Lock body scroll while modal is active
+  useEffect(() => {
+    const orig = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = orig;
+    };
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-xl p-6 md:p-8 rounded-3xl bg-[#121722] border border-white/10 shadow-2xl text-slate-100 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-xl p-5 sm:p-6 md:p-8 rounded-3xl bg-[#121722] border border-white/10 shadow-2xl text-slate-100 my-auto max-h-[92vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -241,18 +250,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
               All data is strictly stored on your device in LocalStorage / IndexedDB. You can export a full JSON backup at any time.
             </p>
 
-            <div className="flex flex-wrap items-center gap-2 pt-1">
+            <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 pt-1">
               <button
                 onClick={handleExport}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-semibold transition"
+                className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-semibold transition cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                <span>Export JSON Backup</span>
+                <span>Export Backup</span>
               </button>
 
-              <label className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-semibold cursor-pointer transition">
+              <label className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-semibold cursor-pointer transition">
                 <Upload className="w-4 h-4" />
-                <span>Import JSON Backup</span>
+                <span>Import Backup</span>
                 <input type="file" accept=".json" onChange={handleImportFile} className="hidden" />
               </label>
 
@@ -262,7 +271,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
                     resetToSeedData();
                   }
                 }}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-semibold transition ml-auto"
+                className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-300 font-semibold transition cursor-pointer sm:ml-auto"
               >
                 <RefreshCw className="w-4 h-4" />
                 <span>Reset Seed Data</span>
