@@ -27,8 +27,10 @@ import { InsightsView } from './components/insights/InsightsView';
 import { BadgesGrid } from './components/badges/BadgesGrid';
 import { JournalExpenseSection } from './components/journal/JournalExpenseSection';
 import { SettingsModal } from './components/settings/SettingsModal';
+import { ResetPasswordModal } from './components/auth/ResetPasswordModal';
 import { HabitManagerModal } from './components/manager/HabitManagerModal';
 import { HabitFormModal } from './components/manager/HabitFormModal';
+import { getSupabase } from './utils/supabase';
 
 // Forge Views & Components
 import { EmberEffect } from './components/forge/layout/EmberEffect';
@@ -53,6 +55,7 @@ export const App: React.FC = () => {
   const [showHabitForm, setShowHabitForm] = useState(false);
   const [showSprintModal, setShowSprintModal] = useState(false);
   const [showArmoryModal, setShowArmoryModal] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   const {
     habits,
@@ -81,9 +84,37 @@ export const App: React.FC = () => {
     }
   };
 
-  // Automatically check and pull latest cloud data on startup
+  // Automatically check and pull latest cloud data on startup + listen for OAuth & recovery events
   useEffect(() => {
     performInitialCloudSync();
+
+    // Check if user arrived via recovery link in URL hash
+    if (typeof window !== 'undefined' && window.location.hash) {
+      if (window.location.hash.includes('type=recovery')) {
+        setShowResetPassword(true);
+      }
+    }
+
+    // Subscribe to Supabase auth events (OAuth returns, Password recovery)
+    const sb = getSupabase();
+    if (sb) {
+      const { data: authListener } = sb.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'PASSWORD_RECOVERY') {
+          setShowResetPassword(true);
+        } else if (event === 'SIGNED_IN' && session?.user?.email) {
+          localStorage.setItem('kata_auth_email', session.user.email);
+          // If returning from OAuth with tokens in hash, clean up browser address bar
+          if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+          await performInitialCloudSync();
+        }
+      });
+
+      return () => {
+        authListener?.subscription?.unsubscribe();
+      };
+    }
   }, []);
 
   // Sync document root class with selected theme
@@ -341,6 +372,12 @@ export const App: React.FC = () => {
       {showSettings && (
         <SettingsModal onClose={() => setShowSettings(false)} />
       )}
+
+      {/* Password Recovery Modal */}
+      <ResetPasswordModal
+        isOpen={showResetPassword}
+        onClose={() => setShowResetPassword(false)}
+      />
 
       {/* Minimal Footer */}
       <footer className="text-center py-6 text-xs text-slate-500 font-mono relative z-10 border-t border-white/5">

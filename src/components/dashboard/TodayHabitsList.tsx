@@ -10,6 +10,14 @@ interface TodayHabitsListProps {
   onOpenHabitForm: () => void;
 }
 
+const categoryKanjiMap: Record<string, string> = {
+  mind: '心',
+  body: '体',
+  craft: '技',
+  lifestyle: '道',
+  finance: '財'
+};
+
 export const TodayHabitsList: React.FC<TodayHabitsListProps> = ({
   onOpenHabitManager,
   onOpenHabitForm
@@ -130,6 +138,13 @@ export const TodayHabitsList: React.FC<TodayHabitsListProps> = ({
                 style={{ backgroundColor: habit.color }}
               />
 
+              {/* Background Translucent Japanese Kanji Watermark */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+                <div className="absolute -right-2 -bottom-4 text-7xl font-display font-black text-slate-900/[0.04] dark:text-white/[0.025] select-none leading-none">
+                  {categoryKanjiMap[habit.category.toLowerCase()] || '鍛'}
+                </div>
+              </div>
+
               {/* Background Glow on Completion */}
               {isDone && (
                 <div
@@ -192,13 +207,13 @@ export const TodayHabitsList: React.FC<TodayHabitsListProps> = ({
                   <span className="text-slate-600 dark:text-slate-400">
                     Monthly Goal: <strong className="text-slate-900 dark:text-slate-200">{monthCount}/{goal}</strong>
                   </span>
-                  <span className="font-bold" style={{ color: habit.color }}>
+                  <span className="font-bold text-slate-800 dark:text-cyan-300 font-mono">
                     {monthPct}%
                   </span>
                 </div>
 
                 {/* Mini fluid progress bar */}
-                <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-900 rounded-full overflow-hidden">
+                <div className="h-2 w-full bg-slate-200 dark:bg-slate-800/90 rounded-full overflow-hidden p-[1px] border border-slate-300/50 dark:border-white/5">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -211,7 +226,7 @@ export const TodayHabitsList: React.FC<TodayHabitsListProps> = ({
 
                 {/* Due status pill */}
                 <div className="flex justify-between items-center text-[10px] pt-0.5">
-                  <span className={isScheduledToday ? 'text-cyan-800 dark:text-cyan-400 font-bold' : 'text-slate-600 dark:text-slate-500'}>
+                  <span className={isScheduledToday ? 'text-cyan-900 dark:text-cyan-400 font-bold' : 'text-slate-600 dark:text-slate-500'}>
                     {isScheduledToday ? '● Due Today' : '○ Optional'}
                   </span>
                   <span className="text-slate-500 font-mono">

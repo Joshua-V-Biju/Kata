@@ -79,6 +79,13 @@ export const RemindersCard: React.FC = () => {
 
   return (
     <div className="rounded-3xl glass-card p-5 md:p-6 border border-white/10 shadow-xl space-y-4 relative overflow-hidden flex flex-col justify-between">
+      {/* Background Japanese Watermark */}
+      <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+        <div className="absolute -right-6 -bottom-8 text-9xl font-display font-black text-slate-900/[0.035] dark:text-white/[0.025] select-none leading-none">
+          備忘
+        </div>
+      </div>
+
       {/* Subtle ambient amber glow */}
       <div className="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
 
@@ -212,14 +219,14 @@ export const RemindersCard: React.FC = () => {
       {/* Filter Tabs & Clear Done */}
       {reminders.length > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl border border-slate-200 dark:border-white/5">
             <button
               type="button"
               onClick={() => setFilter('active')}
               className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                 filter === 'active'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-400/30 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Active ({activeReminders.length})
@@ -229,8 +236,8 @@ export const RemindersCard: React.FC = () => {
               onClick={() => setFilter('pinned')}
               className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                 filter === 'pinned'
-                  ? 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-400/30 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Pinned ({pinnedReminders.length})
@@ -240,8 +247,8 @@ export const RemindersCard: React.FC = () => {
               onClick={() => setFilter('completed')}
               className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                 filter === 'completed'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-400/30 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Done ({completedReminders.length})
@@ -251,8 +258,8 @@ export const RemindersCard: React.FC = () => {
               onClick={() => setFilter('all')}
               className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                 filter === 'all'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-900 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-400/30 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               All ({reminders.length})
@@ -263,7 +270,7 @@ export const RemindersCard: React.FC = () => {
             <button
               type="button"
               onClick={clearCompletedReminders}
-              className="text-[11px] font-mono text-slate-400 hover:text-rose-400 transition cursor-pointer"
+              className="text-[11px] font-mono text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
             >
               Clear done ({completedReminders.length})
             </button>
@@ -284,7 +291,7 @@ export const RemindersCard: React.FC = () => {
                   reminder.completed
                     ? 'bg-emerald-50 dark:bg-emerald-950/15 border-emerald-300 dark:border-emerald-500/20 opacity-75'
                     : reminder.pinned
-                    ? 'bg-amber-50/60 dark:bg-amber-950/20 border-amber-300/80 dark:border-amber-500/30 shadow-sm'
+                    ? 'bg-amber-50/40 dark:bg-amber-950/20 border-l-4 border-l-amber-500 border-amber-300/60 dark:border-amber-500/30 shadow-sm'
                     : reminder.priority === 'urgent'
                     ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300/80 dark:border-rose-500/30'
                     : 'bg-slate-50 dark:bg-black/30 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/15'
@@ -359,13 +366,13 @@ export const RemindersCard: React.FC = () => {
 
                         {/* Priority Badge */}
                         {reminder.priority === 'urgent' && !reminder.completed && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-rose-100 dark:bg-rose-500/20 border border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300 font-mono text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shrink-0">
+                          <span className="px-1.5 py-0.5 rounded-md bg-rose-100 dark:bg-rose-500/20 border border-rose-300 dark:border-rose-500/40 text-rose-950 dark:text-rose-200 font-mono text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shrink-0">
                             <span className="w-1.5 h-1.5 rounded-full bg-rose-500 dark:bg-rose-400 animate-ping" />
                             URGENT
                           </span>
                         )}
                         {reminder.priority === 'high' && !reminder.completed && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-950 dark:text-amber-300 font-mono text-[9px] font-black uppercase tracking-wider shrink-0">
+                          <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-950 dark:text-amber-200 font-mono text-[9px] font-black uppercase tracking-wider shrink-0">
                             HIGH
                           </span>
                         )}

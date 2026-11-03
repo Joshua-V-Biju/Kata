@@ -61,11 +61,11 @@ export const HeroCard: React.FC = () => {
                 onClick={() => setSelectedDate(todayStr)}
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold tracking-wider uppercase transition cursor-pointer ${
                   isToday
-                    ? 'bg-cyan-100 dark:bg-cyan-500/20 border border-cyan-400 text-cyan-950 dark:text-cyan-300 shadow-sm font-bold'
+                    ? 'bg-cyan-100 dark:bg-cyan-500/20 border border-cyan-400 dark:border-cyan-500/40 text-cyan-950 dark:text-cyan-300 shadow-sm font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
-                <Calendar className="w-3.5 h-3.5" />
+                <Calendar className="w-3.5 h-3.5 text-cyan-900 dark:text-cyan-300" />
                 <span>Today ({formatDateDisplay(todayStr)})</span>
               </button>
 
@@ -74,7 +74,7 @@ export const HeroCard: React.FC = () => {
                 onClick={() => setSelectedDate(yesterdayStr)}
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold tracking-wider uppercase transition cursor-pointer ${
                   selectedDate === yesterdayStr
-                    ? 'bg-purple-100 dark:bg-purple-500/20 border border-purple-400 text-purple-950 dark:text-purple-300 shadow-sm font-bold'
+                    ? 'bg-purple-100 dark:bg-purple-500/20 border border-purple-400 dark:border-purple-500/40 text-purple-950 dark:text-purple-300 shadow-sm font-bold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="View or log habits for yesterday"

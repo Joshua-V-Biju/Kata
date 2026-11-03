@@ -136,16 +136,51 @@ export const signUpWithEmail = async (email: string, password: string): Promise<
   }
 };
 
+export const getAuthRedirectUrl = (): string => {
+  if (typeof window === 'undefined') return '';
+  return `${window.location.origin}${window.location.pathname}`;
+};
+
 export const signInWithGoogle = async (): Promise<{ error: string | null }> => {
   const sb = getSupabase();
   if (!sb) return { error: 'Supabase credentials not configured in Settings.' };
   try {
+    const redirectUrl = getAuthRedirectUrl();
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin
+        redirectTo: redirectUrl,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
       }
     });
+    return { error: error ? formatErrorMessage(error) : null };
+  } catch (err) {
+    return { error: formatErrorMessage(err) };
+  }
+};
+
+export const resetPasswordForEmail = async (email: string): Promise<{ error: string | null }> => {
+  const sb = getSupabase();
+  if (!sb) return { error: 'Supabase credentials not configured in Settings.' };
+  try {
+    const redirectUrl = getAuthRedirectUrl();
+    const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: redirectUrl
+    });
+    return { error: error ? formatErrorMessage(error) : null };
+  } catch (err) {
+    return { error: formatErrorMessage(err) };
+  }
+};
+
+export const updatePassword = async (newPassword: string): Promise<{ error: string | null }> => {
+  const sb = getSupabase();
+  if (!sb) return { error: 'Supabase credentials not configured in Settings.' };
+  try {
+    const { error } = await sb.auth.updateUser({ password: newPassword });
     return { error: error ? formatErrorMessage(error) : null };
   } catch (err) {
     return { error: formatErrorMessage(err) };

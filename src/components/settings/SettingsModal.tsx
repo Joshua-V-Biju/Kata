@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { exportDataAsJson, readJsonFile } from '../../utils/storage';
-import { getSupabaseConfig, setSupabaseConfig, clearSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, getCurrentAuthUser } from '../../utils/supabase';
+import { getSupabaseConfig, setSupabaseConfig, clearSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, getCurrentAuthUser, resetPasswordForEmail, getAuthRedirectUrl } from '../../utils/supabase';
 import { performBackgroundPush, performInitialCloudSync } from '../../utils/cloudSync';
 import { useForgeStore } from '../../store/useForgeStore';
-import { X, Moon, Sun, Bell, Volume2, Sparkles, Download, Upload, RefreshCw, Cloud, Shield, ShieldCheck, Check, LogOut, Key, CloudUpload, CloudDownload, Lock } from 'lucide-react';
+import { X, Moon, Sun, Bell, Volume2, Sparkles, Download, Upload, RefreshCw, Cloud, Shield, ShieldCheck, Check, LogOut, Key, CloudUpload, CloudDownload, Lock, AlertCircle, Copy, HelpCircle } from 'lucide-react';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -31,6 +31,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authStatus, setAuthStatus] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [copiedRedirect, setCopiedRedirect] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('kata_auth_email') || null;
@@ -138,6 +140,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail.trim()) {
+      setAuthStatus('Please enter your account email above first.');
+      return;
+    }
+    setAuthStatus('Sending password recovery email...');
+    const res = await resetPasswordForEmail(authEmail);
+    if (res?.error) {
+      setAuthStatus(`Recovery error: ${res.error}`);
+    } else {
+      setAuthStatus('Recovery link sent! Check your inbox (and spam folder) to reset your password.');
+      addToast('Recovery Email Sent', `Sent reset link to ${authEmail}`, 'info');
+    }
+  };
+
   const handleSignOut = async () => {
     await signOut();
     setCurrentUserEmail(null);
@@ -172,37 +190,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-xl p-5 sm:p-6 md:p-8 rounded-3xl bg-[#121722] border border-white/10 shadow-2xl text-slate-100 my-auto max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="relative w-full max-w-xl p-5 sm:p-6 md:p-8 rounded-3xl bg-white dark:bg-[#121722] border border-slate-200 dark:border-white/10 shadow-2xl text-slate-900 dark:text-slate-100 my-auto max-h-[92vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition cursor-pointer"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-xl md:text-2xl font-display font-black text-white mb-2">
+        <h2 className="text-xl md:text-2xl font-display font-black text-slate-900 dark:text-white mb-2">
           System Settings • 設定
         </h2>
-        <p className="text-xs text-slate-400 mb-6">
+        <p className="text-xs text-slate-600 dark:text-slate-400 mb-6">
           Preferences, audio, particle effects, backup, and optional cloud sync
         </p>
 
         <div className="space-y-6 text-xs">
           
           {/* Toggles */}
-          <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/5 space-y-3">
-            <h3 className="font-display font-bold text-white text-sm">Experience & Feedback</h3>
+          <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/5 space-y-3">
+            <h3 className="font-display font-bold text-slate-900 dark:text-white text-sm">Experience & Feedback</h3>
 
             {/* Dark / Light Theme */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-300">
-                {settings.theme === 'dark' ? <Moon className="w-4 h-4 text-cyan-400" /> : <Sun className="w-4 h-4 text-amber-400" />}
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                {settings.theme === 'dark' ? <Moon className="w-4 h-4 text-cyan-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
                 <span>Interface Theme</span>
               </div>
               <button
                 onClick={() => updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' })}
-                className="px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold capitalize transition"
+                className="px-3 py-1 rounded-xl bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-xs font-semibold capitalize transition text-slate-800 dark:text-slate-200 cursor-pointer"
               >
                 {settings.theme} Mode
               </button>
@@ -210,8 +228,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
             {/* Synthesizer Sound */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-300">
-                <Volume2 className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <Volume2 className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                 <span>Anime Chime & Level-Up Fanfare</span>
               </div>
               <input
@@ -224,8 +242,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
             {/* Sakura Floating Petals */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-300">
-                <Sparkles className="w-4 h-4 text-pink-400" />
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <Sparkles className="w-4 h-4 text-pink-500 dark:text-pink-400" />
                 <span>Floating Sakura Petal Atmosphere</span>
               </div>
               <input
@@ -238,13 +256,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
             {/* Browser Notifications */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-300">
-                <Bell className="w-4 h-4 text-amber-400" />
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <Bell className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                 <span>PWA / Browser Habit Reminders</span>
               </div>
               <button
                 onClick={requestNotificationPermission}
-                className="px-3 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold transition"
+                className="px-3 py-1 rounded-xl bg-amber-100 dark:bg-amber-500/10 hover:bg-amber-200 dark:hover:bg-amber-500/20 border border-amber-300 dark:border-amber-500/30 text-amber-900 dark:text-amber-300 text-xs font-semibold transition"
               >
                 {settings.notificationsEnabled ? 'Active' : 'Enable'}
               </button>
@@ -467,56 +485,155 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
               </div>
             ) : supabaseConfig.url ? (
               /* One-Time Account Sign In (Persists permanently once signed in) */
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/5 space-y-2.5">
-                <span className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-                  Sign In Once (Stay Logged In Permanently)
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input
-                    type="email"
-                    value={authEmail}
-                    onChange={e => setAuthEmail(e.target.value)}
-                    placeholder="email@domain.com"
-                    className="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400"
-                  />
-                  <input
-                    type="password"
-                    value={authPassword}
-                    onChange={e => setAuthPassword(e.target.value)}
-                    placeholder="Password"
-                    className="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400"
-                  />
-                </div>
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/5 space-y-3">
+                {showForgotPassword ? (
+                  /* Forgot Password Recovery Mode */
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="block text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                        Reset Password via Email • 認証再設定
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowForgotPassword(false);
+                          setAuthStatus(null);
+                        }}
+                        className="text-[10px] text-cyan-700 dark:text-cyan-400 hover:underline cursor-pointer font-medium"
+                      >
+                        ← Back to Sign In
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-slate-600 dark:text-slate-400">
+                      Enter your account email to receive a secure password recovery link.
+                    </p>
+                    <input
+                      type="email"
+                      value={authEmail}
+                      onChange={e => setAuthEmail(e.target.value)}
+                      placeholder="your-account-email@domain.com"
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400"
+                    />
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-cyan-500 to-teal-400 hover:from-cyan-400 text-slate-950 font-bold text-xs cursor-pointer transition active:scale-95 shadow-md shadow-cyan-500/20"
+                      >
+                        Send Recovery Link
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowForgotPassword(false);
+                          setAuthStatus(null);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-slate-300 text-xs cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Standard Sign In / Sign Up Mode */
+                  <div className="space-y-2.5">
+                    <span className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+                      Sign In Once (Stay Logged In Permanently)
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <input
+                        type="email"
+                        value={authEmail}
+                        onChange={e => setAuthEmail(e.target.value)}
+                        placeholder="email@domain.com"
+                        className="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400"
+                      />
+                      <input
+                        type="password"
+                        value={authPassword}
+                        onChange={e => setAuthPassword(e.target.value)}
+                        placeholder="Password"
+                        className="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs focus:outline-none focus:border-cyan-400"
+                      />
+                    </div>
 
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={handleSignIn}
-                    className="px-4 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-800 dark:text-cyan-300 font-bold text-xs cursor-pointer transition active:scale-95"
-                  >
-                    Sign In
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSignUp}
-                    className="px-4 py-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs cursor-pointer transition active:scale-95"
-                  >
-                    Sign Up
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleGoogleSignIn}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 dark:bg-white/10 dark:hover:bg-white/15 border border-slate-200 dark:border-white/15 text-slate-800 dark:text-white font-medium text-xs ml-auto shadow-sm transition cursor-pointer active:scale-95"
-                    title="Sign in with your Google account"
-                  >
-                    <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                    </svg>
-                    <span>Google OAuth</span>
-                  </button>
+                    <div className="flex items-center justify-between text-[10px] px-0.5">
+                      <span className="text-slate-500">Local-first: Credentials stay private.</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowForgotPassword(true);
+                          setAuthStatus(null);
+                        }}
+                        className="text-cyan-700 dark:text-cyan-400 hover:underline font-medium cursor-pointer"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                      <button
+                        type="button"
+                        onClick={handleSignIn}
+                        className="px-4 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-800 dark:text-cyan-300 font-bold text-xs cursor-pointer transition active:scale-95"
+                      >
+                        Sign In
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSignUp}
+                        className="px-4 py-1.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs cursor-pointer transition active:scale-95"
+                      >
+                        Sign Up
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleGoogleSignIn}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 dark:bg-white/10 dark:hover:bg-white/15 border border-slate-200 dark:border-white/15 text-slate-800 dark:text-white font-medium text-xs ml-auto shadow-sm transition cursor-pointer active:scale-95"
+                        title="Sign in with your Google account"
+                      >
+                        <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>Google OAuth</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Google OAuth & Password Reset Redirect Setup Helper */}
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-300 dark:border-amber-500/30 text-[11px] text-amber-900 dark:text-amber-200 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                      OAuth / Reset Redirecting to localhost:3000?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof window !== 'undefined') {
+                          navigator.clipboard.writeText(getAuthRedirectUrl());
+                          setCopiedRedirect(true);
+                          setTimeout(() => setCopiedRedirect(false), 2000);
+                        }
+                      }}
+                      className="px-2 py-0.5 rounded bg-amber-200 dark:bg-amber-500/20 hover:bg-amber-300 text-amber-950 dark:text-amber-300 font-mono text-[10px] font-bold transition cursor-pointer flex items-center gap-1"
+                      title="Copy exact redirect URL to clipboard"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{copiedRedirect ? 'Copied ✓' : 'Copy Redirect URL'}</span>
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-700 dark:text-slate-300 leading-relaxed">
+                    By default, Supabase sends OAuth &amp; recovery emails to its default Site URL (<code>localhost:3000</code>). In your <strong>Supabase Dashboard &gt; Authentication &gt; URL Configuration</strong>:
+                  </p>
+                  <ol className="text-[10px] text-slate-700 dark:text-slate-300 list-decimal pl-4 space-y-0.5">
+                    <li>Set <strong>Site URL</strong> to: <code className="bg-amber-100 dark:bg-black/40 px-1 rounded">{getAuthRedirectUrl()}</code></li>
+                    <li>Add to <strong>Redirect URLs</strong>: <code className="bg-amber-100 dark:bg-black/40 px-1 rounded">{getAuthRedirectUrl()}**</code> and <code className="bg-amber-100 dark:bg-black/40 px-1 rounded">https://*.vercel.app/**</code></li>
+                  </ol>
                 </div>
 
                 {authStatus && (
@@ -528,10 +645,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
         </div>
 
-        <div className="mt-6 pt-4 border-t border-white/10 flex justify-end">
+        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-medium text-xs transition"
+            className="px-5 py-2.5 rounded-xl bg-slate-200 dark:bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-800 dark:text-white font-medium text-xs transition cursor-pointer"
           >
             Done
           </button>

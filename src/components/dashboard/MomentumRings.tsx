@@ -91,6 +91,13 @@ export const MomentumRings: React.FC = () => {
             key={item.title}
             className="rounded-2xl glass-card p-5 border border-white/5 flex items-center justify-between relative overflow-hidden"
           >
+            {/* Background Translucent Japanese Kanji Watermark */}
+            <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+              <div className="absolute -right-2 -bottom-4 text-7xl font-display font-black text-slate-900/[0.04] dark:text-white/[0.025] select-none leading-none">
+                {item.kanji}
+              </div>
+            </div>
+
             {/* Ambient subtle glow */}
             <div
               className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-2xl opacity-20 pointer-events-none"

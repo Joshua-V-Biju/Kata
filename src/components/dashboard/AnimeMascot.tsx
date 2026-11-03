@@ -53,7 +53,11 @@ export const AnimeMascot: React.FC<AnimeMascotProps> = ({ completionRate, streak
     <div className="relative flex flex-col items-center pt-2">
       {/* Interactive dialogue bubble - positioned safely below avatar to prevent clipping by top banners */}
       {showQuote && (
-        <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 w-60 sm:w-68 max-w-[85vw] p-3 rounded-2xl bg-white/95 dark:bg-[#0f1420]/95 border border-cyan-500/40 dark:border-cyan-400/50 shadow-xl dark:shadow-2xl text-center z-50 animate-pop backdrop-blur-md">
+        <div
+          onClick={() => setShowQuote(false)}
+          className="absolute top-full mt-3 left-1/2 -translate-x-1/2 w-60 sm:w-68 max-w-[85vw] p-3 rounded-2xl bg-white/95 dark:bg-[#0f1420]/95 border border-cyan-500/40 dark:border-cyan-400/50 shadow-xl dark:shadow-2xl text-center z-50 animate-pop backdrop-blur-md cursor-pointer"
+          title="Click to dismiss"
+        >
           <p className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-cyan-200 italic leading-snug">{getDialogue()}</p>
           <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-[#0f1420] border-l border-t border-cyan-500/40 dark:border-cyan-400/50 rotate-45" />
         </div>

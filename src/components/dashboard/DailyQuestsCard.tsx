@@ -7,6 +7,12 @@ export const DailyQuestsCard: React.FC = () => {
 
   return (
     <div className="rounded-3xl glass-card p-5 md:p-6 border border-white/5 space-y-4 relative overflow-hidden flex flex-col justify-between h-full">
+      {/* Background Japanese Watermark */}
+      <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+        <div className="absolute -right-4 -bottom-6 text-9xl font-display font-black text-slate-900/[0.035] dark:text-white/[0.025] select-none leading-none">
+          鍛錬
+        </div>
+      </div>
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -56,12 +62,12 @@ export const DailyQuestsCard: React.FC = () => {
               </div>
 
               <div className="min-w-0 space-y-0.5">
-                <span className={`text-xs font-semibold block truncate ${
-                  quest.completed ? 'text-emerald-800 dark:text-emerald-300' : 'text-slate-800 dark:text-slate-200'
+                <span className={`text-xs font-bold block truncate ${
+                  quest.completed ? 'text-emerald-950 dark:text-emerald-300' : 'text-slate-900 dark:text-slate-100'
                 }`}>
                   {quest.title}
                 </span>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1 font-normal">
                   {quest.description}
                 </p>
               </div>
@@ -69,12 +75,12 @@ export const DailyQuestsCard: React.FC = () => {
 
             {/* Right: XP Badge & Claim Status */}
             <div className="shrink-0 text-right space-y-1">
-              <span className="inline-flex items-center gap-1 font-mono text-amber-800 dark:text-amber-300 font-bold text-xs bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+              <span className="inline-flex items-center gap-1 font-mono text-amber-950 dark:text-amber-300 font-bold text-xs bg-amber-100 dark:bg-amber-500/15 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-500/30">
                 <Zap className="w-3 h-3 fill-current" />
                 +{quest.xpReward} XP
               </span>
               <span className={`block text-[10px] font-mono font-bold tracking-wider uppercase ${
-                quest.completed ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'
+                quest.completed ? 'text-emerald-800 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'
               }`}>
                 {quest.completed ? 'CLAIMED ✓' : 'IN PROGRESS'}
               </span>

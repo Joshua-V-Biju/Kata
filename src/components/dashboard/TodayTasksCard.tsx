@@ -49,6 +49,13 @@ export const TodayTasksCard: React.FC = () => {
 
   return (
     <div className="rounded-3xl glass-card p-5 md:p-6 border border-white/10 shadow-xl space-y-4 relative overflow-hidden">
+      {/* Background Japanese Watermark */}
+      <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+        <div className="absolute -right-6 -bottom-8 text-9xl font-display font-black text-slate-900/[0.035] dark:text-white/[0.025] select-none leading-none">
+          課題
+        </div>
+      </div>
+
       {/* Subtle background glow */}
       <div className="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
 
