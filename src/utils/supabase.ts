@@ -67,3 +67,60 @@ export const signOut = async () => {
     await sb.auth.signOut();
   }
 };
+
+export interface CloudSyncPayload {
+  kata_data?: any;
+  forge_data?: any;
+  updated_at?: string;
+}
+
+// Push local data up to Supabase kata_user_data table
+export const pushToCloud = async (kataData: any, forgeData?: any): Promise<{ success: boolean; error?: string }> => {
+  const sb = getSupabase();
+  if (!sb) return { success: false, error: 'Supabase credentials not configured.' };
+
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return { success: false, error: 'You must be signed in to sync to cloud.' };
+
+    const payload: any = {
+      user_id: user.id,
+      updated_at: new Date().toISOString()
+    };
+    if (kataData) payload.kata_data = kataData;
+    if (forgeData) payload.forge_data = forgeData;
+
+    const { error } = await sb
+      .from('kata_user_data')
+      .upsert(payload, { onConflict: 'user_id' });
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    console.warn('Cloud sync push failed:', err);
+    return { success: false, error: err?.message || String(err) };
+  }
+};
+
+// Pull latest data from Supabase kata_user_data table
+export const pullFromCloud = async (): Promise<{ data: CloudSyncPayload | null; error?: string }> => {
+  const sb = getSupabase();
+  if (!sb) return { data: null, error: 'Supabase credentials not configured.' };
+
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return { data: null, error: 'You must be signed in to pull from cloud.' };
+
+    const { data, error } = await sb
+      .from('kata_user_data')
+      .select('kata_data, forge_data, updated_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return { data };
+  } catch (err: any) {
+    console.warn('Cloud sync pull failed:', err);
+    return { data: null, error: err?.message || String(err) };
+  }
+};

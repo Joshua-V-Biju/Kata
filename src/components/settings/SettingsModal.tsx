@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { exportDataAsJson, readJsonFile } from '../../utils/storage';
-import { getSupabaseConfig, setSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase } from '../../utils/supabase';
-import { X, Moon, Sun, Bell, Volume2, Sparkles, Download, Upload, RefreshCw, Cloud, Shield, Check, LogOut, Key } from 'lucide-react';
+import { getSupabaseConfig, setSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, pushToCloud, pullFromCloud } from '../../utils/supabase';
+import { useForgeStore } from '../../store/useForgeStore';
+import { X, Moon, Sun, Bell, Volume2, Sparkles, Download, Upload, RefreshCw, Cloud, Shield, Check, LogOut, Key, CloudUpload, CloudDownload } from 'lucide-react';
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -28,6 +29,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   const [authPassword, setAuthPassword] = useState('');
   const [authStatus, setAuthStatus] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   React.useEffect(() => {
     const sb = getSupabase();
@@ -39,6 +41,56 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
       });
     }
   }, []);
+
+  const handlePushToCloud = async () => {
+    setIsSyncing(true);
+    const kataState = useKataStore.getState();
+    const forgeState = useForgeStore.getState();
+
+    const kataData = {
+      habits: kataState.habits,
+      dayLogs: kataState.dayLogs,
+      timetable: kataState.timetable,
+      badges: kataState.badges,
+      userStats: kataState.userStats,
+      settings: kataState.settings,
+      reminders: kataState.reminders
+    };
+
+    const forgeData = {
+      equipment: forgeState.equipment,
+      workouts: forgeState.workouts,
+      cindySessions: forgeState.cindySessions,
+      customExercises: forgeState.customExercises,
+      stats: forgeState.stats,
+      settings: forgeState.settings
+    };
+
+    const res = await pushToCloud(kataData, forgeData);
+    setIsSyncing(false);
+    if (res.success) {
+      addToast('Cloud Sync Succeeded', 'All habits, tasks, and workouts backed up to Supabase!', 'success');
+    } else {
+      addToast('Sync Failed', res.error || 'Check Supabase table setup', 'badge');
+    }
+  };
+
+  const handlePullFromCloud = async () => {
+    setIsSyncing(true);
+    const res = await pullFromCloud();
+    setIsSyncing(false);
+    if (res.data) {
+      if (res.data.kata_data) {
+        importBackupData(res.data.kata_data);
+      }
+      if (res.data.forge_data) {
+        useForgeStore.setState(res.data.forge_data);
+      }
+      addToast('Cloud Data Restored', 'Latest data loaded from Supabase!', 'success');
+    } else {
+      addToast('Pull Failed', res.error || 'No data found in Supabase', 'badge');
+    }
+  };
 
   const handleExport = () => {
     const backupData = {
@@ -254,18 +306,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
             </p>
 
             {currentUserEmail ? (
-              <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400" />
-                  <span className="text-emerald-300 font-mono text-xs">{currentUserEmail}</span>
+              <div className="space-y-3">
+                <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span className="text-emerald-300 font-mono text-xs">{currentUserEmail}</span>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Disconnect</span>
+                  </button>
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Disconnect</span>
-                </button>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    disabled={isSyncing}
+                    onClick={handlePushToCloud}
+                    className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-semibold text-xs transition cursor-pointer disabled:opacity-50"
+                  >
+                    <CloudUpload className="w-4 h-4" />
+                    <span>{isSyncing ? 'Syncing...' : 'Push to Cloud'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isSyncing}
+                    onClick={handlePullFromCloud}
+                    className="flex-1 min-w-[140px] flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-semibold text-xs transition cursor-pointer disabled:opacity-50"
+                  >
+                    <CloudDownload className="w-4 h-4" />
+                    <span>Pull from Cloud</span>
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleSaveSupabaseConfig} className="space-y-2 pt-1">
