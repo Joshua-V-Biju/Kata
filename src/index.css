@@ -147,27 +147,114 @@ html.light .text-slate-400 {
 }
 
 /* Light Mode Surfaces & Cards */
+.light .progress-track,
+html.light .progress-track,
+.light .bg-slate-900,
+html.light .bg-slate-900,
+.light .bg-slate-800,
+html.light .bg-slate-800,
+.light .bg-slate-950,
+html.light .bg-slate-950 {
+  background-color: #e2e8f0 !important;
+}
+
+.light .bg-slate-900\/20,
+.light .bg-slate-900\/30,
+.light .bg-slate-900\/40,
+.light .bg-slate-900\/50,
 .light .bg-slate-900\/60,
 .light .bg-slate-900\/70,
 .light .bg-slate-900\/80,
 .light .bg-slate-900\/90,
+html.light .bg-slate-900\/20,
+html.light .bg-slate-900\/30,
+html.light .bg-slate-900\/40,
+html.light .bg-slate-900\/50,
 html.light .bg-slate-900\/60,
 html.light .bg-slate-900\/70,
 html.light .bg-slate-900\/80,
 html.light .bg-slate-900\/90 {
-  background-color: #f8fafc !important;
-  border-color: rgba(0, 0, 0, 0.07) !important;
-}
-
-.light .bg-black\/40,
-.light .bg-black\/50,
-.light .bg-black\/60,
-html.light .bg-black\/40,
-html.light .bg-black\/50,
-html.light .bg-black\/60 {
   background-color: #f1f5f9 !important;
   border-color: rgba(0, 0, 0, 0.08) !important;
 }
+
+.light .bg-black\/20,
+.light .bg-black\/30,
+.light .bg-black\/40,
+.light .bg-black\/50,
+.light .bg-black\/60,
+html.light .bg-black\/20,
+html.light .bg-black\/30,
+html.light .bg-black\/40,
+html.light .bg-black\/50,
+html.light .bg-black\/60 {
+  background-color: #f8fafc !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Eliminate dark brown / green / red muddy dark tints in light mode */
+.light .bg-amber-950\/20,
+.light .bg-amber-950\/15,
+html.light .bg-amber-950\/20,
+html.light .bg-amber-950\/15 {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  border-color: rgba(245, 158, 11, 0.25) !important;
+}
+
+.light .bg-emerald-950\/20,
+.light .bg-emerald-950\/15,
+html.light .bg-emerald-950\/20,
+html.light .bg-emerald-950\/15 {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+.light .bg-rose-950\/20,
+.light .bg-rose-950\/15,
+html.light .bg-rose-950\/20,
+html.light .bg-rose-950\/15 {
+  background-color: rgba(244, 63, 94, 0.08) !important;
+  border-color: rgba(244, 63, 94, 0.25) !important;
+}
+
+.light [class*="bg-[#0f1420]"],
+html.light [class*="bg-[#0f1420]"],
+.light [class*="bg-[#0d121c]"],
+html.light [class*="bg-[#0d121c]"] {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: rgba(0, 0, 0, 0.09) !important;
+}
+
+/* High Contrast Light Mode Text Colors (Fixes unreadable blue/cyan/neon on light backgrounds) */
+.light .text-cyan-200, html.light .text-cyan-200 { color: #0369a1 !important; }
+.light .text-cyan-300, html.light .text-cyan-300 { color: #0284c7 !important; }
+.light .text-cyan-400, html.light .text-cyan-400 { color: #0369a1 !important; }
+.light .text-cyan-500, html.light .text-cyan-500 { color: #075985 !important; }
+
+.light .text-sky-300, html.light .text-sky-300 { color: #0284c7 !important; }
+.light .text-sky-400, html.light .text-sky-400 { color: #0369a1 !important; }
+
+.light .text-blue-300, html.light .text-blue-300 { color: #1d4ed8 !important; }
+.light .text-blue-400, html.light .text-blue-400 { color: #1e40af !important; }
+
+.light .text-teal-300, html.light .text-teal-300 { color: #0d9488 !important; }
+.light .text-teal-400, html.light .text-teal-400 { color: #0f766e !important; }
+
+.light .text-emerald-300, html.light .text-emerald-300 { color: #047857 !important; }
+.light .text-emerald-400, html.light .text-emerald-400 { color: #065f46 !important; }
+
+.light .text-amber-300, html.light .text-amber-300 { color: #b45309 !important; }
+.light .text-amber-400, html.light .text-amber-400 { color: #92400e !important; }
+
+.light .text-pink-300, html.light .text-pink-300 { color: #be185d !important; }
+.light .text-pink-400, html.light .text-pink-400 { color: #9d174d !important; }
+
+.light .text-purple-300, html.light .text-purple-300 { color: #6b21a8 !important; }
+.light .text-purple-400, html.light .text-purple-400 { color: #581c87 !important; }
+
+.light .text-rose-300, html.light .text-rose-300 { color: #be123c !important; }
+.light .text-rose-400, html.light .text-rose-400 { color: #9f1239 !important; }
 
 .light .bg-white\/5,
 .light .bg-white\/10,

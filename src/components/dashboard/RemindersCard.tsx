@@ -85,15 +85,15 @@ export const RemindersCard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-amber-500/15 border border-amber-400/30 text-amber-400 shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+          <div className="p-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-500 dark:text-amber-400 shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
             <Bell className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg md:text-xl font-display font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg md:text-xl font-display font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <span>Reminders</span>
-              <span className="text-xs font-mono text-amber-400 font-normal">備忘録</span>
+              <span className="text-xs font-mono text-amber-600 dark:text-amber-400 font-normal">備忘録</span>
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               Active alerts, upcoming deadlines & critical notices
             </p>
           </div>
@@ -101,8 +101,8 @@ export const RemindersCard: React.FC = () => {
 
         {/* Counter Badge */}
         <div className="flex items-center gap-2 shrink-0">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs font-bold">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 font-mono text-xs font-bold">
+            <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400 animate-pulse" />
             <span>{activeReminders.length} Active</span>
           </span>
         </div>
@@ -116,15 +116,15 @@ export const RemindersCard: React.FC = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Add a reminder... (e.g. Doctor appointment, pay bill, exam on Friday)"
-            className="flex-1 py-2.5 px-4 rounded-2xl bg-black/40 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/50 transition font-sans"
+            className="flex-1 py-2.5 px-4 rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/50 transition font-sans"
           />
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
             className={`p-2.5 rounded-2xl border transition text-xs font-medium cursor-pointer shrink-0 ${
               showAdvanced || priority !== 'normal' || isPinned || dueTime
-                ? 'bg-amber-500/20 border-amber-400/50 text-amber-300'
-                : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
+                ? 'bg-amber-500/15 border-amber-500/40 text-amber-800 dark:text-amber-300'
+                : 'bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
             title="Toggle Due Time & Priority options"
           >
@@ -282,12 +282,12 @@ export const RemindersCard: React.FC = () => {
                 key={reminder.id}
                 className={`p-3 md:p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3 group ${
                   reminder.completed
-                    ? 'bg-emerald-950/15 border-emerald-500/20 opacity-70'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/15 border-emerald-300 dark:border-emerald-500/20 opacity-75'
                     : reminder.pinned
-                    ? 'bg-amber-950/20 border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.06)]'
+                    ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.06)]'
                     : reminder.priority === 'urgent'
-                    ? 'bg-rose-950/20 border-rose-500/30'
-                    : 'bg-black/30 border-white/5 hover:border-white/15'
+                    ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-500/30'
+                    : 'bg-slate-50 dark:bg-black/30 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/15'
                 }`}
               >
                 {/* Left: Checkbox & Content */}
@@ -299,8 +299,8 @@ export const RemindersCard: React.FC = () => {
                       reminder.completed
                         ? 'bg-gradient-to-r from-emerald-500 to-teal-400 border-emerald-400 text-slate-950 shadow-sm'
                         : reminder.priority === 'urgent'
-                        ? 'border-rose-400/60 hover:border-rose-400 bg-rose-500/10 text-transparent'
-                        : 'border-white/20 hover:border-amber-400 bg-white/5 text-transparent'
+                        ? 'border-rose-400/60 hover:border-rose-500 bg-rose-50 dark:bg-rose-500/10 text-transparent'
+                        : 'border-slate-300 dark:border-white/20 hover:border-amber-500 dark:hover:border-amber-400 bg-white dark:bg-white/5 text-transparent'
                     }`}
                     title={reminder.completed ? "Mark as active" : "Mark as completed"}
                   >
@@ -318,12 +318,12 @@ export const RemindersCard: React.FC = () => {
                           if (e.key === 'Enter') handleSaveEdit(reminder.id);
                           if (e.key === 'Escape') setEditingId(null);
                         }}
-                        className="flex-1 py-1 px-2.5 rounded-lg bg-black/60 border border-amber-400 text-white text-sm focus:outline-none"
+                        className="flex-1 py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-black/60 border border-amber-500 dark:border-amber-400 text-slate-900 dark:text-white text-sm focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={() => handleSaveEdit(reminder.id)}
-                        className="p-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30"
+                        className="p-1 rounded-lg bg-amber-500/20 text-amber-800 dark:text-amber-300 hover:bg-amber-500/30"
                         title="Save"
                       >
                         <Check className="w-3.5 h-3.5" />
@@ -331,7 +331,7 @@ export const RemindersCard: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setEditingId(null)}
-                        className="p-1 rounded-lg bg-white/10 text-slate-400 hover:text-white"
+                        className="p-1 rounded-lg bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         title="Cancel"
                       >
                         <X className="w-3.5 h-3.5" />
@@ -341,8 +341,8 @@ export const RemindersCard: React.FC = () => {
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         {reminder.pinned && (
-                          <span className="p-0.5 rounded bg-amber-500/20 text-amber-400 shrink-0" title="Pinned reminder">
-                            <Pin className="w-3 h-3 fill-amber-400" />
+                          <span className="p-0.5 rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0" title="Pinned reminder">
+                            <Pin className="w-3 h-3 fill-current" />
                           </span>
                         )}
 
@@ -350,8 +350,8 @@ export const RemindersCard: React.FC = () => {
                           onClick={() => toggleReminder(reminder.id)}
                           className={`text-sm cursor-pointer select-none font-medium truncate ${
                             reminder.completed
-                              ? 'line-through text-slate-500'
-                              : 'text-slate-100 hover:text-amber-200'
+                              ? 'line-through text-slate-400 dark:text-slate-500'
+                              : 'text-slate-800 hover:text-amber-600 dark:text-slate-100 dark:hover:text-amber-200'
                           }`}
                         >
                           {reminder.title}
@@ -359,13 +359,13 @@ export const RemindersCard: React.FC = () => {
 
                         {/* Priority Badge */}
                         {reminder.priority === 'urgent' && !reminder.completed && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/40 text-rose-300 font-mono text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shrink-0">
-                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
+                          <span className="px-1.5 py-0.5 rounded-md bg-rose-100 dark:bg-rose-500/20 border border-rose-300 dark:border-rose-500/40 text-rose-800 dark:text-rose-300 font-mono text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shrink-0">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 dark:bg-rose-400 animate-ping" />
                             URGENT
                           </span>
                         )}
                         {reminder.priority === 'high' && !reminder.completed && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 border border-amber-500/40 text-amber-300 font-mono text-[9px] font-bold uppercase tracking-wider shrink-0">
+                          <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-500/20 border border-amber-300 dark:border-amber-500/40 text-amber-800 dark:text-amber-300 font-mono text-[9px] font-bold uppercase tracking-wider shrink-0">
                             HIGH
                           </span>
                         )}

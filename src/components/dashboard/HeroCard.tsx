@@ -33,7 +33,7 @@ export const HeroCard: React.FC = () => {
   const xpPercent = Math.min(100, Math.round((userStats.xp / nextLevelXp) * 100));
 
   return (
-    <div className="relative rounded-3xl glass-card p-5 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
+    <div className="relative z-20 rounded-3xl glass-card pt-7 sm:pt-8 p-5 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
       {/* Background Anime Kanwa / Cyber Watermark safely clipped inside */}
       <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
         <div className="absolute -right-8 -bottom-10 text-[140px] font-display font-black text-white/[0.02] select-none leading-none">
@@ -47,7 +47,7 @@ export const HeroCard: React.FC = () => {
         <div className="shrink-0 flex flex-col items-center">
           <AnimeMascot completionRate={completionRate} streak={userStats.currentStreak} />
           <div className="mt-2 text-center">
-            <span className="text-[11px] font-mono text-slate-400">Companion Kata</span>
+            <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Companion Kata</span>
           </div>
         </div>
 
@@ -55,14 +55,14 @@ export const HeroCard: React.FC = () => {
         <div className="flex-1 text-center lg:text-left space-y-3">
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
             {/* Seamless Date Switcher Pills: Today & Yesterday */}
-            <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-white/5 border border-white/10">
+            <div className="inline-flex items-center gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setSelectedDate(todayStr)}
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold tracking-wider uppercase transition cursor-pointer ${
                   isToday
-                    ? 'bg-cyan-500/20 border border-cyan-400 text-cyan-300 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-cyan-500/15 dark:bg-cyan-500/20 border border-cyan-500/40 dark:border-cyan-400 text-cyan-800 dark:text-cyan-300 shadow-sm font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5" />
@@ -74,8 +74,8 @@ export const HeroCard: React.FC = () => {
                 onClick={() => setSelectedDate(yesterdayStr)}
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold tracking-wider uppercase transition cursor-pointer ${
                   selectedDate === yesterdayStr
-                    ? 'bg-purple-500/20 border border-purple-400 text-purple-300 shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-purple-500/15 dark:bg-purple-500/20 border border-purple-500/40 dark:border-purple-400 text-purple-800 dark:text-purple-300 shadow-sm font-bold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
                 title="View or log habits for yesterday"
               >
@@ -84,25 +84,25 @@ export const HeroCard: React.FC = () => {
             </div>
 
             {/* Streak Pill */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">
-              <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-semibold">
+              <Flame className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400 animate-pulse" />
               <span>{userStats.currentStreak}-Day Streak</span>
             </div>
 
             {/* Combo Multiplier Pill */}
             {comboMultiplier > 1 && (
-              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-300 text-xs font-bold animate-pulse">
-                <Sparkles className="w-3 h-3 text-pink-400" />
+              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-800 dark:text-pink-300 text-xs font-bold animate-pulse">
+                <Sparkles className="w-3 h-3 text-pink-500 dark:text-pink-400" />
                 <span>{comboMultiplier.toFixed(1)}x Combo</span>
               </div>
             )}
           </div>
 
           <div>
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-display font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-display font-extrabold text-slate-900 dark:text-white tracking-tight">
               {status.title}
             </h1>
-            <p className="text-sm md:text-base text-slate-300/80 mt-1 max-w-xl font-normal">
+            <p className="text-sm md:text-base text-slate-600 dark:text-slate-300/80 mt-1 max-w-xl font-normal">
               {status.subtitle}
             </p>
           </div>
@@ -111,19 +111,19 @@ export const HeroCard: React.FC = () => {
           <div className="pt-2 max-w-md">
             <div className="flex justify-between items-center text-xs mb-1.5 font-medium">
               <div className="flex items-center gap-1.5">
-                <span className="font-display font-bold text-white text-sm">Lv.{userStats.level}</span>
-                <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 text-[11px]">
+                <span className="font-display font-bold text-slate-900 dark:text-white text-sm">Lv.{userStats.level}</span>
+                <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-[11px]">
                   {userStats.rankTitle} • {userStats.rankKanji}
                 </span>
               </div>
-              <div className="flex items-center gap-1 font-mono text-cyan-400 text-xs">
-                <Zap className="w-3 h-3 fill-cyan-400" />
+              <div className="flex items-center gap-1 font-mono text-cyan-700 dark:text-cyan-400 text-xs font-bold">
+                <Zap className="w-3 h-3 fill-current" />
                 <span>{userStats.xp} / {nextLevelXp} XP</span>
               </div>
             </div>
 
             {/* Glowing Surge XP Bar */}
-            <div className="h-2.5 w-full bg-slate-900/80 rounded-full overflow-hidden p-0.5 border border-white/10">
+            <div className="h-2.5 w-full bg-slate-200 dark:bg-slate-900/80 rounded-full overflow-hidden p-0.5 border border-slate-300 dark:border-white/10">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-teal-400 to-pink-500 shadow-[0_0_12px_rgba(0,242,254,0.6)] transition-all duration-700 ease-out"
                 style={{ width: `${xpPercent}%` }}

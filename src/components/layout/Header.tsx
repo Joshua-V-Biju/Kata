@@ -79,42 +79,42 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-3">
           {currentMode === 'kata' ? (
             <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 via-teal-400 to-pink-500 p-0.5 shadow-lg shadow-cyan-500/20 flex items-center justify-center shrink-0">
-              <div className="w-full h-full bg-[#0a0d14] rounded-2xl flex items-center justify-center">
-                <span className="font-display font-black text-cyan-400 text-lg">型</span>
+              <div className="w-full h-full bg-white dark:bg-[#0a0d14] rounded-2xl flex items-center justify-center">
+                <span className="font-display font-black text-cyan-600 dark:text-cyan-400 text-lg">型</span>
               </div>
             </div>
           ) : (
             <div className="relative w-10 h-10 rounded-2xl bg-gradient-to-tr from-orange-600 via-amber-500 to-red-600 p-0.5 shadow-lg shadow-orange-500/30 flex items-center justify-center shrink-0 animate-impact">
-              <div className="w-full h-full bg-[#0c0d12] rounded-2xl flex items-center justify-center">
-                <Flame className="w-5 h-5 text-orange-400 fill-orange-400" />
+              <div className="w-full h-full bg-white dark:bg-[#0c0d12] rounded-2xl flex items-center justify-center">
+                <Flame className="w-5 h-5 text-orange-500 dark:text-orange-400 fill-current" />
               </div>
             </div>
           )}
 
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-base sm:text-lg font-display font-black tracking-tight text-white header-title">
+              <span className="text-base sm:text-lg font-display font-black tracking-tight text-slate-900 dark:text-white header-title">
                 {currentMode === 'kata' ? 'KATA' : 'FORGE'}
               </span>
-              <span className="text-xs font-display font-medium text-slate-400">
+              <span className="text-xs font-display font-medium text-slate-500 dark:text-slate-400">
                 {currentMode === 'kata' ? '• 習慣' : '• 鍛錬'}
               </span>
             </div>
-            <span className="text-[10px] font-mono tracking-widest uppercase text-cyan-400 hidden sm:block -mt-1">
+            <span className="text-[10px] font-mono tracking-widest uppercase text-cyan-700 dark:text-cyan-400 font-semibold hidden sm:block -mt-1">
               {currentMode === 'kata' ? 'Command Center' : 'Home Armor Lab'}
             </span>
           </div>
         </div>
 
         {/* Center: Always-Visible Two-Mode Switcher [ Kata | Forge ] */}
-        <div className="flex items-center p-0.5 sm:p-1 rounded-2xl bg-black/50 border border-white/10 shadow-inner mode-switcher-bar">
+        <div className="flex items-center p-0.5 sm:p-1 rounded-2xl bg-slate-100 dark:bg-black/50 border border-slate-200 dark:border-white/10 shadow-inner mode-switcher-bar">
           <button
             type="button"
             onClick={() => onModeChange('kata')}
             className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl font-display font-bold text-[11px] sm:text-xs flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
               currentMode === 'kata'
                 ? 'bg-gradient-to-r from-cyan-500 to-teal-400 text-slate-950 shadow-md shadow-cyan-500/20'
-                : 'text-slate-400 hover:text-white'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
             title="Switch to Kata Habit Command Center"
           >
@@ -128,7 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
             className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl font-display font-bold text-[11px] sm:text-xs flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
               currentMode === 'forge'
                 ? 'bg-gradient-to-r from-orange-600 via-amber-500 to-red-600 text-slate-950 shadow-lg shadow-orange-500/30'
-                : 'text-orange-400 hover:text-orange-300'
+                : 'text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300'
             } ${isWorkoutActive ? 'animate-pulse' : ''}`}
             title={isWorkoutActive ? `Forge Live: ${workoutElapsedFormatted}` : 'Switch to Forge Home Fitness Mode (Shift+F)'}
           >
@@ -144,10 +144,10 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Date Stepper & Today Indicator (Visible in Kata mode on larger screens) */}
         {currentMode === 'kata' && (
-          <div className="hidden lg:flex items-center gap-2 p-1 rounded-2xl bg-slate-900/60 border border-white/5">
+          <div className="hidden lg:flex items-center gap-2 p-1 rounded-2xl bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-white/5">
             <button
               onClick={() => stepDate(-1)}
-              className="p-1.5 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition"
+              className="p-1.5 rounded-xl hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition"
               title="Previous Day"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -155,19 +155,19 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => setSelectedDate(todayStr)}
-              className={`px-3 py-1 rounded-xl text-xs font-medium font-mono transition ${
+              className={`px-3 py-1 rounded-xl text-xs font-semibold font-mono transition ${
                 isToday
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+                  ? 'bg-cyan-500/15 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-500/40 dark:border-cyan-500/30 font-bold'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5'
               }`}
             >
               {formatDateDisplay(selectedDate)}
-              {isToday && <span className="ml-1 text-[10px] opacity-75">(Today)</span>}
+              {isToday && <span className="ml-1 text-[10px] opacity-80">(Today)</span>}
             </button>
 
             <button
               onClick={() => stepDate(1)}
-              className="p-1.5 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition"
+              className="p-1.5 rounded-xl hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition"
               title="Next Day"
             >
               <ChevronRight className="w-4 h-4" />

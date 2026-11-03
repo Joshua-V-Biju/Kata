@@ -53,14 +53,14 @@ export const CompletionsChart: React.FC = () => {
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+          <div className="p-2 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-700 dark:text-cyan-400">
             <TrendingUp className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-base font-display font-bold text-white flex items-center gap-2">
+            <h2 className="text-base font-display font-bold text-slate-900 dark:text-white flex items-center gap-2">
               14-Day Completion History • 軌跡
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               Track your daily consistency over the past 2 weeks
             </p>
           </div>
@@ -68,9 +68,9 @@ export const CompletionsChart: React.FC = () => {
 
         {/* Quick Average */}
         <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-slate-300">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Avg: <strong className="text-white font-mono">{(data.reduce((a, b) => a + b.count, 0) / data.length).toFixed(1)}</strong>/day</span>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+            <span>Avg: <strong className="text-slate-900 dark:text-white font-mono">{(data.reduce((a, b) => a + b.count, 0) / data.length).toFixed(1)}</strong>/day</span>
           </div>
         </div>
       </div>
@@ -175,7 +175,8 @@ export const CompletionsChart: React.FC = () => {
                   cx={pt.x}
                   cy={pt.y}
                   r={isHovered || isSelected ? '6' : '4'}
-                  fill="#0a0d14"
+                  fill="currentColor"
+                  className="text-white dark:text-[#0a0d14]"
                   stroke={isSelected ? '#00f2fe' : '#00e5a3'}
                   strokeWidth="2.5"
                 />
@@ -186,7 +187,7 @@ export const CompletionsChart: React.FC = () => {
                   y={chartHeight - 6}
                   textAnchor="middle"
                   fontSize="9.5"
-                  fill={isSelected ? '#00f2fe' : '#94a3b8'}
+                  fill={isSelected ? '#0284c7' : '#64748b'}
                   fontWeight={isSelected ? '700' : '500'}
                   fontFamily="'JetBrains Mono', monospace"
                 >
@@ -200,9 +201,9 @@ export const CompletionsChart: React.FC = () => {
         {/* Hover / Active Day Details Card */}
         {hoveredIndex !== null && points[hoveredIndex] && (
           <div
-            className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl bg-slate-900/95 border border-cyan-400/40 text-xs shadow-xl pointer-events-none flex items-center gap-3 animate-pop z-20"
+            className="absolute top-2 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-xl bg-white/95 dark:bg-slate-900/95 border border-cyan-500/40 dark:border-cyan-400/40 text-xs shadow-xl pointer-events-none flex items-center gap-3 animate-pop z-20 text-slate-800 dark:text-white"
           >
-            <span className="text-cyan-300 font-semibold">
+            <span className="text-cyan-800 dark:text-cyan-300 font-bold">
               {formatDateDisplay(points[hoveredIndex].date)}
             </span>
             <span className="font-mono text-white font-bold bg-cyan-500/20 px-2 py-0.5 rounded">

@@ -55,15 +55,15 @@ export const TodayTasksCard: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-cyan-500/15 border border-cyan-400/30 text-cyan-400 shrink-0 shadow-[0_0_15px_rgba(0,242,254,0.15)]">
+          <div className="p-2.5 rounded-2xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shrink-0 shadow-[0_0_15px_rgba(0,242,254,0.15)]">
             <CheckSquare className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg md:text-xl font-display font-bold text-white flex items-center gap-2">
+            <h2 className="text-lg md:text-xl font-display font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <span>{isToday ? "Today's Tasks" : `Tasks for ${formatDateDisplay(selectedDate)}`}</span>
-              <span className="text-xs font-mono text-cyan-400 font-normal">本日の課題</span>
+              <span className="text-xs font-mono text-cyan-700 dark:text-cyan-400 font-normal">本日の課題</span>
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               {isToday ? "Write your daily to-dos and check them off as you conquer them" : `Viewing & managing tasks for ${formatDateDisplay(selectedDate)}`}
             </p>
           </div>
@@ -73,10 +73,10 @@ export const TodayTasksCard: React.FC = () => {
         {totalCount > 0 && (
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex flex-col items-end">
-              <span className="text-xs font-mono font-bold text-slate-200">
+              <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-200">
                 {completedCount} of {totalCount} Done ({progressPct}%)
               </span>
-              <div className="w-28 h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
+              <div className="w-28 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-1">
                 <div
                   className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
@@ -95,7 +95,7 @@ export const TodayTasksCard: React.FC = () => {
             value={newTaskText}
             onChange={(e) => setNewTaskText(e.target.value)}
             placeholder={isToday ? "Write a task for today... (e.g. Finish project outline, buy groceries)" : `Write a task for ${formatDateDisplay(selectedDate)}...`}
-            className="w-full py-2.5 px-4 rounded-2xl bg-black/40 border border-white/10 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/50 transition font-sans"
+            className="w-full py-2.5 px-4 rounded-2xl bg-slate-100 dark:bg-black/40 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/50 transition font-sans"
           />
         </div>
         <button
@@ -111,14 +111,14 @@ export const TodayTasksCard: React.FC = () => {
       {/* Filter Chips & Clear Completed (if tasks exist) */}
       {totalCount > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-xs">
-          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/5">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl border border-slate-200 dark:border-white/5">
             <button
               type="button"
               onClick={() => setFilter('all')}
               className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer ${
                 filter === 'all'
-                  ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-cyan-500/15 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-500/40 dark:border-cyan-400/30 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               All ({totalCount})
@@ -170,8 +170,8 @@ export const TodayTasksCard: React.FC = () => {
                 key={task.id}
                 className={`p-3 md:p-3.5 rounded-2xl border transition-all duration-200 flex items-center justify-between gap-3 group ${
                   task.completed
-                    ? 'bg-emerald-950/15 border-emerald-500/20'
-                    : 'bg-black/30 border-white/5 hover:border-white/15'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/15 border-emerald-300 dark:border-emerald-500/20'
+                    : 'bg-slate-50 dark:bg-black/30 border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/15'
                 }`}
               >
                 {/* Left: Custom Checkbox & Text */}
@@ -182,7 +182,7 @@ export const TodayTasksCard: React.FC = () => {
                     className={`w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition-all cursor-pointer ${
                       task.completed
                         ? 'bg-gradient-to-r from-emerald-500 to-teal-400 border-emerald-400 text-slate-950 shadow-sm'
-                        : 'border-white/20 hover:border-cyan-400 bg-white/5 text-transparent'
+                        : 'border-slate-300 dark:border-white/20 hover:border-cyan-500 dark:hover:border-cyan-400 bg-white dark:bg-white/5 text-transparent'
                     }`}
                     title={task.completed ? "Mark as pending" : "Mark as done"}
                   >
@@ -200,12 +200,12 @@ export const TodayTasksCard: React.FC = () => {
                           if (e.key === 'Enter') handleSaveEdit(task.id);
                           if (e.key === 'Escape') setEditingTaskId(null);
                         }}
-                        className="flex-1 py-1 px-2.5 rounded-lg bg-black/60 border border-cyan-400 text-white text-sm focus:outline-none"
+                        className="flex-1 py-1 px-2.5 rounded-lg bg-slate-100 dark:bg-black/60 border border-cyan-500 dark:border-cyan-400 text-slate-900 dark:text-white text-sm focus:outline-none"
                       />
                       <button
                         type="button"
                         onClick={() => handleSaveEdit(task.id)}
-                        className="p-1 rounded-lg bg-cyan-500/20 text-cyan-300 hover:bg-cyan-500/30"
+                        className="p-1 rounded-lg bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 hover:bg-cyan-500/30"
                         title="Save"
                       >
                         <Check className="w-3.5 h-3.5" />
@@ -213,7 +213,7 @@ export const TodayTasksCard: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setEditingTaskId(null)}
-                        className="p-1 rounded-lg bg-white/10 text-slate-400 hover:text-white"
+                        className="p-1 rounded-lg bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         title="Cancel"
                       >
                         <X className="w-3.5 h-3.5" />
@@ -224,8 +224,8 @@ export const TodayTasksCard: React.FC = () => {
                       onClick={() => toggleDailyTask(selectedDate, task.id)}
                       className={`text-sm cursor-pointer select-none truncate flex-1 transition ${
                         task.completed
-                          ? 'line-through text-slate-500'
-                          : 'text-slate-200 font-medium hover:text-white'
+                          ? 'line-through text-slate-400 dark:text-slate-500'
+                          : 'text-slate-800 dark:text-slate-200 font-medium hover:text-cyan-700 dark:hover:text-white'
                       }`}
                     >
                       {task.text}

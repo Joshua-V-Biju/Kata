@@ -106,20 +106,20 @@ export const MomentumRings: React.FC = () => {
                   <IconComponent className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                     {item.title}
                   </h3>
-                  <span className="text-[10px] font-display text-slate-400">
+                  <span className="text-[10px] font-display text-slate-500 dark:text-slate-400">
                     {item.kanji}
                   </span>
                 </div>
               </div>
 
               <div className="pt-2">
-                <span className="text-2xl font-display font-extrabold text-white">
+                <span className="text-2xl font-display font-extrabold text-slate-900 dark:text-white">
                   {item.percentage}%
                 </span>
-                <p className="text-[11px] font-mono text-slate-400 mt-0.5">
+                <p className="text-[11px] font-mono text-slate-600 dark:text-slate-400 mt-0.5">
                   {item.valueText}
                 </p>
               </div>
@@ -139,7 +139,8 @@ export const MomentumRings: React.FC = () => {
                   cy="44"
                   r="36"
                   fill="transparent"
-                  stroke="rgba(255, 255, 255, 0.08)"
+                  stroke="currentColor"
+                  className="text-slate-200 dark:text-white/[0.08]"
                   strokeWidth="6"
                 />
                 <circle
@@ -157,7 +158,7 @@ export const MomentumRings: React.FC = () => {
               </svg>
 
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xs font-mono font-bold text-white">
+                <span className="text-xs font-mono font-bold text-slate-800 dark:text-white">
                   {item.percentage}%
                 </span>
               </div>

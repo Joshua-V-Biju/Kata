@@ -53,9 +53,9 @@ export const AnimeMascot: React.FC<AnimeMascotProps> = ({ completionRate, streak
     <div className="relative flex flex-col items-center pt-2">
       {/* Interactive dialogue bubble */}
       {showQuote && (
-        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-56 sm:w-64 max-w-[85vw] p-2.5 sm:p-3 rounded-2xl bg-[#0f1420]/95 border border-cyan-400/50 shadow-2xl text-center z-50 animate-pop backdrop-blur-md">
-          <p className="text-[11px] sm:text-xs font-medium text-cyan-200 italic leading-snug">{getDialogue()}</p>
-          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-[#0f1420] border-r border-b border-cyan-400/50 rotate-45" />
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-56 sm:w-64 max-w-[85vw] p-2.5 sm:p-3 rounded-2xl bg-white/95 dark:bg-[#0f1420]/95 border border-cyan-500/40 dark:border-cyan-400/50 shadow-xl dark:shadow-2xl text-center z-50 animate-pop backdrop-blur-md">
+          <p className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-cyan-200 italic leading-snug">{getDialogue()}</p>
+          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white dark:bg-[#0f1420] border-r border-b border-cyan-500/40 dark:border-cyan-400/50 rotate-45" />
         </div>
       )}
 
@@ -166,7 +166,7 @@ export const AnimeMascot: React.FC<AnimeMascotProps> = ({ completionRate, streak
         </svg>
 
         {/* Small interaction bubble badge */}
-        <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-slate-900 border border-cyan-400/50 text-cyan-300 shadow">
+        <div className="absolute -bottom-1 -right-1 p-1 rounded-full bg-white dark:bg-slate-900 border border-cyan-500/40 dark:border-cyan-400/50 text-cyan-600 dark:text-cyan-300 shadow">
           <MessageCircle className="w-3 h-3" />
         </div>
       </div>
