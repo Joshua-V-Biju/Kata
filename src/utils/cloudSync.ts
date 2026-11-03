@@ -69,12 +69,6 @@ export const performBackgroundPush = async (): Promise<boolean> => {
   }
 
   try {
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user) {
-      setSyncStatus('offline');
-      return false;
-    }
-
     isCurrentlySyncing = true;
     setSyncStatus('syncing');
 
@@ -136,12 +130,6 @@ export const performInitialCloudSync = async (): Promise<boolean> => {
   }
 
   try {
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user) {
-      setSyncStatus('offline');
-      return false;
-    }
-
     setSyncStatus('syncing');
     const res = await pullFromCloud();
 

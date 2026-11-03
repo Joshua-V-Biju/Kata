@@ -146,11 +146,14 @@ export const pushToCloud = async (kataData: any, forgeData?: any): Promise<{ suc
   if (!sb) return { success: false, error: 'Supabase credentials not configured.' };
 
   try {
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user) return { success: false, error: 'You must be signed in to sync to cloud.' };
+    let userId = '00000000-0000-0000-0000-000000000000';
+    try {
+      const { data } = await sb.auth.getUser();
+      if (data?.user?.id) userId = data.user.id;
+    } catch {}
 
     const payload: any = {
-      user_id: user.id,
+      user_id: userId,
       updated_at: new Date().toISOString()
     };
     if (kataData) payload.kata_data = kataData;
@@ -174,14 +177,18 @@ export const pullFromCloud = async (): Promise<{ data: CloudSyncPayload | null; 
   if (!sb) return { data: null, error: 'Supabase credentials not configured.' };
 
   try {
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user) return { data: null, error: 'You must be signed in to pull from cloud.' };
+    let userId: string | null = null;
+    try {
+      const { data } = await sb.auth.getUser();
+      if (data?.user?.id) userId = data.user.id;
+    } catch {}
 
-    const { data, error } = await sb
-      .from('kata_user_data')
-      .select('kata_data, forge_data, updated_at')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    let query = sb.from('kata_user_data').select('kata_data, forge_data, updated_at');
+    if (userId) {
+      query = query.eq('user_id', userId);
+    }
+
+    const { data, error } = await query.order('updated_at', { ascending: false }).limit(1).maybeSingle();
 
     if (error) throw error;
     return { data };
