@@ -15,9 +15,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
 
     <title>Kata • 習慣 — Habit Command Center</title>
+
+    <!-- Self-healing: if an older cached bundle fails to load new hashes, automatically unregister stale workers and reload -->
+    <script>
+      window.addEventListener('error', function(e) {
+        var msg = (e && e.message) ? e.message.toLowerCase() : '';
+        if (msg.indexOf('dynamically imported module') > -1 || msg.indexOf('mime type') > -1 || msg.indexOf('loading chunk') > -1) {
+          if (!sessionStorage.getItem('kata_reloaded_once')) {
+            sessionStorage.setItem('kata_reloaded_once', 'true');
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistrations().then(function(regs) {
+                regs.forEach(function(r) { r.unregister(); });
+                if ('caches' in window) {
+                  caches.keys().then(function(k) {
+                    Promise.all(k.map(function(name) { return caches.delete(name); })).then(function() {
+                      window.location.reload(true);
+                    });
+                  });
+                } else {
+                  window.location.reload(true);
+                }
+              });
+            }
+          }
+        }
+      });
+    </script>
   </head>
   <body class="bg-[#0a0d14] text-slate-100 min-h-screen selection:bg-cyan-500/30 selection:text-cyan-200 antialiased overflow-x-hidden">
-    <div id="root"></div>
+    <div id="root">
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #0a0d14; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif;">
+        <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(0,242,254,0.12); border: 1px solid rgba(0,242,254,0.35); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900; color: #00f2fe; margin-bottom: 16px;">
+          型
+        </div>
+        <div style="font-size: 13px; font-weight: 600; letter-spacing: 0.12em; color: #94a3b8; text-transform: uppercase;">
+          Kata Command Center
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

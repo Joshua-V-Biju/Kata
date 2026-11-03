@@ -77,6 +77,7 @@ function diskStoragePlugin(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [react(), diskStoragePlugin()],
   server: {
     port: 5173,
