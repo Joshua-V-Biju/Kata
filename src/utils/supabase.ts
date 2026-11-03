@@ -30,6 +30,7 @@ export const clearSupabaseConfig = () => {
   if (typeof window === 'undefined') return;
   localStorage.removeItem('kata_supabase_url');
   localStorage.removeItem('kata_supabase_key');
+  localStorage.removeItem('kata_auth_email');
   supabaseInstance = null;
 };
 
@@ -69,7 +70,14 @@ export const getSupabase = (): SupabaseClient | null => {
   const { url, key, isPlaceholder } = getSupabaseConfig();
   if (!url || !key || isPlaceholder) return null;
   try {
-    supabaseInstance = createClient(url, key);
+    supabaseInstance = createClient(url, key, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined
+      }
+    });
     return supabaseInstance;
   } catch (err) {
     console.warn('Supabase initialization failed:', err);
@@ -77,10 +85,23 @@ export const getSupabase = (): SupabaseClient | null => {
   }
 };
 
+export const getCurrentAuthUser = async (): Promise<User | null> => {
+  const sb = getSupabase();
+  if (!sb) return null;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) return session.user;
+    const { data: { user } } = await sb.auth.getUser();
+    return user;
+  } catch {
+    return null;
+  }
+};
+
 const formatErrorMessage = (err: any): string => {
   const msg = err?.message || String(err || '');
   if (msg.includes('Failed to fetch') || msg.includes('fetch')) {
-    return 'Cannot reach Supabase. Check your Project URL (https://xyz.supabase.co), check internet connection, or verify your Supabase project is active.';
+    return 'Cannot reach Supabase. Check your Project URL (https://xyz.supabase.co), check internet connection, or restart the local server.';
   }
   return msg;
 };
@@ -89,8 +110,11 @@ export const signInWithEmail = async (email: string, password: string): Promise<
   const sb = getSupabase();
   if (!sb) return { user: null, error: 'Supabase credentials not configured in Settings.' };
   try {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email: email.trim(), password });
     if (error) return { user: null, error: formatErrorMessage(error) };
+    if (typeof window !== 'undefined' && data.user?.email) {
+      localStorage.setItem('kata_auth_email', data.user.email);
+    }
     return { user: data.user, error: null };
   } catch (err) {
     return { user: null, error: formatErrorMessage(err) };
@@ -101,8 +125,11 @@ export const signUpWithEmail = async (email: string, password: string): Promise<
   const sb = getSupabase();
   if (!sb) return { user: null, error: 'Supabase credentials not configured in Settings.' };
   try {
-    const { data, error } = await sb.auth.signUp({ email, password });
+    const { data, error } = await sb.auth.signUp({ email: email.trim(), password });
     if (error) return { user: null, error: formatErrorMessage(error) };
+    if (typeof window !== 'undefined' && data.user?.email) {
+      localStorage.setItem('kata_auth_email', data.user.email);
+    }
     return { user: data.user, error: null };
   } catch (err) {
     return { user: null, error: formatErrorMessage(err) };
@@ -127,6 +154,9 @@ export const signInWithGoogle = async (): Promise<{ error: string | null }> => {
 
 export const signOut = async () => {
   const sb = getSupabase();
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('kata_auth_email');
+  }
   if (sb) {
     try {
       await sb.auth.signOut();
@@ -146,14 +176,11 @@ export const pushToCloud = async (kataData: any, forgeData?: any): Promise<{ suc
   if (!sb) return { success: false, error: 'Supabase credentials not configured.' };
 
   try {
-    let userId = '00000000-0000-0000-0000-000000000000';
-    try {
-      const { data } = await sb.auth.getUser();
-      if (data?.user?.id) userId = data.user.id;
-    } catch {}
+    const user = await getCurrentAuthUser();
+    if (!user) return { success: false, error: 'Sign in once to sync changes to cloud.' };
 
     const payload: any = {
-      user_id: userId,
+      user_id: user.id,
       updated_at: new Date().toISOString()
     };
     if (kataData) payload.kata_data = kataData;
@@ -177,18 +204,14 @@ export const pullFromCloud = async (): Promise<{ data: CloudSyncPayload | null; 
   if (!sb) return { data: null, error: 'Supabase credentials not configured.' };
 
   try {
-    let userId: string | null = null;
-    try {
-      const { data } = await sb.auth.getUser();
-      if (data?.user?.id) userId = data.user.id;
-    } catch {}
+    const user = await getCurrentAuthUser();
+    if (!user) return { data: null, error: 'Sign in once to sync changes from cloud.' };
 
-    let query = sb.from('kata_user_data').select('kata_data, forge_data, updated_at');
-    if (userId) {
-      query = query.eq('user_id', userId);
-    }
-
-    const { data, error } = await query.order('updated_at', { ascending: false }).limit(1).maybeSingle();
+    const { data, error } = await sb
+      .from('kata_user_data')
+      .select('kata_data, forge_data, updated_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
     if (error) throw error;
     return { data };

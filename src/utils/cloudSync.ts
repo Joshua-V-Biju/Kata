@@ -1,4 +1,4 @@
-import { pushToCloud, pullFromCloud, getSupabase } from './supabase';
+import { pushToCloud, pullFromCloud, getSupabase, getCurrentAuthUser } from './supabase';
 import { useKataStore } from '../store/useKataStore';
 import { useForgeStore } from '../store/useForgeStore';
 
@@ -69,6 +69,12 @@ export const performBackgroundPush = async (): Promise<boolean> => {
   }
 
   try {
+    const user = await getCurrentAuthUser();
+    if (!user) {
+      setSyncStatus('offline');
+      return false;
+    }
+
     isCurrentlySyncing = true;
     setSyncStatus('syncing');
 
@@ -130,6 +136,12 @@ export const performInitialCloudSync = async (): Promise<boolean> => {
   }
 
   try {
+    const user = await getCurrentAuthUser();
+    if (!user) {
+      setSyncStatus('offline');
+      return false;
+    }
+
     setSyncStatus('syncing');
     const res = await pullFromCloud();
 
