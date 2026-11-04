@@ -103,6 +103,11 @@ export const App: React.FC = () => {
           setShowResetPassword(true);
         } else if (event === 'SIGNED_IN' && session?.user?.email) {
           localStorage.setItem('kata_auth_email', session.user.email);
+          localStorage.setItem('kata_auth_user', JSON.stringify({
+            id: session.user.id,
+            email: session.user.email,
+            lastLogin: new Date().toISOString()
+          }));
           // If returning from OAuth with tokens in hash, clean up browser address bar
           if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
             window.history.replaceState(null, '', window.location.pathname);
@@ -110,6 +115,7 @@ export const App: React.FC = () => {
           await performInitialCloudSync();
         } else if (event === 'SIGNED_OUT') {
           localStorage.removeItem('kata_auth_email');
+          localStorage.removeItem('kata_auth_user');
           setSyncStatus('idle');
         }
       });

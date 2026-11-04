@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { exportDataAsJson, readJsonFile } from '../../utils/storage';
-import { getSupabaseConfig, setSupabaseConfig, clearSupabaseConfig, restoreDefaultSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, getCurrentAuthUser, resetPasswordForEmail, getAuthRedirectUrl } from '../../utils/supabase';
+import { getSupabaseConfig, setSupabaseConfig, clearSupabaseConfig, restoreDefaultSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, getCurrentAuthUser, getStoredAuthUser, resetPasswordForEmail, getAuthRedirectUrl } from '../../utils/supabase';
 import { performBackgroundPush, performInitialCloudSync, setSyncStatus } from '../../utils/cloudSync';
 import { soundEngine } from '../../utils/sound';
 import { useForgeStore } from '../../store/useForgeStore';
@@ -35,18 +35,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
   const [authStatus, setAuthStatus] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [copiedRedirect, setCopiedRedirect] = useState(false);
-  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(() => {
+    return getStoredAuthUser()?.email || null;
+  });
   const [isSyncing, setIsSyncing] = useState(false);
 
   React.useEffect(() => {
-    // Check initial user from Supabase session
+    // Check initial user from Supabase session or persistent storage
     getCurrentAuthUser().then(user => {
       if (user?.email) {
         setCurrentUserEmail(user.email);
-        localStorage.setItem('kata_auth_email', user.email);
       } else {
-        setCurrentUserEmail(null);
-        localStorage.removeItem('kata_auth_email');
+        const stored = getStoredAuthUser();
+        if (stored?.email) {
+          setCurrentUserEmail(stored.email);
+        } else {
+          setCurrentUserEmail(null);
+        }
       }
     });
 
@@ -57,9 +62,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
         if (session?.user?.email) {
           setCurrentUserEmail(session.user.email);
           localStorage.setItem('kata_auth_email', session.user.email);
-        } else if (event === 'SIGNED_OUT' || !session) {
+          localStorage.setItem('kata_auth_user', JSON.stringify({
+            id: session.user.id,
+            email: session.user.email,
+            lastLogin: new Date().toISOString()
+          }));
+        } else if (event === 'SIGNED_OUT') {
+          // Only clear when user explicitly signed out
           setCurrentUserEmail(null);
           localStorage.removeItem('kata_auth_email');
+          localStorage.removeItem('kata_auth_user');
         }
       });
       return () => {

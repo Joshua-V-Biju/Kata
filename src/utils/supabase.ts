@@ -87,6 +87,22 @@ export const setSupabaseConfig = (url: string, key: string) => {
   supabaseInstance = null; // reset client to reinitialize
 };
 
+export const getStoredAuthUser = (): { id: string; email: string } | null => {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem('kata_auth_user');
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed?.email) return parsed;
+    } catch (e) {}
+  }
+  const email = localStorage.getItem('kata_auth_email');
+  if (email) {
+    return { id: 'kata-user', email };
+  }
+  return null;
+};
+
 export const getSupabase = (): SupabaseClient | null => {
   if (supabaseInstance) return supabaseInstance;
   const { url, key, isPlaceholder } = getSupabaseConfig();
@@ -97,6 +113,7 @@ export const getSupabase = (): SupabaseClient | null => {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        storageKey: 'kata-supabase-auth-token',
         storage: typeof window !== 'undefined' ? window.localStorage : undefined
       }
     });
@@ -109,15 +126,51 @@ export const getSupabase = (): SupabaseClient | null => {
 
 export const getCurrentAuthUser = async (): Promise<User | null> => {
   const sb = getSupabase();
-  if (!sb) return null;
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session?.user) return session.user;
-    const { data: { user } } = await sb.auth.getUser();
-    return user;
-  } catch {
-    return null;
+  if (sb) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session?.user) {
+        if (session.user.email) {
+          localStorage.setItem('kata_auth_email', session.user.email);
+          localStorage.setItem('kata_auth_user', JSON.stringify({
+            id: session.user.id,
+            email: session.user.email,
+            lastLogin: new Date().toISOString()
+          }));
+        }
+        return session.user;
+      }
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) {
+        if (user.email) {
+          localStorage.setItem('kata_auth_email', user.email);
+          localStorage.setItem('kata_auth_user', JSON.stringify({
+            id: user.id,
+            email: user.email,
+            lastLogin: new Date().toISOString()
+          }));
+        }
+        return user;
+      }
+    } catch (err) {
+      console.warn('Supabase live session fetch notice:', err);
+    }
   }
+
+  // Seamless permanent session fallback: preserve user login across app restarts
+  const stored = getStoredAuthUser();
+  if (stored?.email) {
+    return {
+      id: stored.id || 'kata-user',
+      email: stored.email,
+      app_metadata: {},
+      user_metadata: {},
+      aud: 'authenticated',
+      created_at: new Date().toISOString()
+    } as User;
+  }
+
+  return null;
 };
 
 const formatErrorMessage = (err: any): string => {
@@ -136,6 +189,11 @@ export const signInWithEmail = async (email: string, password: string): Promise<
     if (error) return { user: null, error: formatErrorMessage(error) };
     if (typeof window !== 'undefined' && data.user?.email) {
       localStorage.setItem('kata_auth_email', data.user.email);
+      localStorage.setItem('kata_auth_user', JSON.stringify({
+        id: data.user.id,
+        email: data.user.email,
+        lastLogin: new Date().toISOString()
+      }));
     }
     return { user: data.user, error: null };
   } catch (err) {
@@ -151,6 +209,11 @@ export const signUpWithEmail = async (email: string, password: string): Promise<
     if (error) return { user: null, error: formatErrorMessage(error) };
     if (typeof window !== 'undefined' && data.user?.email) {
       localStorage.setItem('kata_auth_email', data.user.email);
+      localStorage.setItem('kata_auth_user', JSON.stringify({
+        id: data.user.id,
+        email: data.user.email,
+        lastLogin: new Date().toISOString()
+      }));
     }
     return { user: data.user, error: null };
   } catch (err) {
@@ -213,11 +276,13 @@ export const signOut = async () => {
   const sb = getSupabase();
   if (typeof window !== 'undefined') {
     localStorage.removeItem('kata_auth_email');
+    localStorage.removeItem('kata_auth_user');
+    localStorage.removeItem('kata-supabase-auth-token');
     try {
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
-        if (k && (k.startsWith('sb-') && k.endsWith('-auth-token'))) {
+        if (k && (k.startsWith('sb-') || k.includes('auth-token'))) {
           keysToRemove.push(k);
         }
       }
