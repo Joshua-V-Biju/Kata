@@ -11,7 +11,8 @@ export const BadgesGrid: React.FC = () => {
       return {
         border: 'border-slate-200 dark:border-white/5 bg-slate-100/70 dark:bg-slate-900/30 text-slate-400 dark:text-slate-500',
         badge: 'bg-slate-200/80 dark:bg-white/5 text-slate-600 dark:text-slate-500 border-slate-300 dark:border-white/5',
-        glow: ''
+        glow: '',
+        kanjiGlow: 'bg-slate-400/10 dark:bg-white/5'
       };
     }
     switch (rarity) {
@@ -19,25 +20,29 @@ export const BadgesGrid: React.FC = () => {
         return {
           border: 'border-pink-300 dark:border-pink-500/40 bg-gradient-to-b from-pink-50/90 to-white dark:from-pink-950/20 dark:to-slate-900',
           badge: 'bg-pink-100 dark:bg-pink-500/20 text-pink-900 dark:text-pink-300 border-pink-300 dark:border-pink-500/30 font-bold',
-          glow: 'shadow-[0_0_20px_rgba(244,114,182,0.15)]'
+          glow: 'shadow-[0_0_20px_rgba(244,114,182,0.15)]',
+          kanjiGlow: 'bg-pink-400/20 dark:bg-pink-400/15'
         };
       case 'epic':
         return {
           border: 'border-purple-300 dark:border-purple-500/40 bg-gradient-to-b from-purple-50/90 to-white dark:from-purple-950/20 dark:to-slate-900',
           badge: 'bg-purple-100 dark:bg-purple-500/20 text-purple-900 dark:text-purple-300 border-purple-300 dark:border-purple-500/30 font-bold',
-          glow: 'shadow-[0_0_20px_rgba(168,85,247,0.15)]'
+          glow: 'shadow-[0_0_20px_rgba(168,85,247,0.15)]',
+          kanjiGlow: 'bg-purple-400/20 dark:bg-purple-400/15'
         };
       case 'rare':
         return {
           border: 'border-cyan-300 dark:border-cyan-500/40 bg-gradient-to-b from-cyan-50/90 to-white dark:from-cyan-950/20 dark:to-slate-900',
           badge: 'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-950 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30 font-bold',
-          glow: 'shadow-[0_0_20px_rgba(0,242,254,0.15)]'
+          glow: 'shadow-[0_0_20px_rgba(0,242,254,0.15)]',
+          kanjiGlow: 'bg-cyan-400/20 dark:bg-cyan-400/15'
         };
       default:
         return {
-          border: 'border-amber-300 dark:border-amber-500/30 bg-gradient-to-b from-amber-50/80 to-white dark:bg-slate-900/60',
+          border: 'border-amber-300 dark:border-amber-500/30 bg-gradient-to-b from-amber-50/80 to-white dark:from-amber-950/20 dark:to-slate-900',
           badge: 'bg-amber-100 dark:bg-amber-500/15 text-amber-950 dark:text-amber-300 border-amber-300 dark:border-amber-500/20 font-bold',
-          glow: ''
+          glow: '',
+          kanjiGlow: 'bg-amber-400/20 dark:bg-amber-400/15'
         };
     }
   };
@@ -99,9 +104,7 @@ export const BadgesGrid: React.FC = () => {
                   {badge.titleKanji}
                 </div>
                 {/* Ambient subtle light glow behind kanji */}
-                <div className={`absolute -right-2 -top-2 w-24 h-24 rounded-full blur-2xl pointer-events-none transition-opacity ${
-                  isUnlocked ? 'bg-amber-400/25 dark:bg-amber-400/15' : 'bg-slate-400/10 dark:bg-white/5'
-                }`} />
+                <div className={`absolute -right-2 -top-2 w-24 h-24 rounded-full blur-2xl pointer-events-none transition-opacity ${styles.kanjiGlow}`} />
               </div>
 
               <div>
