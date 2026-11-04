@@ -69,6 +69,15 @@ export const JournalExpenseSection: React.FC = () => {
       
       {/* 1. Daily Journal & Mood Section */}
       <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4 relative overflow-hidden">
+        {/* Background Japanese Watermark with Ambient Glow */}
+        <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+          <div className="absolute -right-4 -bottom-6 text-9xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
+            所感
+          </div>
+          {/* Ambient subtle light glow behind kanji */}
+          <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-purple-500/20 dark:bg-purple-400/15 blur-3xl pointer-events-none" />
+        </div>
+
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400">
             <PenTool className="w-4 h-4" />
@@ -155,6 +164,15 @@ export const JournalExpenseSection: React.FC = () => {
 
       {/* 2. Expense & Savings Tracker */}
       <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4 relative overflow-hidden">
+        {/* Background Japanese Watermark with Ambient Glow */}
+        <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+          <div className="absolute -right-4 -bottom-6 text-9xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
+            蓄財
+          </div>
+          {/* Ambient subtle light glow behind kanji */}
+          <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-amber-500/20 dark:bg-amber-400/15 blur-3xl pointer-events-none" />
+        </div>
+
         <div className="flex items-center gap-2.5">
           <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
             <DollarSign className="w-4 h-4" />

@@ -34,11 +34,13 @@ export const HeroCard: React.FC = () => {
 
   return (
     <div className="relative z-20 rounded-3xl glass-card pt-7 sm:pt-8 p-5 sm:p-6 md:p-8 border border-white/10 shadow-2xl">
-      {/* Background Anime Kanwa / Cyber Watermark safely clipped inside */}
+      {/* Background Anime Kanwa / Cyber Watermark safely clipped inside with Ambient Glow */}
       <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-        <div className="absolute -right-8 -bottom-10 text-[140px] font-display font-black text-white/[0.02] select-none leading-none">
+        <div className="absolute -right-8 -bottom-10 text-[140px] font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
           鍛錬
         </div>
+        {/* Ambient subtle light glow behind kanji */}
+        <div className="absolute -right-12 -bottom-12 w-48 h-48 rounded-full bg-cyan-500/20 dark:bg-cyan-400/15 blur-3xl pointer-events-none" />
       </div>
 
       <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">

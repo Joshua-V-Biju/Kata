@@ -117,16 +117,16 @@ export const App: React.FC = () => {
     }
   }, []);
 
-  // Sync document root class with selected theme
+  // Sync document root class with selected theme (Forge is strictly locked to dark mode)
   useEffect(() => {
-    if (settings.theme === 'light') {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    } else {
+    if (currentMode === 'forge' || settings.theme === 'dark') {
       document.documentElement.classList.remove('light');
       document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.add('light');
     }
-  }, [settings.theme]);
+  }, [settings.theme, currentMode]);
 
   // Auto-trigger daily motivation quote when opening the app on a new day in Kata mode
   useEffect(() => {
@@ -190,7 +190,7 @@ export const App: React.FC = () => {
   return (
     <div
       className={`min-h-screen relative flex flex-col transition-colors duration-300 ${
-        settings.theme === 'light'
+        settings.theme === 'light' && currentMode !== 'forge'
           ? 'light bg-[#f4f6fb] text-slate-800'
           : 'dark bg-[#0f1219] text-slate-200'
       } ${currentMode === 'forge' ? 'forge-theme !bg-[#111318] !text-slate-200' : ''}`}
@@ -370,7 +370,7 @@ export const App: React.FC = () => {
 
       {/* Settings Modal */}
       {showSettings && (
-        <SettingsModal onClose={() => setShowSettings(false)} />
+        <SettingsModal onClose={() => setShowSettings(false)} currentMode={currentMode} />
       )}
 
       {/* Password Recovery Modal */}

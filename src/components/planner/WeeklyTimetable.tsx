@@ -64,7 +64,15 @@ export const WeeklyTimetable: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* View Switcher Top Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl glass-card border border-white/5">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl glass-card border border-white/5 relative overflow-hidden">
+        {/* Background Japanese Watermark with Ambient Glow */}
+        <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+          <div className="absolute -right-4 -bottom-6 text-8xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
+            計画
+          </div>
+          {/* Ambient subtle light glow behind kanji */}
+          <div className="absolute -right-8 -bottom-8 w-36 h-36 rounded-full bg-purple-500/20 dark:bg-purple-400/15 blur-3xl pointer-events-none" />
+        </div>
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400">
             <Zap className="w-5 h-5 animate-pulse" />

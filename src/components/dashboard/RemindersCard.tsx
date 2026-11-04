@@ -79,15 +79,14 @@ export const RemindersCard: React.FC = () => {
 
   return (
     <div className="rounded-3xl glass-card p-5 md:p-6 border border-white/10 shadow-xl space-y-4 relative overflow-hidden flex flex-col justify-between">
-      {/* Background Japanese Watermark */}
+      {/* Background Japanese Watermark with Ambient Glow */}
       <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-        <div className="absolute -right-6 -bottom-8 text-9xl font-display font-black text-slate-900/[0.035] dark:text-white/[0.025] select-none leading-none">
+        <div className="absolute -right-6 -bottom-8 text-9xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
           備忘
         </div>
+        {/* Ambient subtle light glow behind kanji */}
+        <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-amber-500/20 dark:bg-amber-400/15 blur-3xl pointer-events-none" />
       </div>
-
-      {/* Subtle ambient amber glow */}
-      <div className="absolute -top-12 -right-12 w-36 h-36 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/5">

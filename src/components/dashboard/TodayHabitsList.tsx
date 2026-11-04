@@ -138,11 +138,19 @@ export const TodayHabitsList: React.FC<TodayHabitsListProps> = ({
                 style={{ backgroundColor: habit.color }}
               />
 
-              {/* Background Translucent Japanese Kanji Watermark */}
+              {/* Background Translucent Japanese Kanji Watermark with Ambient Glow */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
-                <div className="absolute -right-2 -bottom-4 text-7xl font-display font-black text-slate-900/[0.04] dark:text-white/[0.025] select-none leading-none">
+                <div className="absolute -right-2 -bottom-4 text-7xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
                   {categoryKanjiMap[habit.category.toLowerCase()] || '鍛'}
                 </div>
+                {/* Ambient subtle light glow behind kanji */}
+                <div
+                  className="absolute -right-6 -bottom-6 w-24 h-24 rounded-full blur-2xl pointer-events-none transition-all duration-500"
+                  style={{
+                    backgroundColor: habit.color,
+                    opacity: isDone ? 0.3 : 0.14
+                  }}
+                />
               </div>
 
               {/* Background Glow on Completion */}

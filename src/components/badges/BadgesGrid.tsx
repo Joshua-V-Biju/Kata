@@ -93,9 +93,15 @@ export const BadgesGrid: React.FC = () => {
               key={badge.id}
               className={`rounded-2xl p-5 border transition-all duration-300 flex flex-col justify-between relative overflow-hidden ${styles.border} ${styles.glow}`}
             >
-              {/* Background Kanji Watermark */}
-              <div className="absolute right-2 top-0 text-5xl font-display font-black text-white/[0.03] select-none pointer-events-none">
-                {badge.titleKanji}
+              {/* Background Kanji Watermark with Ambient Glow */}
+              <div className="absolute inset-0 overflow-hidden rounded-2xl pointer-events-none">
+                <div className="absolute right-2 top-0 text-5xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
+                  {badge.titleKanji}
+                </div>
+                {/* Ambient subtle light glow behind kanji */}
+                <div className={`absolute -right-2 -top-2 w-24 h-24 rounded-full blur-2xl pointer-events-none transition-opacity ${
+                  isUnlocked ? 'bg-amber-400/25 dark:bg-amber-400/15' : 'bg-slate-400/10 dark:bg-white/5'
+                }`} />
               </div>
 
               <div>

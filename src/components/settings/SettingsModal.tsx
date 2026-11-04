@@ -3,14 +3,16 @@ import { useKataStore } from '../../store/useKataStore';
 import { exportDataAsJson, readJsonFile } from '../../utils/storage';
 import { getSupabaseConfig, setSupabaseConfig, clearSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, getCurrentAuthUser, resetPasswordForEmail, getAuthRedirectUrl } from '../../utils/supabase';
 import { performBackgroundPush, performInitialCloudSync } from '../../utils/cloudSync';
+import { soundEngine } from '../../utils/sound';
 import { useForgeStore } from '../../store/useForgeStore';
 import { X, Moon, Sun, Bell, Volume2, Sparkles, Download, Upload, RefreshCw, Cloud, Shield, ShieldCheck, Check, LogOut, Key, CloudUpload, CloudDownload, Lock, AlertCircle, Copy, HelpCircle } from 'lucide-react';
 
 interface SettingsModalProps {
   onClose: () => void;
+  currentMode?: 'kata' | 'forge';
 }
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMode = 'kata' }) => {
   const {
     settings,
     updateSettings,
@@ -189,6 +191,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
     };
   }, []);
 
+  const handleToggleTheme = () => {
+    if (currentMode === 'forge') {
+      addToast('LOCK IN! 🔥', "YOU DON'T NEED LIGHT MODE IN THE FORGE", 'badge');
+      soundEngine.playAnvilHit();
+      return;
+    }
+    updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 dark:bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
       <div className="relative w-full max-w-xl p-5 sm:p-6 md:p-8 rounded-3xl bg-white dark:bg-[#121722] border border-slate-200 dark:border-white/10 shadow-2xl text-slate-900 dark:text-slate-100 my-auto max-h-[92vh] overflow-y-auto">
@@ -215,14 +226,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
             {/* Dark / Light Theme */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                {settings.theme === 'dark' ? <Moon className="w-4 h-4 text-cyan-400" /> : <Sun className="w-4 h-4 text-amber-500" />}
+                {currentMode === 'forge' ? (
+                  <Moon className="w-4 h-4 text-orange-400" />
+                ) : settings.theme === 'dark' ? (
+                  <Moon className="w-4 h-4 text-cyan-400" />
+                ) : (
+                  <Sun className="w-4 h-4 text-amber-500" />
+                )}
                 <span>Interface Theme</span>
               </div>
               <button
-                onClick={() => updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' })}
-                className="px-3 py-1 rounded-xl bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-xs font-semibold capitalize transition text-slate-800 dark:text-slate-200 cursor-pointer"
+                type="button"
+                onClick={handleToggleTheme}
+                className={`px-3 py-1 rounded-xl border text-xs font-semibold capitalize transition cursor-pointer ${
+                  currentMode === 'forge'
+                    ? 'bg-orange-500/10 hover:bg-orange-500/20 border-orange-500/30 text-orange-400 font-bold'
+                    : 'bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 border-slate-300 dark:border-white/10 text-slate-800 dark:text-slate-200'
+                }`}
               >
-                {settings.theme} Mode
+                {currentMode === 'forge' ? 'Forge Locked (Dark)' : `${settings.theme} Mode`}
               </button>
             </div>
 

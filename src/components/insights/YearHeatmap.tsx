@@ -77,9 +77,13 @@ export const YearHeatmap: React.FC = () => {
 
   return (
     <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4 relative overflow-hidden">
-      {/* Anime Background Watermark */}
-      <div className="absolute -right-4 -bottom-6 text-8xl font-display font-black text-white/[0.015] select-none pointer-events-none">
-        鍛錬年輪
+      {/* Anime Background Watermark with Ambient Glow */}
+      <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+        <div className="absolute -right-4 -bottom-6 text-8xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
+          鍛錬年輪
+        </div>
+        {/* Ambient subtle light glow behind kanji */}
+        <div className="absolute -right-8 -bottom-8 w-44 h-44 rounded-full bg-cyan-500/20 dark:bg-cyan-400/15 blur-3xl pointer-events-none" />
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

@@ -169,7 +169,15 @@ export const MonthlyGrid: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Container Card with Anime Glass & Dark Charcoal Styling */}
-      <div className="rounded-3xl glass-card border border-white/10 p-5 md:p-7 shadow-2xl overflow-hidden space-y-6">
+      <div className="rounded-3xl glass-card border border-white/10 p-5 md:p-7 shadow-2xl overflow-hidden space-y-6 relative">
+        {/* Background Japanese Watermark with Ambient Glow */}
+        <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+          <div className="absolute -right-6 -bottom-8 text-[130px] font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
+            月歴
+          </div>
+          {/* Ambient subtle light glow behind kanji */}
+          <div className="absolute -right-12 -bottom-12 w-48 h-48 rounded-full bg-cyan-500/20 dark:bg-cyan-400/15 blur-3xl pointer-events-none" />
+        </div>
         
         {/* ==================================================================== */}
         {/* TOP SECTION: Month Meta & Top Glowing Wave Chart & Performance Score */}

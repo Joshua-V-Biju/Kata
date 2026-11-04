@@ -56,7 +56,16 @@ export const InsightsView: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Top Habits Card */}
-        <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4">
+        <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4 relative overflow-hidden">
+          {/* Background Japanese Watermark with Ambient Glow */}
+          <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+            <div className="absolute -right-4 -bottom-6 text-9xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
+              最強
+            </div>
+            {/* Ambient subtle light glow behind kanji */}
+            <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-emerald-500/20 dark:bg-emerald-400/15 blur-3xl pointer-events-none" />
+          </div>
+
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
               <Award className="w-4 h-4" />
@@ -110,7 +119,16 @@ export const InsightsView: React.FC = () => {
         </div>
 
         {/* Growth Opportunities / Habits Needing Focus */}
-        <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4">
+        <div className="rounded-3xl glass-card p-6 border border-slate-200 dark:border-white/5 space-y-4 relative overflow-hidden">
+          {/* Background Japanese Watermark with Ambient Glow */}
+          <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
+            <div className="absolute -right-4 -bottom-6 text-9xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
+              改善
+            </div>
+            {/* Ambient subtle light glow behind kanji */}
+            <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-amber-500/20 dark:bg-amber-400/15 blur-3xl pointer-events-none" />
+          </div>
+
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
               <AlertCircle className="w-4 h-4" />

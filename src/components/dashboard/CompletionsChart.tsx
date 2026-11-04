@@ -46,11 +46,13 @@ export const CompletionsChart: React.FC = () => {
 
   return (
     <div className="rounded-3xl glass-card p-6 border border-white/5 space-y-4 relative overflow-hidden">
-      {/* Background Anime Kanwa / Translucent Japanese Watermark */}
+      {/* Background Anime Kanwa / Translucent Japanese Watermark with Ambient Glow */}
       <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-        <div className="absolute -right-4 -bottom-6 text-9xl font-display font-black text-slate-900/[0.035] dark:text-white/[0.025] select-none leading-none">
+        <div className="absolute -right-4 -bottom-6 text-9xl font-display font-black text-slate-900/[0.045] dark:text-white/[0.035] select-none leading-none">
           軌跡
         </div>
+        {/* Ambient subtle light glow behind kanji */}
+        <div className="absolute -right-8 -bottom-8 w-40 h-40 rounded-full bg-cyan-500/20 dark:bg-cyan-400/15 blur-3xl pointer-events-none" />
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-4">

@@ -3,6 +3,7 @@ import { useKataStore } from '../../store/useKataStore';
 import { useForgeStore } from '../../store/useForgeStore';
 import { getTodayStr, formatDateDisplay, getDayOfWeekIndex } from '../../utils/dates';
 import { subscribeSyncStatus, SyncStatus } from '../../utils/cloudSync';
+import { soundEngine } from '../../utils/sound';
 import { Flame, Zap, Sun, Moon, Settings, Bell, Calendar, ChevronLeft, ChevronRight, Sparkles, Sliders, Dumbbell, Cloud, CloudOff } from 'lucide-react';
 
 interface HeaderProps {
@@ -30,8 +31,18 @@ export const Header: React.FC<HeaderProps> = ({
     updateSettings,
     sprintTimer,
     habits,
-    dayLogs
+    dayLogs,
+    addToast
   } = useKataStore();
+
+  const handleToggleTheme = () => {
+    if (currentMode === 'forge') {
+      addToast('LOCK IN! 🔥', "YOU DON'T NEED LIGHT MODE IN THE FORGE", 'badge');
+      soundEngine.playAnvilHit();
+      return;
+    }
+    updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' });
+  };
 
   const { activeWorkout } = useForgeStore();
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
@@ -226,11 +237,21 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Theme Switcher */}
           <button
-            onClick={() => updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' })}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition"
-            title="Toggle Light/Dark Theme"
+            onClick={handleToggleTheme}
+            className={`p-2 rounded-xl transition cursor-pointer ${
+              currentMode === 'forge'
+                ? 'bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20'
+                : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white'
+            }`}
+            title={
+              currentMode === 'forge'
+                ? "Forge Lock-In (Dark Only): Click to test discipline"
+                : "Toggle Light/Dark Theme"
+            }
           >
-            {settings.theme === 'dark' ? (
+            {currentMode === 'forge' ? (
+              <Moon className="w-4 h-4 text-orange-400" />
+            ) : settings.theme === 'dark' ? (
               <Sun className="w-4 h-4 text-amber-400" />
             ) : (
               <Moon className="w-4 h-4 text-cyan-400" />
