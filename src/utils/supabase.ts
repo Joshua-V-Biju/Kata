@@ -101,22 +101,13 @@ export const getStoredAuthUser = (): { id: string; email: string } | null => {
     return null;
   }
 
-  // 1. Check if a user session is stored on this device
+  // 1. Browser-level "Remember Me" (Option 2):
+  // If a user has logged into their account on this device, remember them permanently across restarts
   const raw = localStorage.getItem('kata_auth_user');
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
       if (parsed?.email && parsed.email !== 'placeholder@example.com') {
-        // On public web (Vercel), ensure Joshua's account was not mistakenly held by anonymous visitors
-        if (!isLocalEnvironment() && parsed.email === 'joshuavarkeybiju@gmail.com') {
-          const hasToken = localStorage.getItem('kata-supabase-auth-token') ||
-            Object.keys(localStorage).some(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
-          if (!hasToken) {
-            localStorage.removeItem('kata_auth_user');
-            localStorage.removeItem('kata_auth_email');
-            return null;
-          }
-        }
         return parsed;
       }
     } catch (e) {}
@@ -124,32 +115,30 @@ export const getStoredAuthUser = (): { id: string; email: string } | null => {
 
   const email = localStorage.getItem('kata_auth_email');
   if (email && email !== 'placeholder@example.com') {
-    if (!isLocalEnvironment() && email === 'joshuavarkeybiju@gmail.com') {
-      const hasToken = localStorage.getItem('kata-supabase-auth-token') ||
-        Object.keys(localStorage).some(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
-      if (!hasToken) {
-        localStorage.removeItem('kata_auth_email');
-        return null;
-      }
-    }
     return { id: 'kata-user', email };
   }
 
-  // 2. On local dev server (localhost), automatically recognize Joshua's local workspace
-  // so you never have to sign in every time you launch the app locally
+  // 2. Private .env.local developer override (Option 1):
+  // When running locally on the owner's machine with VITE_LOCAL_DEV_EMAIL defined in .env.local,
+  // automatically log in with zero prompts. If another developer clones the repo without .env.local,
+  // this is undefined and they start with a clean slate.
   if (isLocalEnvironment()) {
-    const localUser = { id: 'master-user-jvb', email: 'joshuavarkeybiju@gmail.com' };
-    try {
-      localStorage.setItem('kata_auth_email', localUser.email);
-      localStorage.setItem('kata_auth_user', JSON.stringify({
-        ...localUser,
-        lastLogin: new Date().toISOString()
-      }));
-    } catch (e) {}
-    return localUser;
+    const devEmail = ((import.meta as any).env?.VITE_LOCAL_DEV_EMAIL || '').trim();
+    if (devEmail) {
+      const devUser = { id: 'local-dev-user', email: devEmail };
+      try {
+        localStorage.setItem('kata_auth_email', devUser.email);
+        localStorage.setItem('kata_auth_user', JSON.stringify({
+          ...devUser,
+          lastLogin: new Date().toISOString()
+        }));
+      } catch (e) {}
+      return devUser;
+    }
   }
 
-  // 3. For public web visitors (Vercel), default to null (their own guest/login flow)
+  // 3. For public web visitors or someone who cloned the repo with no saved session:
+  // Default to null so they can use local mode or sign into their own account once.
   return null;
 };
 
