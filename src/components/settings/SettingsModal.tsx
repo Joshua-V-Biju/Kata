@@ -191,8 +191,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
     };
   }, []);
 
+  const [isThemeShaking, setIsThemeShaking] = useState(false);
+
   const handleToggleTheme = () => {
     if (currentMode === 'forge') {
+      setIsThemeShaking(true);
+      setTimeout(() => setIsThemeShaking(false), 550);
+
+      const root = document.getElementById('root');
+      if (root) {
+        root.classList.add('animate-screen-shake');
+        setTimeout(() => root.classList.remove('animate-screen-shake'), 450);
+      }
+
       addToast('LOCK IN! 🔥', "YOU DON'T NEED LIGHT MODE IN THE FORGE", 'badge');
       soundEngine.playAnvilHit();
       return;
@@ -239,6 +250,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
                 type="button"
                 onClick={handleToggleTheme}
                 className={`px-3 py-1 rounded-xl border text-xs font-semibold capitalize transition cursor-pointer ${
+                  isThemeShaking ? 'animate-forge-shake ring-2 ring-orange-500 bg-orange-500/30 text-orange-200 shadow-[0_0_20px_rgba(249,115,22,0.6)]' : ''
+                } ${
                   currentMode === 'forge'
                     ? 'bg-orange-500/10 hover:bg-orange-500/20 border-orange-500/30 text-orange-400 font-bold'
                     : 'bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 border-slate-300 dark:border-white/10 text-slate-800 dark:text-slate-200'

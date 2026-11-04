@@ -35,17 +35,27 @@ export const Header: React.FC<HeaderProps> = ({
     addToast
   } = useKataStore();
 
+  const { activeWorkout } = useForgeStore();
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+  const [isThemeShaking, setIsThemeShaking] = useState(false);
+
   const handleToggleTheme = () => {
     if (currentMode === 'forge') {
+      setIsThemeShaking(true);
+      setTimeout(() => setIsThemeShaking(false), 550);
+
+      const root = document.getElementById('root');
+      if (root) {
+        root.classList.add('animate-screen-shake');
+        setTimeout(() => root.classList.remove('animate-screen-shake'), 450);
+      }
+
       addToast('LOCK IN! 🔥', "YOU DON'T NEED LIGHT MODE IN THE FORGE", 'badge');
       soundEngine.playAnvilHit();
       return;
     }
     updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' });
   };
-
-  const { activeWorkout } = useForgeStore();
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
 
   useEffect(() => {
     return subscribeSyncStatus((status) => {
@@ -239,6 +249,8 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={handleToggleTheme}
             className={`p-2 rounded-xl transition cursor-pointer ${
+              isThemeShaking ? 'animate-forge-shake ring-2 ring-orange-500 bg-orange-500/30 text-orange-200 shadow-[0_0_20px_rgba(249,115,22,0.6)]' : ''
+            } ${
               currentMode === 'forge'
                 ? 'bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/20'
                 : 'bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white'
