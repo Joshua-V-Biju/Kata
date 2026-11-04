@@ -49,14 +49,14 @@ export const WorkoutFinishModal: React.FC<Props> = ({
 
           <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
             <span className="text-[10px] font-mono text-slate-500 uppercase block">Total Volume</span>
-            <span className="text-lg font-mono font-bold text-amber-400">{summary.volumeKg.toLocaleString()} kg</span>
+            <span className="text-lg font-mono font-bold text-amber-400">{(summary?.volumeKg || 0).toLocaleString()} kg</span>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-1">
             <span className="text-[10px] font-mono text-slate-500 uppercase block">PRs Hit</span>
             <span className="text-lg font-mono font-bold text-orange-400 flex items-center gap-1">
               <Trophy className="w-4 h-4" />
-              <span>+{summary.prCount} PRs</span>
+              <span>+{summary?.prCount || 0} PRs</span>
             </span>
           </div>
 
@@ -64,7 +64,7 @@ export const WorkoutFinishModal: React.FC<Props> = ({
             <span className="text-[10px] font-mono text-orange-400 uppercase block font-bold">Iron Mined</span>
             <span className="text-lg font-mono font-black text-orange-300 flex items-center gap-1">
               <Zap className="w-4 h-4 fill-orange-400" />
-              <span>+{summary.ironEarned} Iron</span>
+              <span>+{summary?.ironEarned || 0} Iron</span>
             </span>
           </div>
         </div>

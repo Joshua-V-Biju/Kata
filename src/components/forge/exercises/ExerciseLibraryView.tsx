@@ -41,7 +41,7 @@ export const ExerciseLibraryView: React.FC = () => {
     const matchesSearch =
       ex.name.toLowerCase().includes(search.toLowerCase()) ||
       ex.primaryMuscles.some(m => m.toLowerCase().includes(search.toLowerCase()));
-    const hasEquipment = ex.requiredEquipment.every(eq => equipment.includes(eq));
+    const hasEquipment = ex.requiredEquipment.every(eq => (equipment || []).includes(eq));
     const matchesGear = !onlyOwnedGear || hasEquipment;
     return matchesCategory && matchesSearch && matchesGear;
   });

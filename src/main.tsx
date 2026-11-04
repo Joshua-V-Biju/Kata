@@ -39,7 +39,23 @@ class ErrorBoundary extends React.Component<
               <button
                 onClick={() => {
                   try {
+                    // Preserve critical user habit, workout and account data
+                    const savedKata = localStorage.getItem('kata_habits');
+                    const savedLogs = localStorage.getItem('kata_day_logs');
+                    const savedForge = localStorage.getItem('forge_fitness_v1');
+                    const savedCindy = localStorage.getItem('forge_cindy_sessions_v1');
+                    const savedUser = localStorage.getItem('kata_supabase_auth_user');
+                    const savedConfig = localStorage.getItem('kata_supabase_config');
+
+                    sessionStorage.clear();
                     localStorage.clear();
+
+                    if (savedKata) localStorage.setItem('kata_habits', savedKata);
+                    if (savedLogs) localStorage.setItem('kata_day_logs', savedLogs);
+                    if (savedForge) localStorage.setItem('forge_fitness_v1', savedForge);
+                    if (savedCindy) localStorage.setItem('forge_cindy_sessions_v1', savedCindy);
+                    if (savedUser) localStorage.setItem('kata_supabase_auth_user', savedUser);
+                    if (savedConfig) localStorage.setItem('kata_supabase_config', savedConfig);
                   } catch (e) {}
                   window.location.reload();
                 }}

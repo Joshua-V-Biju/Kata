@@ -14,7 +14,7 @@ export const ForgeStatsView: React.FC = () => {
     { title: 'Titan', minIron: 2000, kanji: '鋼神', color: '#f59e0b' }
   ];
 
-  const currentRankIndex = ranks.findIndex(r => r.title === stats.rank);
+  const currentRankIndex = Math.max(0, ranks.findIndex(r => r.title === stats?.rank));
   const nextRank = ranks[currentRankIndex + 1];
 
   return (
@@ -34,10 +34,10 @@ export const ForgeStatsView: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-3xl font-display font-black text-white">
-                  Rank: {stats.rank}
+                  Rank: {stats?.rank || 'Spark'}
                 </h1>
                 <span className="text-xs font-mono text-slate-400">
-                  Tier {currentRankIndex + 1} of 6 • {ranks[currentRankIndex]?.kanji}
+                  Tier {currentRankIndex + 1} of 6 • {ranks[currentRankIndex]?.kanji || '火花'}
                 </span>
               </div>
             </div>
@@ -51,7 +51,7 @@ export const ForgeStatsView: React.FC = () => {
                 Mined Iron Currency
               </span>
               <span className="text-2xl font-mono font-black text-orange-300">
-                {stats.iron.toLocaleString()} Iron
+                {(stats?.iron || 0).toLocaleString()} Iron
               </span>
             </div>
           </div>
@@ -84,22 +84,22 @@ export const ForgeStatsView: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl forge-card border border-white/5 space-y-1">
           <span className="text-[10px] font-mono text-slate-500 uppercase block">Total Workouts</span>
-          <span className="text-2xl font-mono font-black text-white">{stats.totalWorkouts}</span>
+          <span className="text-2xl font-mono font-black text-white">{stats?.totalWorkouts || 0}</span>
         </div>
 
         <div className="p-4 rounded-2xl forge-card border border-white/5 space-y-1">
           <span className="text-[10px] font-mono text-slate-500 uppercase block">Lifetime Volume</span>
-          <span className="text-2xl font-mono font-black text-amber-400">{stats.totalVolumeKg.toLocaleString()} kg</span>
+          <span className="text-2xl font-mono font-black text-amber-400">{(stats?.totalVolumeKg || 0).toLocaleString()} kg</span>
         </div>
 
         <div className="p-4 rounded-2xl forge-card border border-white/5 space-y-1">
           <span className="text-[10px] font-mono text-slate-500 uppercase block">Sets Logged</span>
-          <span className="text-2xl font-mono font-black text-orange-400">{stats.totalSets}</span>
+          <span className="text-2xl font-mono font-black text-orange-400">{stats?.totalSets || 0}</span>
         </div>
 
         <div className="p-4 rounded-2xl forge-card border border-white/5 space-y-1">
           <span className="text-[10px] font-mono text-slate-500 uppercase block">Current Streak</span>
-          <span className="text-2xl font-mono font-black text-red-400">{stats.currentStreak} Days</span>
+          <span className="text-2xl font-mono font-black text-red-400">{stats?.currentStreak || 0} Days</span>
         </div>
       </div>
 

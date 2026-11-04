@@ -49,22 +49,22 @@ export const MuscleMapView: React.FC = () => {
     calves: 0
   };
 
-  workouts.forEach(workout => {
-    const wDate = new Date(workout.startedAt);
+  (workouts || []).forEach(workout => {
+    const wDate = new Date(workout?.startedAt || Date.now());
     if (wDate >= sevenDaysAgo) {
-      workout.exercises.forEach(loggedEx => {
-        const completedSetsCount = loggedEx.sets.filter(s => s.completed).length;
+      (workout?.exercises || []).forEach(loggedEx => {
+        const completedSetsCount = (loggedEx?.sets || []).filter(s => s.completed).length;
         if (completedSetsCount === 0) return;
 
         // Find exercise definition to get targeted muscle groups
         const def = ALL_FORGE_EXERCISES.find(e => e.id === loggedEx.exerciseId || e.name === loggedEx.name);
         if (def) {
-          def.primaryMuscles.forEach(m => {
+          (def.primaryMuscles || []).forEach(m => {
             if (muscleSetsMap[m] !== undefined) {
               muscleSetsMap[m] += completedSetsCount;
             }
           });
-          def.secondaryMuscles.forEach(m => {
+          (def.secondaryMuscles || []).forEach(m => {
             if (muscleSetsMap[m] !== undefined) {
               muscleSetsMap[m] += Math.round(completedSetsCount * 0.5);
             }

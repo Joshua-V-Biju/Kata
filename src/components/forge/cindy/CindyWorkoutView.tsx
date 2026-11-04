@@ -86,9 +86,9 @@ export const CindyWorkoutView: React.FC = () => {
   });
 
   // Calculate highest rounds (all-time PR)
-  const bestSession = [...sessions].sort((a, b) => b.totalReps - a.totalReps)[0];
+  const bestSession = [...(sessions || [])].sort((a, b) => (b?.totalReps || 0) - (a?.totalReps || 0))[0];
   const bestRoundsFormatted = bestSession
-    ? `${bestSession.rounds} Rds + ${bestSession.partialReps} reps (${bestSession.totalReps} total)`
+    ? `${bestSession.rounds || 0} Rds + ${bestSession.partialReps || 0} reps (${bestSession.totalReps || 0} total)`
     : 'No baseline yet';
 
   // Timer Tick Hook

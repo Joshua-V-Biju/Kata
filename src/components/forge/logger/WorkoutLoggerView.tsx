@@ -268,7 +268,7 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory, onNavigateToT
               title="Open full workout history calendar"
             >
               <Calendar className="w-3.5 h-3.5 text-orange-400" />
-              <span>Monthly Tracker ({workouts.length})</span>
+              <span>Monthly Tracker ({(workouts || []).length})</span>
             </button>
           )}
 
@@ -346,7 +346,7 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory, onNavigateToT
             <div className="flex items-center gap-2.5">
               <Shield className="w-4 h-4 text-orange-400" />
               <span className="text-xs font-mono text-slate-300">
-                Active Armory: <strong>{equipment.length} equipment items</strong> configured
+                Active Armory: <strong>{(equipment || []).length} equipment items</strong> configured
               </span>
             </div>
             <button
@@ -503,7 +503,7 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory, onNavigateToT
                 <h4 className="font-display font-bold text-white text-sm flex items-center gap-2">
                   <span>Workout Calendar &amp; Monthly History</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">
-                    {workouts.length} {workouts.length === 1 ? 'workout' : 'workouts'} logged
+                    {(workouts || []).length} {(workouts || []).length === 1 ? 'workout' : 'workouts'} logged
                   </span>
                 </h4>
                 <p className="text-xs text-slate-400">

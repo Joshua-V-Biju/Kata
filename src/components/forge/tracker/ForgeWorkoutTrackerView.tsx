@@ -14,11 +14,12 @@ import {
   CheckCircle2,
   Trophy,
   Activity,
-  Plus
+  Plus,
+  Trash2
 } from 'lucide-react';
 
 export const ForgeWorkoutTrackerView: React.FC = () => {
-  const { workouts, cindySessions, startWorkout } = useForgeStore();
+  const { workouts, cindySessions, startWorkout, deleteWorkout, deleteCindySession } = useForgeStore();
 
   // Track active month and year (defaults dynamically to current month)
   const [activeDate, setActiveDate] = useState(() => {
@@ -75,13 +76,13 @@ export const ForgeWorkoutTrackerView: React.FC = () => {
       totalWorkoutsThisMonth += dayW.length + dayC.length;
     }
     dayW.forEach(w => {
-      totalVolumeThisMonth += w.totalVolumeKg;
-      totalDurationSecondsThisMonth += w.durationSeconds;
-      totalIronThisMonth += w.ironEarned;
+      totalVolumeThisMonth += (w.totalVolumeKg || 0);
+      totalDurationSecondsThisMonth += (w.durationSeconds || 0);
+      totalIronThisMonth += (w.ironEarned || 0);
     });
     dayC.forEach(c => {
-      totalDurationSecondsThisMonth += c.durationSeconds;
-      totalVolumeThisMonth += c.totalReps * 20; // Simulated volume estimate
+      totalDurationSecondsThisMonth += (c.durationSeconds || 0);
+      totalVolumeThisMonth += ((c.totalReps || 0) * 20); // Simulated volume estimate
       totalIronThisMonth += 150;
     });
   });
@@ -322,15 +323,33 @@ export const ForgeWorkoutTrackerView: React.FC = () => {
                           {w.name}
                         </h4>
                       </div>
-                      <span className="text-[10px] font-mono text-slate-400">
-                        {Math.floor(w.durationSeconds / 60)} mins
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-slate-400">
+                          {Math.floor((w.durationSeconds || 0) / 60)} mins
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm(`Delete "${w.name}" workout record?`)) {
+                              deleteWorkout(w.id);
+                              if (inspectWorkout?.id === w.id) {
+                                setInspectWorkout(null);
+                              }
+                            }
+                          }}
+                          className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/15 transition cursor-pointer"
+                          title="Delete workout record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-                      <span>{w.exercises.length} Exercises</span>
-                      <span className="text-amber-400 font-bold">{w.totalVolumeKg.toLocaleString()} kg</span>
-                      <span className="text-emerald-400 font-bold">+{w.ironEarned} Iron</span>
+                      <span>{(w.exercises || []).length} Exercises</span>
+                      <span className="text-amber-400 font-bold">{(w.totalVolumeKg || 0).toLocaleString()} kg</span>
+                      <span className="text-emerald-400 font-bold">+{(w.ironEarned || 0)} Iron</span>
                     </div>
 
                     <span className="text-[11px] font-mono text-orange-400 block pt-1">
@@ -352,13 +371,28 @@ export const ForgeWorkoutTrackerView: React.FC = () => {
                           The Cindy Protocol (20m AMRAP)
                         </h4>
                       </div>
-                      <span className="text-[10px] font-mono text-amber-400 font-bold">
-                        {c.rounds} Rds + {c.partialReps} Reps
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-amber-400 font-bold">
+                          {c.rounds || 0} Rds + {c.partialReps || 0} Reps
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (window.confirm('Delete this Cindy benchmark record?')) {
+                              deleteCindySession(c.id);
+                            }
+                          }}
+                          className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/15 transition cursor-pointer"
+                          title="Delete Cindy record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-                      <span>{c.totalReps} Total Reps</span>
+                      <span>{c.totalReps || 0} Total Reps</span>
                       <span>5 Pull • 10 Push • 15 Squat</span>
                     </div>
                   </div>
@@ -383,6 +417,10 @@ export const ForgeWorkoutTrackerView: React.FC = () => {
         workout={inspectWorkout}
         isOpen={Boolean(inspectWorkout)}
         onClose={() => setInspectWorkout(null)}
+        onDelete={(id) => {
+          deleteWorkout(id);
+          setInspectWorkout(null);
+        }}
       />
 
     </div>

@@ -51,34 +51,6 @@
           }
         }
       });
-
-      // Detect unstyled hitch caused by stale service worker cache and auto-heal
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          var font = window.getComputedStyle(document.body).fontFamily || '';
-          if (font.indexOf('Times') > -1 || font.indexOf('serif') === 0) {
-            if (!sessionStorage.getItem('kata_style_healed')) {
-              sessionStorage.setItem('kata_style_healed', 'true');
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(regs) {
-                  regs.forEach(function(r) { r.unregister(); });
-                });
-              }
-              if ('caches' in window) {
-                caches.keys().then(function(keys) {
-                  Promise.all(keys.map(function(k) { return caches.delete(k); })).then(function() {
-                    window.location.reload(true);
-                  });
-                });
-              } else {
-                window.location.reload(true);
-              }
-            }
-          } else {
-            sessionStorage.removeItem('kata_style_healed');
-          }
-        }, 120);
-      });
     </script>
   </head>
   <body class="bg-[#0a0d14] text-slate-100 min-h-screen selection:bg-cyan-500/30 selection:text-cyan-200 antialiased overflow-x-hidden">

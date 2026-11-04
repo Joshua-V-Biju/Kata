@@ -41,7 +41,7 @@ export const RoutinePreviewModal: React.FC<Props> = ({
   // Determine which equipment is owned vs missing
   const requiredEquipItems = routine.requiredEquipment.map(eqId => {
     const item = AVAILABLE_EQUIPMENT.find(e => e.id === eqId);
-    const isOwned = equipment.includes(eqId);
+    const isOwned = (equipment || []).includes(eqId);
     return {
       id: eqId,
       name: item?.name || eqId,

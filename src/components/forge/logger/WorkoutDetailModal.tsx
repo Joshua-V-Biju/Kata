@@ -10,7 +10,8 @@ import {
   CheckCircle2,
   Calendar,
   Activity,
-  FileText
+  FileText,
+  Trash2
 } from 'lucide-react';
 
 interface Props {
@@ -18,19 +19,21 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onRepeat?: (workout: WorkoutSession) => void;
+  onDelete?: (id: string) => void;
 }
 
 export const WorkoutDetailModal: React.FC<Props> = ({
   workout,
   isOpen,
   onClose,
-  onRepeat
+  onRepeat,
+  onDelete
 }) => {
   if (!isOpen || !workout) return null;
 
-  const durM = Math.floor(workout.durationSeconds / 60);
-  const durS = workout.durationSeconds % 60;
-  const dateFormatted = new Date(workout.startedAt).toLocaleDateString(undefined, {
+  const durM = Math.floor((workout.durationSeconds || 0) / 60);
+  const durS = (workout.durationSeconds || 0) % 60;
+  const dateFormatted = new Date(workout.startedAt || Date.now()).toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
     month: 'short',
@@ -39,8 +42,8 @@ export const WorkoutDetailModal: React.FC<Props> = ({
 
   // Calculate total completed sets
   let totalSets = 0;
-  workout.exercises.forEach(ex => {
-    totalSets += ex.sets.filter(s => s.completed).length;
+  (workout.exercises || []).forEach(ex => {
+    totalSets += (ex.sets || []).filter(s => s.completed).length;
   });
 
   return (
@@ -85,11 +88,11 @@ export const WorkoutDetailModal: React.FC<Props> = ({
           </div>
           <div>
             <span className="text-[10px] text-slate-500 uppercase block">Volume</span>
-            <span className="text-lg font-black text-orange-400">{workout.totalVolumeKg.toLocaleString()} kg</span>
+            <span className="text-lg font-black text-orange-400">{(workout.totalVolumeKg || 0).toLocaleString()} kg</span>
           </div>
           <div>
             <span className="text-[10px] text-slate-500 uppercase block">Iron Mined</span>
-            <span className="text-lg font-black text-emerald-400">+{workout.ironEarned} Iron</span>
+            <span className="text-lg font-black text-emerald-400">+{(workout.ironEarned || 0)} Iron</span>
           </div>
         </div>
 
@@ -170,7 +173,7 @@ export const WorkoutDetailModal: React.FC<Props> = ({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex flex-wrap items-center gap-3 pt-2">
           {onRepeat && (
             <button
               type="button"
@@ -182,6 +185,23 @@ export const WorkoutDetailModal: React.FC<Props> = ({
             >
               <RotateCcw className="w-4 h-4 stroke-[2.5]" />
               <span>Repeat This Workout</span>
+            </button>
+          )}
+
+          {onDelete && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm(`Permanently delete "${workout.name}" record? This cannot be undone.`)) {
+                  onDelete(workout.id);
+                  onClose();
+                }
+              }}
+              className="py-3 px-4 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-mono font-bold transition cursor-pointer flex items-center justify-center gap-2"
+              title="Delete this workout record"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete Record</span>
             </button>
           )}
 

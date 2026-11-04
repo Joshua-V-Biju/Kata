@@ -22,10 +22,10 @@ export const BossLiftsView: React.FC = () => {
   // Find max reps or hold for boss targets
   const getMaxReps = (exName: string) => {
     let max = 0;
-    workouts.forEach(w => {
-      w.exercises.forEach(ex => {
-        if (ex.name.toLowerCase().includes(exName.toLowerCase())) {
-          ex.sets.forEach(s => {
+    (workouts || []).forEach(w => {
+      (w.exercises || []).forEach(ex => {
+        if (ex?.name && ex.name.toLowerCase().includes(exName.toLowerCase())) {
+          (ex.sets || []).forEach(s => {
             if ((s.completed || s.reps > 0) && s.reps > max) max = s.reps;
           });
         }

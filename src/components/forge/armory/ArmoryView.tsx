@@ -39,7 +39,7 @@ export const ArmoryView: React.FC<Props> = ({ onOpenOnboarding }) => {
       {/* Equipment Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {AVAILABLE_EQUIPMENT.map(item => {
-          const isOwned = equipment.includes(item.id);
+          const isOwned = (equipment || []).includes(item.id);
 
           return (
             <div

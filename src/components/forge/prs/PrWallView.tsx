@@ -17,20 +17,21 @@ export const PrWallView: React.FC = () => {
 
   const recordsMap: Record<string, ExerciseRecord> = {};
 
-  workouts.forEach(w => {
-    w.exercises.forEach(ex => {
+  (workouts || []).forEach(w => {
+    (w.exercises || []).forEach(ex => {
+      if (!ex?.name) return;
       if (!recordsMap[ex.name]) {
         recordsMap[ex.name] = {
           exerciseName: ex.name,
           maxReps: 0,
           maxWeightKg: 0,
           maxSetVolume: 0,
-          date: w.startedAt,
+          date: w.startedAt || new Date().toISOString(),
           totalSetsPerformed: 0
         };
       }
 
-      ex.sets.forEach(s => {
+      (ex.sets || []).forEach(s => {
         if (s.completed || s.reps > 0) {
           recordsMap[ex.name].totalSetsPerformed++;
           if (s.reps > recordsMap[ex.name].maxReps) {
@@ -56,13 +57,13 @@ export const PrWallView: React.FC = () => {
 
   // Compile history for selected exercise
   const exerciseHistory: { date: string; reps: number; weight: number; volume: number }[] = [];
-  workouts.forEach(w => {
-    const found = w.exercises.find(e => e.name === selectedExName);
+  (workouts || []).forEach(w => {
+    const found = (w.exercises || []).find(e => e?.name === selectedExName);
     if (found) {
-      found.sets.forEach(s => {
+      (found.sets || []).forEach(s => {
         if (s.completed || s.reps > 0) {
           exerciseHistory.push({
-            date: new Date(w.startedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+            date: new Date(w.startedAt || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
             reps: s.reps,
             weight: s.weightKg,
             volume: s.reps * (s.weightKg > 0 ? s.weightKg : 50)

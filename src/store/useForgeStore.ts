@@ -54,6 +54,7 @@ export interface ForgeState {
   // Cindy Benchmark Execution
   recordCindySession: (cindySession: CindySession) => void;
   deleteCindySession: (id: string) => void;
+  deleteWorkout: (id: string) => void;
 
   // Rest Timer
   startRestTimer: (durationSeconds?: number, exerciseName?: string) => void;
@@ -71,6 +72,37 @@ export interface ForgeState {
 }
 
 const SEED_CINDY_SESSIONS: CindySession[] = [];
+
+export const sanitizeWorkout = (w: any): WorkoutSession => ({
+  id: w?.id || `workout-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+  name: typeof w?.name === 'string' && w.name.trim() ? w.name : 'Forge Workout Session',
+  routineId: w?.routineId,
+  startedAt: typeof w?.startedAt === 'string' && w.startedAt ? w.startedAt : new Date().toISOString(),
+  completedAt: w?.completedAt,
+  durationSeconds: typeof w?.durationSeconds === 'number' && !isNaN(w.durationSeconds) ? Math.max(0, w.durationSeconds) : 0,
+  totalVolumeKg: typeof w?.totalVolumeKg === 'number' && !isNaN(w.totalVolumeKg) ? Math.max(0, w.totalVolumeKg) : 0,
+  ironEarned: typeof w?.ironEarned === 'number' && !isNaN(w.ironEarned) ? Math.max(0, w.ironEarned) : 50,
+  prCount: typeof w?.prCount === 'number' && !isNaN(w.prCount) ? Math.max(0, w.prCount) : 0,
+  notes: typeof w?.notes === 'string' ? w.notes : '',
+  exercises: Array.isArray(w?.exercises) ? w.exercises.map((ex: any, exIdx: number) => ({
+    id: ex?.id || `ex-${exIdx}-${Date.now()}`,
+    exerciseId: ex?.exerciseId || ex?.id || 'unknown',
+    name: typeof ex?.name === 'string' && ex.name.trim() ? ex.name : 'Exercise',
+    notes: ex?.notes,
+    supersetGroupId: ex?.supersetGroupId,
+    sets: Array.isArray(ex?.sets) ? ex.sets.map((s: any, sIdx: number) => ({
+      id: s?.id || `set-${sIdx}-${Date.now()}`,
+      setNumber: typeof s?.setNumber === 'number' ? s.setNumber : sIdx + 1,
+      type: s?.type || 'normal',
+      reps: typeof s?.reps === 'number' && !isNaN(s.reps) ? Math.max(0, s.reps) : 0,
+      weightKg: typeof s?.weightKg === 'number' && !isNaN(s.weightKg) ? Math.max(0, s.weightKg) : 0,
+      tempo: typeof s?.tempo === 'string' ? s.tempo : 'Standard',
+      rpe: typeof s?.rpe === 'number' ? s.rpe : 8,
+      completed: Boolean(s?.completed),
+      notes: s?.notes
+    })) : []
+  })) : []
+});
 
 const getInitialForgeState = () => {
   let initialCindy = SEED_CINDY_SESSIONS;
@@ -128,27 +160,40 @@ const getInitialForgeState = () => {
     if (rawSaved) {
       const parsed = JSON.parse(rawSaved);
       if (parsed && typeof parsed === 'object') {
+        const rawWorkouts = [
+          ...(Array.isArray(parsed.workouts) ? parsed.workouts : []),
+          ...defaultState.workouts
+        ];
+        const cleanWorkouts = rawWorkouts
+          .filter((w, idx, arr) => arr.findIndex(x => x?.id === w?.id) === idx)
+          .map(sanitizeWorkout);
+
         return {
           ...defaultState,
           ...parsed,
           equipment: Array.isArray(parsed.equipment) ? parsed.equipment : defaultState.equipment,
-          workouts: (() => {
-            const raw = [
-              ...(Array.isArray(parsed.workouts) ? parsed.workouts : []),
-              ...defaultState.workouts
-            ];
-            return raw.filter((w, idx, arr) => arr.findIndex(x => x.id === w.id) === idx);
-          })(),
+          workouts: cleanWorkouts,
           cindySessions: (() => {
             const raw = [
               ...(Array.isArray(parsed.cindySessions) ? parsed.cindySessions : []),
               ...initialCindy
             ];
-            return raw.filter((s, idx, arr) => arr.findIndex(x => x.id === s.id) === idx);
+            return raw.filter((s, idx, arr) => arr.findIndex(x => x?.id === s?.id) === idx);
           })(),
           customExercises: Array.isArray(parsed.customExercises) ? parsed.customExercises : defaultState.customExercises,
           settings: { ...defaultState.settings, ...(parsed.settings || {}) },
-          stats: { ...defaultState.stats, ...(parsed.stats || {}) },
+          stats: {
+            ...defaultState.stats,
+            ...(parsed.stats || {}),
+            iron: typeof parsed.stats?.iron === 'number' && !isNaN(parsed.stats.iron) ? parsed.stats.iron : defaultState.stats.iron,
+            heat: typeof parsed.stats?.heat === 'number' && !isNaN(parsed.stats.heat) ? parsed.stats.heat : defaultState.stats.heat,
+            totalWorkouts: typeof parsed.stats?.totalWorkouts === 'number' && !isNaN(parsed.stats.totalWorkouts) ? parsed.stats.totalWorkouts : defaultState.stats.totalWorkouts,
+            totalVolumeKg: typeof parsed.stats?.totalVolumeKg === 'number' && !isNaN(parsed.stats.totalVolumeKg) ? parsed.stats.totalVolumeKg : defaultState.stats.totalVolumeKg,
+            totalSets: typeof parsed.stats?.totalSets === 'number' && !isNaN(parsed.stats.totalSets) ? parsed.stats.totalSets : defaultState.stats.totalSets,
+            currentStreak: typeof parsed.stats?.currentStreak === 'number' && !isNaN(parsed.stats.currentStreak) ? parsed.stats.currentStreak : defaultState.stats.currentStreak,
+            longestStreak: typeof parsed.stats?.longestStreak === 'number' && !isNaN(parsed.stats.longestStreak) ? parsed.stats.longestStreak : defaultState.stats.longestStreak,
+            rank: parsed.stats?.rank || defaultState.stats.rank
+          },
           onboardingCompleted: Boolean(parsed.onboardingCompleted),
           activeWorkout: parsed.activeWorkout?.isActive ? parsed.activeWorkout : defaultState.activeWorkout
         };
@@ -612,8 +657,42 @@ export const useForgeStore = create<ForgeState>((set, get) => {
     deleteCindySession: (id: string) => {
       set(state => ({
         cindySessions: state.cindySessions.filter(c => c.id !== id),
-        workouts: state.workouts.filter(w => w.id !== id)
+        workouts: state.workouts.filter(w => w.id !== id),
+        stats: {
+          ...state.stats,
+          totalWorkouts: Math.max(0, state.stats.totalWorkouts - 1)
+        }
       }));
+      persist();
+    },
+
+    deleteWorkout: (id: string) => {
+      set(state => {
+        const target = state.workouts.find(w => w.id === id);
+        const nextWorkouts = state.workouts.filter(w => w.id !== id);
+        const volumeToSubtract = target?.totalVolumeKg || 0;
+        const ironToSubtract = target?.ironEarned || 0;
+        let setsToSubtract = 0;
+        if (target && Array.isArray(target.exercises)) {
+          target.exercises.forEach(ex => {
+            if (Array.isArray(ex.sets)) {
+              setsToSubtract += ex.sets.filter(s => s.completed).length;
+            }
+          });
+        }
+
+        return {
+          workouts: nextWorkouts,
+          cindySessions: state.cindySessions.filter(c => c.id !== id),
+          stats: {
+            ...state.stats,
+            totalWorkouts: Math.max(0, state.stats.totalWorkouts - 1),
+            totalVolumeKg: Math.max(0, state.stats.totalVolumeKg - volumeToSubtract),
+            totalSets: Math.max(0, state.stats.totalSets - setsToSubtract),
+            iron: Math.max(0, state.stats.iron - ironToSubtract)
+          }
+        };
+      });
       persist();
     },
 
@@ -853,14 +932,19 @@ export const useForgeStore = create<ForgeState>((set, get) => {
 // Auto-sync with disk file forge_data.json on startup
 if (typeof window !== 'undefined') {
   fetch('/api/forge-storage')
-    .then(res => res.json())
+    .then(res => {
+      const ct = res.headers.get('content-type') || '';
+      if (!res.ok || !ct.includes('application/json')) return null;
+      return res.json();
+    })
     .then(diskData => {
       if (diskData && typeof diskData === 'object' && Array.isArray(diskData.workouts)) {
         const state = useForgeStore.getState();
+        const cleanWorkouts = diskData.workouts.map(sanitizeWorkout);
         useForgeStore.setState({
           equipment: Array.isArray(diskData.equipment) && diskData.equipment.length > 0 ? diskData.equipment : state.equipment,
           onboardingCompleted: diskData.onboardingCompleted ?? state.onboardingCompleted,
-          workouts: Array.isArray(diskData.workouts) && diskData.workouts.length > 0 ? diskData.workouts : state.workouts,
+          workouts: cleanWorkouts.length > 0 ? cleanWorkouts : state.workouts,
           cindySessions: Array.isArray(diskData.cindySessions) && diskData.cindySessions.length > 0 ? diskData.cindySessions : state.cindySessions,
           customExercises: Array.isArray(diskData.customExercises) ? diskData.customExercises : state.customExercises,
           settings: { ...state.settings, ...(diskData.settings || {}) },

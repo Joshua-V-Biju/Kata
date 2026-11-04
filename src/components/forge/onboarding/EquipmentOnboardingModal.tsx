@@ -52,7 +52,7 @@ const getEquipmentIcon = (id: EquipmentId) => {
 export const EquipmentOnboardingModal: React.FC<Props> = ({ onClose, isOpen }) => {
   const { equipment, completeOnboarding, setEquipment } = useForgeStore();
   const [selected, setSelected] = useState<EquipmentId[]>(() =>
-    equipment.length > 0 ? equipment : ['bodyweight', 'pullup_bar', 'chair_table']
+    (equipment && equipment.length > 0) ? equipment : ['bodyweight', 'pullup_bar', 'chair_table']
   );
 
   if (!isOpen) return null;
