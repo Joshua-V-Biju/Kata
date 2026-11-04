@@ -40,8 +40,11 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory, onNavigateToT
     tickWorkoutTimer,
     tickRestTimer,
     equipment,
-    workouts
+    workouts,
+    deletedRecordIds
   } = useForgeStore();
+
+  const visibleWorkouts = (workouts || []).filter(w => w && w.id && !(deletedRecordIds || []).includes(w.id));
 
   const [workoutSubTab, setWorkoutSubTab] = useState<'train' | 'cindy' | 'library'>('train');
   const [showAddExercise, setShowAddExercise] = useState(false);
@@ -268,7 +271,7 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory, onNavigateToT
               title="Open full workout history calendar"
             >
               <Calendar className="w-3.5 h-3.5 text-orange-400" />
-              <span>Monthly Tracker ({(workouts || []).length})</span>
+              <span>Monthly Tracker ({visibleWorkouts.length})</span>
             </button>
           )}
 
@@ -503,7 +506,7 @@ export const WorkoutLoggerView: React.FC<Props> = ({ onOpenArmory, onNavigateToT
                 <h4 className="font-display font-bold text-white text-sm flex items-center gap-2">
                   <span>Workout Calendar &amp; Monthly History</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-slate-400">
-                    {(workouts || []).length} {(workouts || []).length === 1 ? 'workout' : 'workouts'} logged
+                    {visibleWorkouts.length} {visibleWorkouts.length === 1 ? 'workout' : 'workouts'} logged
                   </span>
                 </h4>
                 <p className="text-xs text-slate-400">

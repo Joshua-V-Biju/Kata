@@ -20,11 +20,13 @@ import { soundEngine } from '../utils/sound';
 import { triggerAutoSync } from '../utils/cloudSync';
 
 const FORGE_STORAGE_KEY = 'forge_fitness_state_v1';
+const DELETED_RECORDS_KEY = 'forge_deleted_records_v1';
 
 // Seed workouts: empty for fresh users, preserved locally if user has saved data
 const SEED_WORKOUTS: WorkoutSession[] = [];
 
 export interface ForgeState {
+  deletedRecordIds: string[];
   equipment: EquipmentId[];
   onboardingCompleted: boolean;
   workouts: WorkoutSession[];
@@ -38,6 +40,7 @@ export interface ForgeState {
   setEquipment: (equipment: EquipmentId[]) => void;
   toggleEquipment: (eq: EquipmentId) => void;
   completeOnboarding: (equipment?: EquipmentId[]) => void;
+  importCloudData: (cloudForge: any) => void;
   
   // Workout Execution
   startWorkout: (routine?: ForgeRoutine, customName?: string) => void;
@@ -105,18 +108,28 @@ export const sanitizeWorkout = (w: any): WorkoutSession => ({
 });
 
 const getInitialForgeState = () => {
+  let initialDeleted: string[] = [];
+  try {
+    const rawDeleted = localStorage.getItem(DELETED_RECORDS_KEY);
+    if (rawDeleted) {
+      const parsed = JSON.parse(rawDeleted);
+      if (Array.isArray(parsed)) initialDeleted = parsed;
+    }
+  } catch (e) {}
+
   let initialCindy = SEED_CINDY_SESSIONS;
   try {
     const savedCindy = localStorage.getItem('forge_cindy_sessions_v1');
     if (savedCindy) {
       const parsedCindy = JSON.parse(savedCindy);
-      if (Array.isArray(parsedCindy) && parsedCindy.length > 0) {
-        initialCindy = parsedCindy;
+      if (Array.isArray(parsedCindy)) {
+        initialCindy = parsedCindy.filter((c: any) => c && c.id && !initialDeleted.includes(c.id));
       }
     }
   } catch (e) {}
 
   const defaultState = {
+    deletedRecordIds: initialDeleted,
     equipment: ['bodyweight', 'pullup_bar', 'chair_table'] as EquipmentId[],
     onboardingCompleted: false,
     workouts: SEED_WORKOUTS,
@@ -160,26 +173,28 @@ const getInitialForgeState = () => {
     if (rawSaved) {
       const parsed = JSON.parse(rawSaved);
       if (parsed && typeof parsed === 'object') {
-        const rawWorkouts = [
-          ...(Array.isArray(parsed.workouts) ? parsed.workouts : []),
-          ...defaultState.workouts
-        ];
-        const cleanWorkouts = rawWorkouts
-          .filter((w, idx, arr) => arr.findIndex(x => x?.id === w?.id) === idx)
-          .map(sanitizeWorkout);
+        const deletedRecordIds = Array.from(new Set([
+          ...initialDeleted,
+          ...(Array.isArray(parsed.deletedRecordIds) ? parsed.deletedRecordIds : [])
+        ]));
+
+        const savedWorkouts = Array.isArray(parsed.workouts)
+          ? parsed.workouts
+              .filter((w: any) => w && w.id && !deletedRecordIds.includes(w.id))
+              .map(sanitizeWorkout)
+          : defaultState.workouts.filter(w => !deletedRecordIds.includes(w.id));
+
+        const savedCindy = Array.isArray(parsed.cindySessions)
+          ? parsed.cindySessions.filter((c: any) => c && c.id && !deletedRecordIds.includes(c.id))
+          : initialCindy.filter(c => !deletedRecordIds.includes(c.id));
 
         return {
           ...defaultState,
           ...parsed,
+          deletedRecordIds,
           equipment: Array.isArray(parsed.equipment) ? parsed.equipment : defaultState.equipment,
-          workouts: cleanWorkouts,
-          cindySessions: (() => {
-            const raw = [
-              ...(Array.isArray(parsed.cindySessions) ? parsed.cindySessions : []),
-              ...initialCindy
-            ];
-            return raw.filter((s, idx, arr) => arr.findIndex(x => x?.id === s?.id) === idx);
-          })(),
+          workouts: savedWorkouts,
+          cindySessions: savedCindy,
           customExercises: Array.isArray(parsed.customExercises) ? parsed.customExercises : defaultState.customExercises,
           settings: { ...defaultState.settings, ...(parsed.settings || {}) },
           stats: {
@@ -213,10 +228,11 @@ export const useForgeStore = create<ForgeState>((set, get) => {
     try {
       const state = get();
       const toSave = {
+        deletedRecordIds: state.deletedRecordIds || [],
         equipment: state.equipment,
         onboardingCompleted: state.onboardingCompleted,
-        workouts: state.workouts,
-        cindySessions: state.cindySessions,
+        workouts: (state.workouts || []).filter(w => !(state.deletedRecordIds || []).includes(w.id)),
+        cindySessions: (state.cindySessions || []).filter(c => !(state.deletedRecordIds || []).includes(c.id)),
         activeWorkout: state.activeWorkout,
         customExercises: state.customExercises,
         settings: state.settings,
@@ -225,8 +241,9 @@ export const useForgeStore = create<ForgeState>((set, get) => {
       const jsonStr = JSON.stringify(toSave);
       localStorage.setItem(FORGE_STORAGE_KEY, jsonStr);
       localStorage.setItem('forge_fitness_state_backup', jsonStr);
+      localStorage.setItem(DELETED_RECORDS_KEY, JSON.stringify(state.deletedRecordIds || []));
       if (Array.isArray(state.cindySessions)) {
-        localStorage.setItem('forge_cindy_sessions_v1', JSON.stringify(state.cindySessions));
+        localStorage.setItem('forge_cindy_sessions_v1', JSON.stringify(toSave.cindySessions));
       }
       if (typeof window !== 'undefined') {
         fetch('/api/forge-storage', {
@@ -655,21 +672,37 @@ export const useForgeStore = create<ForgeState>((set, get) => {
     },
 
     deleteCindySession: (id: string) => {
-      set(state => ({
-        cindySessions: state.cindySessions.filter(c => c.id !== id),
-        workouts: state.workouts.filter(w => w.id !== id),
-        stats: {
-          ...state.stats,
-          totalWorkouts: Math.max(0, state.stats.totalWorkouts - 1)
-        }
-      }));
+      set(state => {
+        const nextDeleted = Array.from(new Set([...(state.deletedRecordIds || []), id]));
+        try {
+          localStorage.setItem(DELETED_RECORDS_KEY, JSON.stringify(nextDeleted));
+        } catch (e) {}
+
+        return {
+          cindySessions: (state.cindySessions || []).filter(c => c.id !== id),
+          workouts: (state.workouts || []).filter(w => w.id !== id),
+          deletedRecordIds: nextDeleted,
+          stats: {
+            ...state.stats,
+            totalWorkouts: Math.max(0, state.stats.totalWorkouts - 1)
+          }
+        };
+      });
       persist();
+      triggerAutoSync(0);
     },
 
     deleteWorkout: (id: string) => {
       set(state => {
         const target = state.workouts.find(w => w.id === id);
         const nextWorkouts = state.workouts.filter(w => w.id !== id);
+        const nextCindy = state.cindySessions.filter(c => c.id !== id);
+        const nextDeleted = Array.from(new Set([...(state.deletedRecordIds || []), id]));
+
+        try {
+          localStorage.setItem(DELETED_RECORDS_KEY, JSON.stringify(nextDeleted));
+        } catch (e) {}
+
         const volumeToSubtract = target?.totalVolumeKg || 0;
         const ironToSubtract = target?.ironEarned || 0;
         let setsToSubtract = 0;
@@ -683,7 +716,8 @@ export const useForgeStore = create<ForgeState>((set, get) => {
 
         return {
           workouts: nextWorkouts,
-          cindySessions: state.cindySessions.filter(c => c.id !== id),
+          cindySessions: nextCindy,
+          deletedRecordIds: nextDeleted,
           stats: {
             ...state.stats,
             totalWorkouts: Math.max(0, state.stats.totalWorkouts - 1),
@@ -694,6 +728,7 @@ export const useForgeStore = create<ForgeState>((set, get) => {
         };
       });
       persist();
+      triggerAutoSync(0);
     },
 
     tickWorkoutTimer: () => {
@@ -921,9 +956,58 @@ export const useForgeStore = create<ForgeState>((set, get) => {
       persist();
     },
 
+    importCloudData: (cloudForge: any) => {
+      if (!cloudForge || typeof cloudForge !== 'object') return;
+      const state = get();
+      const currentDeleted = state.deletedRecordIds || [];
+      const cloudDeleted = Array.isArray(cloudForge.deletedRecordIds) ? cloudForge.deletedRecordIds : [];
+      const mergedDeleted = Array.from(new Set([...currentDeleted, ...cloudDeleted]));
+
+      try {
+        localStorage.setItem(DELETED_RECORDS_KEY, JSON.stringify(mergedDeleted));
+      } catch (e) {}
+
+      const incomingWorkouts = Array.isArray(cloudForge.workouts)
+        ? cloudForge.workouts
+            .filter((w: any) => w && w.id && !mergedDeleted.includes(w.id))
+            .map(sanitizeWorkout)
+        : state.workouts.filter(w => !mergedDeleted.includes(w.id));
+
+      const incomingCindy = Array.isArray(cloudForge.cindySessions)
+        ? cloudForge.cindySessions
+            .filter((c: any) => c && c.id && !mergedDeleted.includes(c.id))
+        : state.cindySessions.filter(c => !mergedDeleted.includes(c.id));
+
+      set({
+        deletedRecordIds: mergedDeleted,
+        equipment: Array.isArray(cloudForge.equipment) && cloudForge.equipment.length > 0 ? cloudForge.equipment : state.equipment,
+        workouts: incomingWorkouts,
+        cindySessions: incomingCindy,
+        customExercises: Array.isArray(cloudForge.customExercises) ? cloudForge.customExercises : state.customExercises,
+        settings: { ...state.settings, ...(cloudForge.settings || {}) },
+        stats: {
+          ...state.stats,
+          ...(cloudForge.stats || {}),
+          totalWorkouts: Math.max(0, incomingWorkouts.length)
+        }
+      });
+
+      persist();
+
+      // If cloud had items that were marked deleted locally, sync clean state to cloud immediately
+      const cloudHadDeletedWorkouts = Array.isArray(cloudForge.workouts) && cloudForge.workouts.some((w: any) => mergedDeleted.includes(w?.id));
+      const cloudHadDeletedCindy = Array.isArray(cloudForge.cindySessions) && cloudForge.cindySessions.some((c: any) => mergedDeleted.includes(c?.id));
+      if (cloudHadDeletedWorkouts || cloudHadDeletedCindy) {
+        triggerAutoSync(0);
+      }
+    },
+
     resetForgeData: () => {
+      try {
+        localStorage.removeItem(DELETED_RECORDS_KEY);
+      } catch (e) {}
       const defaults = getInitialForgeState();
-      set(defaults);
+      set({ ...defaults, deletedRecordIds: [] });
       persist();
     }
   };
@@ -938,21 +1022,28 @@ if (typeof window !== 'undefined') {
       return res.json();
     })
     .then(diskData => {
-      if (diskData && typeof diskData === 'object' && Array.isArray(diskData.workouts)) {
+      if (diskData && typeof diskData === 'object') {
         const state = useForgeStore.getState();
-        const cleanWorkouts = diskData.workouts.map(sanitizeWorkout);
-        useForgeStore.setState({
-          equipment: Array.isArray(diskData.equipment) && diskData.equipment.length > 0 ? diskData.equipment : state.equipment,
-          onboardingCompleted: diskData.onboardingCompleted ?? state.onboardingCompleted,
-          workouts: cleanWorkouts.length > 0 ? cleanWorkouts : state.workouts,
-          cindySessions: Array.isArray(diskData.cindySessions) && diskData.cindySessions.length > 0 ? diskData.cindySessions : state.cindySessions,
-          customExercises: Array.isArray(diskData.customExercises) ? diskData.customExercises : state.customExercises,
-          settings: { ...state.settings, ...(diskData.settings || {}) },
-          stats: { ...state.stats, ...(diskData.stats || {}) }
-        });
-        try {
-          localStorage.setItem(FORGE_STORAGE_KEY, JSON.stringify(diskData));
-        } catch (e) {}
+        const deleted = state.deletedRecordIds || [];
+
+        // Filter disk workouts & Cindy against tombstones
+        const diskWorkouts = Array.isArray(diskData.workouts)
+          ? diskData.workouts.filter((w: any) => w && w.id && !deleted.includes(w.id)).map(sanitizeWorkout)
+          : [];
+        const diskCindy = Array.isArray(diskData.cindySessions)
+          ? diskData.cindySessions.filter((c: any) => c && c.id && !deleted.includes(c.id))
+          : [];
+
+        // Only adopt from disk if local is completely empty and no deletions have occurred
+        const shouldAdoptWorkouts = state.workouts.length === 0 && deleted.length === 0 && diskWorkouts.length > 0;
+        const shouldAdoptCindy = state.cindySessions.length === 0 && deleted.length === 0 && diskCindy.length > 0;
+
+        if (shouldAdoptWorkouts || shouldAdoptCindy) {
+          useForgeStore.setState({
+            ...(shouldAdoptWorkouts ? { workouts: diskWorkouts } : {}),
+            ...(shouldAdoptCindy ? { cindySessions: diskCindy } : {})
+          });
+        }
       }
     })
     .catch(() => {});

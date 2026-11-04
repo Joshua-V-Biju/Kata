@@ -653,6 +653,7 @@ export const useKataStore = create<KataState>((set, get) => {
       set({ habits });
       state.addToast('Habit Removed', 'Habit was removed from Kata.', 'info');
       persist({});
+      triggerAutoSync(0);
     },
 
     reorderHabit: (id, direction) => {
@@ -1049,23 +1050,29 @@ export const useKataStore = create<KataState>((set, get) => {
 // Auto-sync with disk file kata_data.json on startup
 if (typeof window !== 'undefined') {
   fetch('/api/kata-storage')
-    .then(res => res.json())
+    .then(res => {
+      const ct = res.headers.get('content-type') || '';
+      if (!res.ok || !ct.includes('application/json')) return null;
+      return res.json();
+    })
     .then(diskData => {
       if (diskData && typeof diskData === 'object' && diskData.dayLogs) {
         const state = useKataStore.getState();
-        const mergedLogs = { ...state.dayLogs, ...diskData.dayLogs };
-        const mergedStats = { ...state.userStats, ...(diskData.userStats || {}) };
+        const mergedLogs = { ...diskData.dayLogs, ...state.dayLogs };
+        const mergedStats = { ...(diskData.userStats || {}), ...state.userStats };
+        // If local state already has habits configured by user, preserve local state!
+        const habitsToUse = (state.habits && state.habits.length > 0)
+          ? state.habits
+          : (Array.isArray(diskData.habits) ? diskData.habits : state.habits);
+
         useKataStore.setState({
           dayLogs: mergedLogs,
           userStats: mergedStats,
-          habits: Array.isArray(diskData.habits) && diskData.habits.length > 0 ? diskData.habits : state.habits,
-          timetable: Array.isArray(diskData.timetable) ? diskData.timetable : state.timetable,
-          badges: Array.isArray(diskData.badges) ? diskData.badges : state.badges,
-          reminders: Array.isArray(diskData.reminders) ? diskData.reminders : state.reminders
+          habits: habitsToUse,
+          timetable: (state.timetable && state.timetable.length > 0) ? state.timetable : (Array.isArray(diskData.timetable) ? diskData.timetable : state.timetable),
+          badges: Array.isArray(diskData.badges) && diskData.badges.length > 0 ? diskData.badges : state.badges,
+          reminders: (state.reminders && state.reminders.length > 0) ? state.reminders : (Array.isArray(diskData.reminders) ? diskData.reminders : state.reminders)
         });
-        try {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(diskData));
-        } catch (e) {}
       }
     })
     .catch(() => {});

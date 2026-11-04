@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export const ForgeWorkoutTrackerView: React.FC = () => {
-  const { workouts, cindySessions, startWorkout, deleteWorkout, deleteCindySession } = useForgeStore();
+  const { workouts, cindySessions, startWorkout, deleteWorkout, deleteCindySession, deletedRecordIds } = useForgeStore();
 
   // Track active month and year (defaults dynamically to current month)
   const [activeDate, setActiveDate] = useState(() => {
@@ -45,7 +45,10 @@ export const ForgeWorkoutTrackerView: React.FC = () => {
   const monthWorkoutsByDay: Record<number, WorkoutSession[]> = {};
   const monthCindyByDay: Record<number, CindySession[]> = {};
 
-  workouts.forEach(w => {
+  const cleanWorkouts = (workouts || []).filter(w => w && w.id && !(deletedRecordIds || []).includes(w.id));
+  const cleanCindy = (cindySessions || []).filter(c => c && c.id && !(deletedRecordIds || []).includes(c.id));
+
+  cleanWorkouts.forEach(w => {
     const d = new Date(w.startedAt);
     if (d.getFullYear() === year && d.getMonth() === month) {
       const dayNum = d.getDate();
@@ -54,7 +57,7 @@ export const ForgeWorkoutTrackerView: React.FC = () => {
     }
   });
 
-  cindySessions.forEach(c => {
+  cleanCindy.forEach(c => {
     const d = new Date(c.date);
     if (d.getFullYear() === year && d.getMonth() === month) {
       const dayNum = d.getDate();

@@ -27,7 +27,7 @@ const MUSCLE_DEFINITIONS: MuscleData[] = [
 ];
 
 export const MuscleMapView: React.FC = () => {
-  const { workouts, startWorkout } = useForgeStore();
+  const { workouts, startWorkout, deletedRecordIds } = useForgeStore();
   const [activeView, setActiveView] = useState<'front' | 'back'>('front');
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup>('chest');
 
@@ -49,7 +49,7 @@ export const MuscleMapView: React.FC = () => {
     calves: 0
   };
 
-  (workouts || []).forEach(workout => {
+  (workouts || []).filter(workout => workout && workout.id && !(deletedRecordIds || []).includes(workout.id)).forEach(workout => {
     const wDate = new Date(workout?.startedAt || Date.now());
     if (wDate >= sevenDaysAgo) {
       (workout?.exercises || []).forEach(loggedEx => {

@@ -3,7 +3,7 @@ import { useForgeStore } from '../../../store/useForgeStore';
 import { Trophy, TrendingUp, Zap, Flame, Award, Dumbbell } from 'lucide-react';
 
 export const PrWallView: React.FC = () => {
-  const { workouts } = useForgeStore();
+  const { workouts, deletedRecordIds } = useForgeStore();
 
   // Aggregate personal records across all workouts
   interface ExerciseRecord {
@@ -17,7 +17,7 @@ export const PrWallView: React.FC = () => {
 
   const recordsMap: Record<string, ExerciseRecord> = {};
 
-  (workouts || []).forEach(w => {
+  (workouts || []).filter(w => w && w.id && !(deletedRecordIds || []).includes(w.id)).forEach(w => {
     (w.exercises || []).forEach(ex => {
       if (!ex?.name) return;
       if (!recordsMap[ex.name]) {

@@ -60,9 +60,9 @@ const SEED_CINDY_SESSIONS: CindySession[] = [
 ];
 
 export const CindyWorkoutView: React.FC = () => {
-  const { settings, cindySessions, recordCindySession, deleteCindySession } = useForgeStore();
+  const { settings, cindySessions, recordCindySession, deleteCindySession, deletedRecordIds } = useForgeStore();
 
-  const sessions = cindySessions && cindySessions.length > 0 ? cindySessions : SEED_CINDY_SESSIONS;
+  const sessions = (cindySessions || []).filter(s => !(deletedRecordIds || []).includes(s.id));
 
   // Timer & AMRAP Active State
   const TOTAL_DURATION_SECONDS = 1200; // 20 minutes

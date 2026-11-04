@@ -52,6 +52,11 @@ export const triggerAutoSync = (delayMs = 1800) => {
     clearTimeout(debounceTimer);
   }
 
+  if (delayMs === 0) {
+    performBackgroundPush();
+    return;
+  }
+
   debounceTimer = setTimeout(() => {
     performBackgroundPush();
   }, delayMs);
@@ -92,9 +97,10 @@ export const performBackgroundPush = async (): Promise<boolean> => {
     };
 
     const forgeData = {
+      deletedRecordIds: forgeState.deletedRecordIds || [],
       equipment: forgeState.equipment,
-      workouts: forgeState.workouts,
-      cindySessions: forgeState.cindySessions,
+      workouts: (forgeState.workouts || []).filter(w => !(forgeState.deletedRecordIds || []).includes(w.id)),
+      cindySessions: (forgeState.cindySessions || []).filter(c => !(forgeState.deletedRecordIds || []).includes(c.id)),
       customExercises: forgeState.customExercises,
       stats: forgeState.stats,
       settings: forgeState.settings
@@ -161,7 +167,7 @@ export const performInitialCloudSync = async (): Promise<boolean> => {
         }
 
         if (cloudForge) {
-          useForgeStore.setState(cloudForge);
+          useForgeStore.getState().importCloudData(cloudForge);
         }
       } finally {
         isHydratingFromCloud = false;

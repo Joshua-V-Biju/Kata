@@ -42,7 +42,8 @@ class ErrorBoundary extends React.Component<
                     // Preserve critical user habit, workout and account data
                     const savedKata = localStorage.getItem('kata_habits');
                     const savedLogs = localStorage.getItem('kata_day_logs');
-                    const savedForge = localStorage.getItem('forge_fitness_v1');
+                    const savedForge = localStorage.getItem('forge_fitness_state_v1');
+                    const savedDeletedForge = localStorage.getItem('forge_deleted_records_v1');
                     const savedCindy = localStorage.getItem('forge_cindy_sessions_v1');
                     const savedUser = localStorage.getItem('kata_supabase_auth_user');
                     const savedConfig = localStorage.getItem('kata_supabase_config');
@@ -52,7 +53,8 @@ class ErrorBoundary extends React.Component<
 
                     if (savedKata) localStorage.setItem('kata_habits', savedKata);
                     if (savedLogs) localStorage.setItem('kata_day_logs', savedLogs);
-                    if (savedForge) localStorage.setItem('forge_fitness_v1', savedForge);
+                    if (savedForge) localStorage.setItem('forge_fitness_state_v1', savedForge);
+                    if (savedDeletedForge) localStorage.setItem('forge_deleted_records_v1', savedDeletedForge);
                     if (savedCindy) localStorage.setItem('forge_cindy_sessions_v1', savedCindy);
                     if (savedUser) localStorage.setItem('kata_supabase_auth_user', savedUser);
                     if (savedConfig) localStorage.setItem('kata_supabase_config', savedConfig);

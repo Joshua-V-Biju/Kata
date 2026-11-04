@@ -17,12 +17,12 @@ interface BossTarget {
 }
 
 export const BossLiftsView: React.FC = () => {
-  const { workouts, stats } = useForgeStore();
+  const { workouts, stats, deletedRecordIds } = useForgeStore();
 
   // Find max reps or hold for boss targets
   const getMaxReps = (exName: string) => {
     let max = 0;
-    (workouts || []).forEach(w => {
+    (workouts || []).filter(w => w && w.id && !(deletedRecordIds || []).includes(w.id)).forEach(w => {
       (w.exercises || []).forEach(ex => {
         if (ex?.name && ex.name.toLowerCase().includes(exName.toLowerCase())) {
           (ex.sets || []).forEach(s => {
