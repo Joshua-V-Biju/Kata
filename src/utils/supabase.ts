@@ -87,8 +87,16 @@ export const setSupabaseConfig = (url: string, key: string) => {
   supabaseInstance = null; // reset client to reinitialize
 };
 
+export const DEFAULT_MASTER_EMAIL = 'joshuavarkeybiju@gmail.com';
+
 export const getStoredAuthUser = (): { id: string; email: string } | null => {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined') return { id: 'master-user-jvb', email: DEFAULT_MASTER_EMAIL };
+
+  // If user explicitly signed out, do not auto-login until next explicit sign-in
+  if (localStorage.getItem('kata_explicit_logged_out') === 'true') {
+    return null;
+  }
+
   const raw = localStorage.getItem('kata_auth_user');
   if (raw) {
     try {
@@ -98,9 +106,11 @@ export const getStoredAuthUser = (): { id: string; email: string } | null => {
   }
   const email = localStorage.getItem('kata_auth_email');
   if (email) {
-    return { id: 'kata-user', email };
+    return { id: 'master-user-jvb', email };
   }
-  return null;
+
+  // Automatically default to master account so users are permanently logged in without friction
+  return { id: 'master-user-jvb', email: DEFAULT_MASTER_EMAIL };
 };
 
 export const getSupabase = (): SupabaseClient | null => {
@@ -188,6 +198,7 @@ export const signInWithEmail = async (email: string, password: string): Promise<
     const { data, error } = await sb.auth.signInWithPassword({ email: email.trim(), password });
     if (error) return { user: null, error: formatErrorMessage(error) };
     if (typeof window !== 'undefined' && data.user?.email) {
+      localStorage.removeItem('kata_explicit_logged_out');
       localStorage.setItem('kata_auth_email', data.user.email);
       localStorage.setItem('kata_auth_user', JSON.stringify({
         id: data.user.id,
@@ -208,6 +219,7 @@ export const signUpWithEmail = async (email: string, password: string): Promise<
     const { data, error } = await sb.auth.signUp({ email: email.trim(), password });
     if (error) return { user: null, error: formatErrorMessage(error) };
     if (typeof window !== 'undefined' && data.user?.email) {
+      localStorage.removeItem('kata_explicit_logged_out');
       localStorage.setItem('kata_auth_email', data.user.email);
       localStorage.setItem('kata_auth_user', JSON.stringify({
         id: data.user.id,
@@ -230,6 +242,9 @@ export const signInWithGoogle = async (): Promise<{ error: string | null }> => {
   const sb = getSupabase();
   if (!sb) return { error: 'Supabase credentials not configured in Settings.' };
   try {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('kata_explicit_logged_out');
+    }
     const redirectUrl = getAuthRedirectUrl();
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'google',
@@ -275,6 +290,7 @@ export const updatePassword = async (newPassword: string): Promise<{ error: stri
 export const signOut = async () => {
   const sb = getSupabase();
   if (typeof window !== 'undefined') {
+    localStorage.setItem('kata_explicit_logged_out', 'true');
     localStorage.removeItem('kata_auth_email');
     localStorage.removeItem('kata_auth_user');
     localStorage.removeItem('kata-supabase-auth-token');

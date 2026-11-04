@@ -6,7 +6,7 @@ export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
 type SyncListener = (status: SyncStatus, lastSyncTime?: string) => void;
 
-let currentSyncStatus: SyncStatus = 'idle';
+let currentSyncStatus: SyncStatus = 'synced';
 let lastSyncTimestamp: string | null = null;
 const listeners = new Set<SyncListener>();
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;

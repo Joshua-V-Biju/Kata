@@ -286,7 +286,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : syncStatus === 'error'
                     ? 'Sync issue • Click to inspect'
                     : isCloudActive
-                    ? 'Cloud Database Ready • Click to sign in or view status'
+                    ? 'Cloud Synced • Auto-sync active'
                     : 'Local Mode • Connect cloud in settings'
                 }
               >
@@ -307,8 +307,8 @@ export const Header: React.FC<HeaderProps> = ({
                   </>
                 ) : isCloudActive ? (
                   <>
-                    <Cloud className="w-3.5 h-3.5 text-cyan-400" />
-                    <span className="hidden sm:inline text-[10px] text-cyan-300 font-mono font-medium">Cloud Ready</span>
+                    <Cloud className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="hidden sm:inline text-[10px] text-emerald-300 font-mono font-medium">Synced</span>
                   </>
                 ) : (
                   <>
