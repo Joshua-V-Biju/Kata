@@ -4,6 +4,10 @@ import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
 // Users can provide their own Supabase project URL & Anon Key in the app settings,
 // or use local-first storage with 0 cloud dependencies.
 
+// Built-in default production Supabase credentials for Kata
+export const DEFAULT_SUPABASE_URL = 'https://jtigfaacegbvdjwzislp.supabase.co';
+export const DEFAULT_SUPABASE_KEY = 'sb_publishable_I-FzmOwYtz8aLZfhE5BFlQ_DaUNSDzW';
+
 let supabaseInstance: SupabaseClient | null = null;
 
 export const formatSupabaseUrl = (raw: string): string => {
@@ -28,14 +32,31 @@ export const isPlaceholderConfig = (url: string, key: string): boolean => {
 
 export const clearSupabaseConfig = () => {
   if (typeof window === 'undefined') return;
+  localStorage.setItem('kata_cloud_disabled', 'true');
   localStorage.removeItem('kata_supabase_url');
   localStorage.removeItem('kata_supabase_key');
   localStorage.removeItem('kata_auth_email');
   supabaseInstance = null;
 };
 
+export const restoreDefaultSupabaseConfig = () => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem('kata_cloud_disabled');
+  localStorage.removeItem('kata_supabase_url');
+  localStorage.removeItem('kata_supabase_key');
+  supabaseInstance = null;
+};
+
 export const getSupabaseConfig = () => {
-  if (typeof window === 'undefined') return { url: '', key: '', isEnvConfigured: false, isPlaceholder: false };
+  if (typeof window === 'undefined') {
+    return { url: DEFAULT_SUPABASE_URL, key: DEFAULT_SUPABASE_KEY, isEnvConfigured: false, isPlaceholder: false };
+  }
+
+  // If user explicitly chose local-only mode
+  if (localStorage.getItem('kata_cloud_disabled') === 'true') {
+    return { url: '', key: '', isEnvConfigured: false, isPlaceholder: false };
+  }
+
   const envUrl = ((import.meta as any).env?.VITE_SUPABASE_URL || '').trim();
   const envKey = ((import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '').trim();
   const localUrl = (localStorage.getItem('kata_supabase_url') || '').trim();
@@ -47,10 +68,10 @@ export const getSupabaseConfig = () => {
     localStorage.removeItem('kata_supabase_key');
   }
 
-  const rawUrl = localUrl || envUrl;
-  const rawKey = localKey || envKey;
+  const rawUrl = localUrl || envUrl || DEFAULT_SUPABASE_URL;
+  const rawKey = localKey || envKey || DEFAULT_SUPABASE_KEY;
   const isPlaceholder = isPlaceholderConfig(rawUrl, rawKey);
-  const isEnvConfigured = Boolean(envUrl && envKey && !isPlaceholderConfig(envUrl, envKey));
+  const isEnvConfigured = Boolean((envUrl && envKey && !isPlaceholderConfig(envUrl, envKey)) || (!localUrl && !envUrl));
   const url = isPlaceholder ? '' : formatSupabaseUrl(rawUrl);
   const key = isPlaceholder ? '' : rawKey;
 
@@ -59,6 +80,7 @@ export const getSupabaseConfig = () => {
 
 export const setSupabaseConfig = (url: string, key: string) => {
   if (typeof window === 'undefined') return;
+  localStorage.removeItem('kata_cloud_disabled');
   const formattedUrl = formatSupabaseUrl(url);
   localStorage.setItem('kata_supabase_url', formattedUrl);
   localStorage.setItem('kata_supabase_key', key.trim());
@@ -191,11 +213,23 @@ export const signOut = async () => {
   const sb = getSupabase();
   if (typeof window !== 'undefined') {
     localStorage.removeItem('kata_auth_email');
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('sb-') && k.endsWith('-auth-token'))) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
   }
   if (sb) {
     try {
-      await sb.auth.signOut();
-    } catch (e) {}
+      await sb.auth.signOut({ scope: 'local' });
+    } catch (e) {
+      console.warn('Signout warning:', e);
+    }
   }
 };
 

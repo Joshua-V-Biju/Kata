@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useKataStore } from '../../store/useKataStore';
 import { exportDataAsJson, readJsonFile } from '../../utils/storage';
-import { getSupabaseConfig, setSupabaseConfig, clearSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, getCurrentAuthUser, resetPasswordForEmail, getAuthRedirectUrl } from '../../utils/supabase';
-import { performBackgroundPush, performInitialCloudSync } from '../../utils/cloudSync';
+import { getSupabaseConfig, setSupabaseConfig, clearSupabaseConfig, restoreDefaultSupabaseConfig, signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, getSupabase, getCurrentAuthUser, resetPasswordForEmail, getAuthRedirectUrl } from '../../utils/supabase';
+import { performBackgroundPush, performInitialCloudSync, setSyncStatus } from '../../utils/cloudSync';
 import { soundEngine } from '../../utils/sound';
 import { useForgeStore } from '../../store/useForgeStore';
 import { X, Moon, Sun, Bell, Volume2, Sparkles, Download, Upload, RefreshCw, Cloud, Shield, ShieldCheck, Check, LogOut, Key, CloudUpload, CloudDownload, Lock, AlertCircle, Copy, HelpCircle } from 'lucide-react';
@@ -35,22 +35,37 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
   const [authStatus, setAuthStatus] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [copiedRedirect, setCopiedRedirect] = useState(false);
-  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('kata_auth_email') || null;
-  });
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
 
   React.useEffect(() => {
+    // Check initial user from Supabase session
     getCurrentAuthUser().then(user => {
       if (user?.email) {
         setCurrentUserEmail(user.email);
         localStorage.setItem('kata_auth_email', user.email);
-      } else if (!user) {
-        const saved = localStorage.getItem('kata_auth_email');
-        if (!saved) setCurrentUserEmail(null);
+      } else {
+        setCurrentUserEmail(null);
+        localStorage.removeItem('kata_auth_email');
       }
     });
+
+    // Reactive auth listener for instant UI updates on sign in / sign out
+    const sb = getSupabase();
+    if (sb) {
+      const { data: listener } = sb.auth.onAuthStateChange((event, session) => {
+        if (session?.user?.email) {
+          setCurrentUserEmail(session.user.email);
+          localStorage.setItem('kata_auth_email', session.user.email);
+        } else if (event === 'SIGNED_OUT' || !session) {
+          setCurrentUserEmail(null);
+          localStorage.removeItem('kata_auth_email');
+        }
+      });
+      return () => {
+        listener?.subscription?.unsubscribe();
+      };
+    }
   }, []);
 
   const handlePushToCloud = async () => {
@@ -109,14 +124,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!authEmail.trim() || !authPassword) {
+      setAuthStatus('Please enter your email and password.');
+      return;
+    }
     setAuthStatus('Authenticating...');
     const res = await signInWithEmail(authEmail, authPassword);
     if (res.error) {
       setAuthStatus(`Error: ${res.error}`);
     } else {
-      setCurrentUserEmail(res.user?.email || authEmail);
+      const email = res.user?.email || authEmail;
+      setCurrentUserEmail(email);
       setAuthStatus('Signed in! Syncing latest data...');
-      addToast('Cloud Sync Connected', `Logged in as ${authEmail}`, 'success');
+      addToast('Cloud Sync Connected', `Logged in as ${email}`, 'success');
       await performInitialCloudSync();
       setAuthStatus(null);
     }
@@ -124,13 +144,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!authEmail.trim() || !authPassword) {
+      setAuthStatus('Please enter your email and password.');
+      return;
+    }
+    if (authPassword.length < 6) {
+      setAuthStatus('Password must be at least 6 characters.');
+      return;
+    }
     setAuthStatus('Creating account...');
     const res = await signUpWithEmail(authEmail, authPassword);
     if (res.error) {
       setAuthStatus(`Error: ${res.error}`);
     } else {
-      setAuthStatus('Verification email sent or account created!');
-      addToast('Account Registered', 'Check your email to confirm.', 'info');
+      if (res.user?.email) {
+        setCurrentUserEmail(res.user.email);
+      }
+      setAuthStatus('Account created! Please check your email to confirm if required.');
+      addToast('Account Registered', 'Account setup complete.', 'info');
+      await performInitialCloudSync();
     }
   };
 
@@ -159,10 +191,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
   };
 
   const handleSignOut = async () => {
+    setIsSyncing(true);
     await signOut();
     setCurrentUserEmail(null);
+    setAuthEmail('');
+    setAuthPassword('');
     setAuthStatus(null);
-    addToast('Signed Out', 'Cloud sync disconnected. Operating local-first.', 'info');
+    setSyncStatus('idle');
+    setIsSyncing(false);
+    addToast('Logged Out', 'You have been logged out of your account.', 'info');
   };
 
   const requestNotificationPermission = async () => {
@@ -347,8 +384,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
                 <Cloud className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                 <h3 className="font-display font-bold text-slate-900 dark:text-white text-sm">Cloud Database & Auto-Sync</h3>
               </div>
-              <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold tracking-wide bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-300">
-                {supabaseConfig.url ? 'AUTO-SYNC ACTIVE' : 'LOCAL MODE'}
+              <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold tracking-wide ${
+                currentUserEmail
+                  ? 'bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/20 text-emerald-800 dark:text-emerald-300'
+                  : supabaseConfig.url
+                  ? 'bg-cyan-100 dark:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/20 text-cyan-800 dark:text-cyan-300'
+                  : 'bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-600 dark:text-slate-400'
+              }`}>
+                {currentUserEmail ? 'AUTO-SYNC ACTIVE' : supabaseConfig.url ? 'CLOUD READY • SIGN IN' : 'LOCAL MODE'}
               </span>
             </div>
 
@@ -397,8 +440,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowAdvancedConfig(true)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold shrink-0 ml-3 transition cursor-pointer"
+                  onClick={() => {
+                    restoreDefaultSupabaseConfig();
+                    const cfg = getSupabaseConfig();
+                    setSupabaseUrl(cfg.url);
+                    setSupabaseKey(cfg.key);
+                    addToast('Cloud Reconnected', 'Kata Cloud backend restored.', 'success');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-800 dark:text-cyan-300 text-xs font-semibold shrink-0 ml-3 transition cursor-pointer"
                 >
                   Connect Cloud
                 </button>
@@ -477,12 +526,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
                     <span className="text-slate-900 dark:text-white font-mono text-xs font-semibold">{currentUserEmail}</span>
                   </div>
                   <button
+                    type="button"
                     onClick={handleSignOut}
-                    className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-white/5 hover:bg-slate-300 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-xs flex items-center gap-1 transition cursor-pointer"
-                    title="Switch account or sign out"
+                    className="px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 dark:hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                    title="Log out of this account"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    <span>Switch Account</span>
+                    <span>Log Out</span>
                   </button>
                 </div>
 

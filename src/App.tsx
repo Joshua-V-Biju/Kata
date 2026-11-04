@@ -10,7 +10,7 @@ import { ToastContainer } from './components/layout/ToastContainer';
 import { LevelUpModal } from './components/layout/LevelUpModal';
 import { DailyQuoteModal } from './components/dashboard/DailyQuoteModal';
 import { DailyQuoteBanner } from './components/dashboard/DailyQuoteBanner';
-import { performInitialCloudSync } from './utils/cloudSync';
+import { performInitialCloudSync, setSyncStatus } from './utils/cloudSync';
 
 // Kata Views
 import { HeroCard } from './components/dashboard/HeroCard';
@@ -108,6 +108,9 @@ export const App: React.FC = () => {
             window.history.replaceState(null, '', window.location.pathname);
           }
           await performInitialCloudSync();
+        } else if (event === 'SIGNED_OUT') {
+          localStorage.removeItem('kata_auth_email');
+          setSyncStatus('idle');
         }
       });
 
