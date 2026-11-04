@@ -87,6 +87,12 @@ export const setSupabaseConfig = (url: string, key: string) => {
   supabaseInstance = null; // reset client to reinitialize
 };
 
+export const isLocalEnvironment = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const h = window.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h.endsWith('.local');
+};
+
 export const getStoredAuthUser = (): { id: string; email: string } | null => {
   if (typeof window === 'undefined') return null;
 
@@ -95,29 +101,55 @@ export const getStoredAuthUser = (): { id: string; email: string } | null => {
     return null;
   }
 
+  // 1. Check if a user session is stored on this device
   const raw = localStorage.getItem('kata_auth_user');
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
-      // Clean up orphaned master placeholder if it wasn't a real user session
-      if (parsed?.id === 'master-user-jvb' && !localStorage.getItem('kata-supabase-auth-token')) {
-        localStorage.removeItem('kata_auth_user');
+      if (parsed?.email && parsed.email !== 'placeholder@example.com') {
+        // On public web (Vercel), ensure Joshua's account was not mistakenly held by anonymous visitors
+        if (!isLocalEnvironment() && parsed.email === 'joshuavarkeybiju@gmail.com') {
+          const hasToken = localStorage.getItem('kata-supabase-auth-token') ||
+            Object.keys(localStorage).some(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+          if (!hasToken) {
+            localStorage.removeItem('kata_auth_user');
+            localStorage.removeItem('kata_auth_email');
+            return null;
+          }
+        }
+        return parsed;
+      }
+    } catch (e) {}
+  }
+
+  const email = localStorage.getItem('kata_auth_email');
+  if (email && email !== 'placeholder@example.com') {
+    if (!isLocalEnvironment() && email === 'joshuavarkeybiju@gmail.com') {
+      const hasToken = localStorage.getItem('kata-supabase-auth-token') ||
+        Object.keys(localStorage).some(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+      if (!hasToken) {
         localStorage.removeItem('kata_auth_email');
         return null;
       }
-      if (parsed?.email && parsed.email !== 'placeholder@example.com') return parsed;
-    } catch (e) {}
-  }
-  const email = localStorage.getItem('kata_auth_email');
-  if (email && email !== 'placeholder@example.com') {
-    // Also clean up if it was orphaned master email without a session
-    if (email === 'joshuavarkeybiju@gmail.com' && !localStorage.getItem('kata-supabase-auth-token')) {
-      localStorage.removeItem('kata_auth_email');
-      return null;
     }
     return { id: 'kata-user', email };
   }
 
+  // 2. On local dev server (localhost), automatically recognize Joshua's local workspace
+  // so you never have to sign in every time you launch the app locally
+  if (isLocalEnvironment()) {
+    const localUser = { id: 'master-user-jvb', email: 'joshuavarkeybiju@gmail.com' };
+    try {
+      localStorage.setItem('kata_auth_email', localUser.email);
+      localStorage.setItem('kata_auth_user', JSON.stringify({
+        ...localUser,
+        lastLogin: new Date().toISOString()
+      }));
+    } catch (e) {}
+    return localUser;
+  }
+
+  // 3. For public web visitors (Vercel), default to null (their own guest/login flow)
   return null;
 };
 

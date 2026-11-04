@@ -60,6 +60,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, currentMo
     if (sb) {
       const { data: listener } = sb.auth.onAuthStateChange((event, session) => {
         if (session?.user?.email) {
+          localStorage.removeItem('kata_explicit_logged_out');
           setCurrentUserEmail(session.user.email);
           localStorage.setItem('kata_auth_email', session.user.email);
           localStorage.setItem('kata_auth_user', JSON.stringify({

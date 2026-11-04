@@ -102,6 +102,7 @@ export const App: React.FC = () => {
         if (event === 'PASSWORD_RECOVERY') {
           setShowResetPassword(true);
         } else if (event === 'SIGNED_IN' && session?.user?.email) {
+          localStorage.removeItem('kata_explicit_logged_out');
           localStorage.setItem('kata_auth_email', session.user.email);
           localStorage.setItem('kata_auth_user', JSON.stringify({
             id: session.user.id,
