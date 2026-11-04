@@ -3,7 +3,7 @@ import { useKataStore } from '../../store/useKataStore';
 import { useForgeStore } from '../../store/useForgeStore';
 import { getTodayStr, formatDateDisplay, getDayOfWeekIndex } from '../../utils/dates';
 import { subscribeSyncStatus, SyncStatus } from '../../utils/cloudSync';
-import { getSupabaseConfig } from '../../utils/supabase';
+import { getSupabaseConfig, getStoredAuthUser } from '../../utils/supabase';
 import { soundEngine } from '../../utils/sound';
 import { Flame, Zap, Sun, Moon, Settings, Bell, Calendar, ChevronLeft, ChevronRight, Sparkles, Sliders, Dumbbell, Cloud, CloudOff } from 'lucide-react';
 
@@ -274,41 +274,46 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Cloud Auto-Sync Indicator */}
           {(() => {
             const isCloudActive = Boolean(getSupabaseConfig().url);
+            const user = getStoredAuthUser();
+            const isAuthenticated = Boolean(user?.email);
+
             return (
               <button
                 onClick={onOpenSettings}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs transition cursor-pointer"
                 title={
-                  syncStatus === 'synced'
-                    ? 'Cloud Synced • Auto-sync active'
-                    : syncStatus === 'syncing'
-                    ? 'Syncing changes to cloud...'
-                    : syncStatus === 'error'
-                    ? 'Sync issue • Click to inspect'
+                  isAuthenticated
+                    ? syncStatus === 'syncing'
+                      ? 'Syncing changes to cloud...'
+                      : syncStatus === 'error'
+                      ? 'Sync issue • Click to inspect'
+                      : 'Cloud Synced • Auto-sync active'
                     : isCloudActive
-                    ? 'Cloud Synced • Auto-sync active'
-                    : 'Local Mode • Connect cloud in settings'
+                    ? 'Cloud Ready • Click to sign in and sync'
+                    : 'Local Mode • Habits saved in your browser'
                 }
               >
-                {syncStatus === 'syncing' ? (
-                  <>
-                    <Cloud className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                    <span className="hidden sm:inline text-[10px] text-cyan-300 font-mono font-medium">Syncing</span>
-                  </>
-                ) : syncStatus === 'synced' ? (
-                  <>
-                    <Cloud className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="hidden sm:inline text-[10px] text-emerald-300 font-mono font-medium">Synced</span>
-                  </>
-                ) : syncStatus === 'error' ? (
-                  <>
-                    <CloudOff className="w-3.5 h-3.5 text-rose-400" />
-                    <span className="hidden sm:inline text-[10px] text-rose-300 font-mono font-medium">Offline</span>
-                  </>
+                {isAuthenticated ? (
+                  syncStatus === 'syncing' ? (
+                    <>
+                      <Cloud className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+                      <span className="hidden sm:inline text-[10px] text-cyan-300 font-mono font-medium">Syncing</span>
+                    </>
+                  ) : syncStatus === 'error' ? (
+                    <>
+                      <CloudOff className="w-3.5 h-3.5 text-rose-400" />
+                      <span className="hidden sm:inline text-[10px] text-rose-300 font-mono font-medium">Offline</span>
+                    </>
+                  ) : (
+                    <>
+                      <Cloud className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="hidden sm:inline text-[10px] text-emerald-300 font-mono font-medium">Synced</span>
+                    </>
+                  )
                 ) : isCloudActive ? (
                   <>
-                    <Cloud className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="hidden sm:inline text-[10px] text-emerald-300 font-mono font-medium">Synced</span>
+                    <Cloud className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="hidden sm:inline text-[10px] text-cyan-300 font-mono font-medium">Sign In</span>
                   </>
                 ) : (
                   <>

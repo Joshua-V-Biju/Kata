@@ -1,4 +1,4 @@
-import { pushToCloud, pullFromCloud, getSupabase, getCurrentAuthUser } from './supabase';
+import { pushToCloud, pullFromCloud, getSupabase, getCurrentAuthUser, getStoredAuthUser } from './supabase';
 import { useKataStore } from '../store/useKataStore';
 import { useForgeStore } from '../store/useForgeStore';
 
@@ -6,7 +6,7 @@ export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline';
 
 type SyncListener = (status: SyncStatus, lastSyncTime?: string) => void;
 
-let currentSyncStatus: SyncStatus = 'synced';
+let currentSyncStatus: SyncStatus = typeof window !== 'undefined' && getStoredAuthUser() ? 'synced' : 'idle';
 let lastSyncTimestamp: string | null = null;
 const listeners = new Set<SyncListener>();
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -71,7 +71,7 @@ export const performBackgroundPush = async (): Promise<boolean> => {
   try {
     const user = await getCurrentAuthUser();
     if (!user) {
-      setSyncStatus('offline');
+      setSyncStatus('idle');
       return false;
     }
 
@@ -138,7 +138,7 @@ export const performInitialCloudSync = async (): Promise<boolean> => {
   try {
     const user = await getCurrentAuthUser();
     if (!user) {
-      setSyncStatus('offline');
+      setSyncStatus('idle');
       return false;
     }
 

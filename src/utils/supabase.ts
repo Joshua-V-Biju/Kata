@@ -87,10 +87,8 @@ export const setSupabaseConfig = (url: string, key: string) => {
   supabaseInstance = null; // reset client to reinitialize
 };
 
-export const DEFAULT_MASTER_EMAIL = 'joshuavarkeybiju@gmail.com';
-
 export const getStoredAuthUser = (): { id: string; email: string } | null => {
-  if (typeof window === 'undefined') return { id: 'master-user-jvb', email: DEFAULT_MASTER_EMAIL };
+  if (typeof window === 'undefined') return null;
 
   // If user explicitly signed out, do not auto-login until next explicit sign-in
   if (localStorage.getItem('kata_explicit_logged_out') === 'true') {
@@ -101,16 +99,26 @@ export const getStoredAuthUser = (): { id: string; email: string } | null => {
   if (raw) {
     try {
       const parsed = JSON.parse(raw);
-      if (parsed?.email) return parsed;
+      // Clean up orphaned master placeholder if it wasn't a real user session
+      if (parsed?.id === 'master-user-jvb' && !localStorage.getItem('kata-supabase-auth-token')) {
+        localStorage.removeItem('kata_auth_user');
+        localStorage.removeItem('kata_auth_email');
+        return null;
+      }
+      if (parsed?.email && parsed.email !== 'placeholder@example.com') return parsed;
     } catch (e) {}
   }
   const email = localStorage.getItem('kata_auth_email');
-  if (email) {
-    return { id: 'master-user-jvb', email };
+  if (email && email !== 'placeholder@example.com') {
+    // Also clean up if it was orphaned master email without a session
+    if (email === 'joshuavarkeybiju@gmail.com' && !localStorage.getItem('kata-supabase-auth-token')) {
+      localStorage.removeItem('kata_auth_email');
+      return null;
+    }
+    return { id: 'kata-user', email };
   }
 
-  // Automatically default to master account so users are permanently logged in without friction
-  return { id: 'master-user-jvb', email: DEFAULT_MASTER_EMAIL };
+  return null;
 };
 
 export const getSupabase = (): SupabaseClient | null => {
