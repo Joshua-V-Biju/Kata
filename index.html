@@ -16,6 +16,17 @@
 
     <title>Kata • 習慣 — Habit Command Center</title>
 
+    <!-- Immediately unregister any legacy service workers -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          for (var i = 0; i < regs.length; i++) {
+            regs[i].unregister();
+          }
+        });
+      }
+    </script>
+
     <!-- Self-healing: if an older cached bundle fails to load new hashes, automatically unregister stale workers and reload -->
     <script>
       window.addEventListener('error', function(e) {
@@ -39,6 +50,34 @@
             }
           }
         }
+      });
+
+      // Detect unstyled hitch caused by stale service worker cache and auto-heal
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          var font = window.getComputedStyle(document.body).fontFamily || '';
+          if (font.indexOf('Times') > -1 || font.indexOf('serif') === 0) {
+            if (!sessionStorage.getItem('kata_style_healed')) {
+              sessionStorage.setItem('kata_style_healed', 'true');
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(regs) {
+                  regs.forEach(function(r) { r.unregister(); });
+                });
+              }
+              if ('caches' in window) {
+                caches.keys().then(function(keys) {
+                  Promise.all(keys.map(function(k) { return caches.delete(k); })).then(function() {
+                    window.location.reload(true);
+                  });
+                });
+              } else {
+                window.location.reload(true);
+              }
+            }
+          } else {
+            sessionStorage.removeItem('kata_style_healed');
+          }
+        }, 120);
       });
     </script>
   </head>

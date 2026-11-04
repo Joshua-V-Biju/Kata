@@ -338,6 +338,16 @@ export const App: React.FC = () => {
 
       </main>
 
+      {/* Global Footer Copyright */}
+      <footer className="relative z-10 py-6 pb-28 md:pb-8 text-center text-xs font-mono tracking-wider select-none text-slate-500 dark:text-slate-400">
+        <p className="flex items-center justify-center gap-1.5">
+          <span>&copy;</span>
+          <span className="font-semibold text-slate-700 dark:text-slate-300">jvbstudios</span>
+          <span className="text-slate-400 dark:text-slate-600">•</span>
+          <span className="text-[11px] text-slate-400 dark:text-slate-400">All Rights Reserved</span>
+        </p>
+      </footer>
+
       {/* Toast Notification Container */}
       <ToastContainer />
 

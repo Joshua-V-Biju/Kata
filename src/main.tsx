@@ -62,12 +62,12 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// Register PWA service worker in production
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch((error) => {
-      console.log('SW registration error:', error);
-    });
+// Unregister any legacy service workers and clear stale caches
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister();
+    }
   });
 }
 
